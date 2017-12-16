@@ -1,25 +1,54 @@
 const express = require('express');
 const router = express.Router();
 const { displays, images, groups } = require('../datos');
+const mongoose = require('mongoose');
 
+const Group = require('../models/group');
 
 /* API GET */
 router.get('/', (req, res, next) => {
-  const res_json = groups.map((g) => ({
-    "url":g.url,
-    "id":g.id,
-    "name":g.name,
-    "description":g.description,
-    "tags_total":g.tags_total,
-    "created_at":g.created_at
-  }));
-  res.status(200).json(res_json);
+  Group.find()
+    .exec()
+    .then(docs => {
+      const response = {
+        count: docs.length,
+        data: docs.map((doc) =>{
+          return{
+            _id: doc._id,
+            url: doc.url,
+            id: doc.id,
+            name: doc.name,
+            description: doc.description,
+            tags_total: doc.tags.length,
+            created_at: doc.created_at,
+          }
+        })
+      }
+      console.log(response);
+      res.status(200).json(response);
+    })
+    .catch(err => {
+      console.log(err);
+      res.status(500).json({error: err});
+    });
 });
 
 router.get('/:id', (req, res, next) => {
-  const id = req.params.id;
-  const group = groups.find((g) => g.id == id);
-  group ? res.status(200).json(group) : res.status(500).json({ alert: 'No matches found'});
+  const _id = req.params.id;
+  Group.findById(_id)
+    .exec()
+    .then(doc => {
+      console.log("From database", doc);
+      if (doc) {
+        res.status(200).json(doc);
+      } else {
+        res.status(404).json({message: 'No valid entry found for provided id'});
+      }
+    })
+    .catch(err => {
+      console.log(err);
+      res.status(500).json({error: err});
+    });
 });
 
 
@@ -29,8 +58,8 @@ router.post('/', (req, res, next) => {
 });
 
 
-/* API PUT */
-router.put('/:id', (req, res, next) => {
+/* API PATCH */
+router.patch('/:id', (req, res, next) => {
 
 });
 

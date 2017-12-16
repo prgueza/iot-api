@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const { users } = require('../datos');
 const mongoose = require('mongoose');
 
 const User = require('../models/user');
@@ -11,7 +10,7 @@ router.get('/', (req, res, next) => {
     .exec()
     .then(docs => {
       console.log(docs);
-      res.status(200).json(docs);
+      setTimeout(() => { res.status(200).json(docs) }, 1000);
     })
     .catch(err => {
       console.log(err);

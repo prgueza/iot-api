@@ -1,6 +1,6 @@
 module.exports.displays = [
    {
-      "url":"http://localhost:3000/api/displays/1",
+      "url":"http://localhost:4000/displays/1",
       "id":1,
       "name":"Display de prueba nº1",
       "description":"Descripcion del display de prueba nº1",
@@ -14,33 +14,33 @@ module.exports.displays = [
       },
       "groups":[
          {
-            "url":"http://localhost:3000/api/groups/1",
+            "url":"http://localhost:4000/groups/1",
             "id":1,
             "name":"Grupo de prueba 1"
          }
       ],
       "images":[
          {
-            "url":"http://localhost:3000/api/images/1",
+            "url":"http://localhost:4000/images/1",
             "id":1,
             "name":"Imagen de prueba 1",
             "src_url":"http://localhost:3000/img/1024x600.png"
          },
          {
-            "url":"http://localhost:3000/api/images/2",
+            "url":"http://localhost:4000/images/2",
             "id":2,
             "name":"Imagen de prueba 2",
             "src_url":"http://localhost:3000/img/1280x720.png"
          },
          {
-            "url":"http://localhost:3000/api/images/3",
+            "url":"http://localhost:4000/images/3",
             "id":3,
             "name":"Imagen de prueba 3",
             "src_url":"http://localhost:3000/img/854x480.png"
          }
       ],
       "active_image":{
-         "url":"http://localhost:3000/api/images/1",
+         "url":"http://localhost:4000/images/1",
          "id":1,
          "name":"Imagen de prueba 1",
          "src_url":"http://localhost:3000/img/1024x600.png"
@@ -59,7 +59,7 @@ module.exports.displays = [
       }
    },
    {
-      "url":"http://localhost:3000/api/displays/2",
+      "url":"http://localhost:4000/displays/2",
       "id":2,
       "name":"Display de prueba nº2",
       "description":"Descripcion del display de prueba nº2",
@@ -73,33 +73,33 @@ module.exports.displays = [
       },
       "groups":[
          {
-            "url":"http://localhost:3000/api/groups/1",
+            "url":"http://localhost:4000/groups/1",
             "id":1,
             "name":"Grupo de prueba 1"
          }
       ],
       "images":[
          {
-            "url":"http://localhost:3000/api/images/1",
+            "url":"http://localhost:4000/images/1",
             "id":1,
             "name":"Imagen de prueba 1",
             "src_url":"http://localhost:3000/img/1024x600.png"
          },
          {
-            "url":"http://localhost:3000/api/images/2",
+            "url":"http://localhost:4000/images/2",
             "id":2,
             "name":"Imagen de prueba 2",
             "src_url":"http://localhost:3000/img/1280x720.png"
          },
          {
-            "url":"http://localhost:3000/api/images/3",
+            "url":"http://localhost:4000/images/3",
             "id":3,
             "name":"Imagen de prueba 3",
             "src_url":"http://localhost:3000/img/854x480.png"
          }
       ],
       "active_image":{
-         "url":"http://localhost:3000/api/images/1",
+         "url":"http://localhost:4000/images/1",
          "id":1,
          "name":"Imagen de prueba 1",
          "src_url":"http://localhost:3000/img/1024x600.png"
@@ -118,7 +118,7 @@ module.exports.displays = [
       }
    },
    {
-      "url":"http://localhost:3000/api/displays/3",
+      "url":"http://localhost:4000/displays/3",
       "id":3,
       "name":"Display de prueba nº3",
       "description":"Descripcion del display de prueba nº3",
@@ -132,33 +132,33 @@ module.exports.displays = [
       },
       "groups":[
          {
-            "url":"http://localhost:3000/api/groups/1",
+            "url":"http://localhost:4000/groups/1",
             "id":1,
             "name":"Grupo de prueba 1"
          }
       ],
       "images":[
          {
-            "url":"http://localhost:3000/api/images/1",
+            "url":"http://localhost:4000/images/1",
             "id":1,
             "name":"Imagen de prueba 1",
             "src_url":"http://localhost:3000/img/1024x600.png"
          },
          {
-            "url":"http://localhost:3000/api/images/2",
+            "url":"http://localhost:4000/images/2",
             "id":2,
             "name":"Imagen de prueba 2",
             "src_url":"http://localhost:3000/img/1280x720.png"
          },
          {
-            "url":"http://localhost:3000/api/images/3",
+            "url":"http://localhost:4000/images/3",
             "id":3,
             "name":"Imagen de prueba 3",
             "src_url":"http://localhost:3000/img/854x480.png"
          }
       ],
       "active_image":{
-         "url":"http://localhost:3000/api/images/1",
+         "url":"http://localhost:4000/images/1",
          "id":1,
          "name":"Imagen de prueba 1",
          "src_url":"http://localhost:3000/img/1024x600.png"
@@ -177,7 +177,7 @@ module.exports.displays = [
       }
    },
    {
-      "url":"http://localhost:3000/api/displays/4",
+      "url":"http://localhost:4000/displays/4",
       "id":4,
       "name":"Display de prueba nº4",
       "description":"Descripcion del display de prueba nº4",
@@ -191,33 +191,33 @@ module.exports.displays = [
       },
       "groups":[
          {
-            "url":"http://localhost:3000/api/groups/1",
+            "url":"http://localhost:4000/groups/1",
             "id":1,
             "name":"Grupo de prueba 1"
          }
       ],
       "images":[
          {
-            "url":"http://localhost:3000/api/images/1",
+            "url":"http://localhost:4000/images/1",
             "id":1,
             "name":"Imagen de prueba 1",
             "src_url":"http://localhost:3000/img/1024x600.png"
          },
          {
-            "url":"http://localhost:3000/api/images/2",
+            "url":"http://localhost:4000/images/2",
             "id":2,
             "name":"Imagen de prueba 2",
             "src_url":"http://localhost:3000/img/1280x720.png"
          },
          {
-            "url":"http://localhost:3000/api/images/3",
+            "url":"http://localhost:4000/images/3",
             "id":3,
             "name":"Imagen de prueba 3",
             "src_url":"http://localhost:3000/img/854x480.png"
          }
       ],
       "active_image":{
-         "url":"http://localhost:3000/api/images/1",
+         "url":"http://localhost:4000/images/1",
          "id":1,
          "name":"Imagen de prueba 1",
          "src_url":"http://localhost:3000/img/1024x600.png"
@@ -236,7 +236,7 @@ module.exports.displays = [
       }
    },
    {
-      "url":"http://localhost:3000/api/displays/5",
+      "url":"http://localhost:4000/displays/5",
       "id":5,
       "name":"Display de prueba nº5",
       "description":"Descripcion del display de prueba nº5",
@@ -250,33 +250,33 @@ module.exports.displays = [
       },
       "groups":[
          {
-            "url":"http://localhost:3000/api/groups/1",
+            "url":"http://localhost:4000/groups/1",
             "id":1,
             "name":"Grupo de prueba 1"
          }
       ],
       "images":[
          {
-            "url":"http://localhost:3000/api/images/1",
+            "url":"http://localhost:4000/images/1",
             "id":1,
             "name":"Imagen de prueba 1",
             "src_url":"http://localhost:3000/img/1024x600.png"
          },
          {
-            "url":"http://localhost:3000/api/images/2",
+            "url":"http://localhost:4000/images/2",
             "id":2,
             "name":"Imagen de prueba 2",
             "src_url":"http://localhost:3000/img/1280x720.png"
          },
          {
-            "url":"http://localhost:3000/api/images/3",
+            "url":"http://localhost:4000/images/3",
             "id":3,
             "name":"Imagen de prueba 3",
             "src_url":"http://localhost:3000/img/854x480.png"
          }
       ],
       "active_image":{
-         "url":"http://localhost:3000/api/images/1",
+         "url":"http://localhost:4000/images/1",
          "id":1,
          "name":"Imagen de prueba 1",
          "src_url":"http://localhost:3000/img/1024x600.png"
@@ -295,7 +295,7 @@ module.exports.displays = [
       }
    },
    {
-      "url":"http://localhost:3000/api/displays/6",
+      "url":"http://localhost:4000/displays/6",
       "id":6,
       "name":"Display de prueba nº6",
       "description":"Descripcion del display de prueba nº6",
@@ -309,33 +309,33 @@ module.exports.displays = [
       },
       "groups":[
          {
-            "url":"http://localhost:3000/api/groups/1",
+            "url":"http://localhost:4000/groups/1",
             "id":1,
             "name":"Grupo de prueba 1"
          }
       ],
       "images":[
          {
-            "url":"http://localhost:3000/api/images/1",
+            "url":"http://localhost:4000/images/1",
             "id":1,
             "name":"Imagen de prueba 1",
             "src_url":"http://localhost:3000/img/1024x600.png"
          },
          {
-            "url":"http://localhost:3000/api/images/2",
+            "url":"http://localhost:4000/images/2",
             "id":2,
             "name":"Imagen de prueba 2",
             "src_url":"http://localhost:3000/img/1280x720.png"
          },
          {
-            "url":"http://localhost:3000/api/images/3",
+            "url":"http://localhost:4000/images/3",
             "id":3,
             "name":"Imagen de prueba 3",
             "src_url":"http://localhost:3000/img/854x480.png"
          }
       ],
       "active_image":{
-         "url":"http://localhost:3000/api/images/1",
+         "url":"http://localhost:4000/images/1",
          "id":1,
          "name":"Imagen de prueba 1",
          "src_url":"http://localhost:3000/img/1024x600.png"
@@ -354,7 +354,7 @@ module.exports.displays = [
       }
    },
    {
-      "url":"http://localhost:3000/api/displays/7",
+      "url":"http://localhost:4000/displays/7",
       "id":7,
       "name":"Display de prueba nº7",
       "description":"Descripcion del display de prueba nº7",
@@ -368,33 +368,33 @@ module.exports.displays = [
       },
       "groups":[
          {
-            "url":"http://localhost:3000/api/groups/1",
+            "url":"http://localhost:4000/groups/1",
             "id":1,
             "name":"Grupo de prueba 1"
          }
       ],
       "images":[
          {
-            "url":"http://localhost:3000/api/images/1",
+            "url":"http://localhost:4000/images/1",
             "id":1,
             "name":"Imagen de prueba 1",
             "src_url":"http://localhost:3000/img/1024x600.png"
          },
          {
-            "url":"http://localhost:3000/api/images/2",
+            "url":"http://localhost:4000/images/2",
             "id":2,
             "name":"Imagen de prueba 2",
             "src_url":"http://localhost:3000/img/1280x720.png"
          },
          {
-            "url":"http://localhost:3000/api/images/3",
+            "url":"http://localhost:4000/images/3",
             "id":3,
             "name":"Imagen de prueba 3",
             "src_url":"http://localhost:3000/img/854x480.png"
          }
       ],
       "active_image":{
-         "url":"http://localhost:3000/api/images/1",
+         "url":"http://localhost:4000/images/1",
          "id":1,
          "name":"Imagen de prueba 1",
          "src_url":"http://localhost:3000/img/1024x600.png"
@@ -413,7 +413,7 @@ module.exports.displays = [
       }
    },
    {
-      "url":"http://localhost:3000/api/displays/8",
+      "url":"http://localhost:4000/displays/8",
       "id":8,
       "name":"Display de prueba nº8",
       "description":"Descripcion del display de prueba nº8",
@@ -427,33 +427,33 @@ module.exports.displays = [
       },
       "groups":[
          {
-            "url":"http://localhost:3000/api/groups/1",
+            "url":"http://localhost:4000/groups/1",
             "id":1,
             "name":"Grupo de prueba 1"
          }
       ],
       "images":[
          {
-            "url":"http://localhost:3000/api/images/1",
+            "url":"http://localhost:4000/images/1",
             "id":1,
             "name":"Imagen de prueba 1",
             "src_url":"http://localhost:3000/img/1024x600.png"
          },
          {
-            "url":"http://localhost:3000/api/images/2",
+            "url":"http://localhost:4000/images/2",
             "id":2,
             "name":"Imagen de prueba 2",
             "src_url":"http://localhost:3000/img/1280x720.png"
          },
          {
-            "url":"http://localhost:3000/api/images/3",
+            "url":"http://localhost:4000/images/3",
             "id":3,
             "name":"Imagen de prueba 3",
             "src_url":"http://localhost:3000/img/854x480.png"
          }
       ],
       "active_image":{
-         "url":"http://localhost:3000/api/images/1",
+         "url":"http://localhost:4000/images/1",
          "id":1,
          "name":"Imagen de prueba 1",
          "src_url":"http://localhost:3000/img/1024x600.png"
@@ -472,7 +472,7 @@ module.exports.displays = [
       }
    },
    {
-      "url":"http://localhost:3000/api/displays/9",
+      "url":"http://localhost:4000/displays/9",
       "id":9,
       "name":"Display de prueba nº9",
       "description":"Descripcion del display de prueba nº9",
@@ -486,33 +486,33 @@ module.exports.displays = [
       },
       "groups":[
          {
-            "url":"http://localhost:3000/api/groups/1",
+            "url":"http://localhost:4000/groups/1",
             "id":1,
             "name":"Grupo de prueba 1"
          }
       ],
       "images":[
          {
-            "url":"http://localhost:3000/api/images/1",
+            "url":"http://localhost:4000/images/1",
             "id":1,
             "name":"Imagen de prueba 1",
             "src_url":"http://localhost:3000/img/1024x600.png"
          },
          {
-            "url":"http://localhost:3000/api/images/2",
+            "url":"http://localhost:4000/images/2",
             "id":2,
             "name":"Imagen de prueba 2",
             "src_url":"http://localhost:3000/img/1280x720.png"
          },
          {
-            "url":"http://localhost:3000/api/images/3",
+            "url":"http://localhost:4000/images/3",
             "id":3,
             "name":"Imagen de prueba 3",
             "src_url":"http://localhost:3000/img/854x480.png"
          }
       ],
       "active_image":{
-         "url":"http://localhost:3000/api/images/1",
+         "url":"http://localhost:4000/images/1",
          "id":1,
          "name":"Imagen de prueba 1",
          "src_url":"http://localhost:3000/img/1024x600.png"
@@ -531,7 +531,7 @@ module.exports.displays = [
       }
    },
    {
-      "url":"http://localhost:3000/api/displays/10",
+      "url":"http://localhost:4000/displays/10",
       "id":10,
       "name":"Display de prueba nº10",
       "description":"Descripicion del display de prueba",
@@ -545,33 +545,33 @@ module.exports.displays = [
       },
       "groups":[
          {
-            "url":"http://localhost:3000/api/groups/1",
+            "url":"http://localhost:4000/groups/1",
             "id":1,
             "name":"Grupo de prueba 1"
          }
       ],
       "images":[
          {
-            "url":"http://localhost:3000/api/images/1",
+            "url":"http://localhost:4000/images/1",
             "id":1,
             "name":"Imagen de prueba 1",
             "src_url":"http://localhost:3000/img/1024x600.png"
          },
          {
-            "url":"http://localhost:3000/api/images/2",
+            "url":"http://localhost:4000/images/2",
             "id":2,
             "name":"Imagen de prueba 2",
             "src_url":"http://localhost:3000/img/1280x720.png"
          },
          {
-            "url":"http://localhost:3000/api/images/3",
+            "url":"http://localhost:4000/images/3",
             "id":3,
             "name":"Imagen de prueba 3",
             "src_url":"http://localhost:3000/img/854x480.png"
          }
       ],
       "active_image":{
-         "url":"http://localhost:3000/api/images/1",
+         "url":"http://localhost:4000/images/1",
          "id":1,
          "name":"Imagen de prueba 1",
          "src_url":"http://localhost:3000/img/1024x600.png"
@@ -593,7 +593,7 @@ module.exports.displays = [
 
 module.exports.images = [
    {
-      "url":"http://localhost:3000/api/images/1",
+      "url":"http://localhost:4000/images/1",
       "id":1,
       "name":"Imagen de prueba 1",
       "description":"Descripcion de la imagen de prueba nº1",
@@ -603,7 +603,7 @@ module.exports.images = [
       "src_url":"http://localhost:3000/img/180x150.png",
       "file":"png",
       "color_profile":"grises",
-      "resolution":{
+      "dimensions":{
          "width":180,
          "height":150
       },
@@ -617,21 +617,21 @@ module.exports.images = [
       ],
       "displays":[
          {
-            "url":"http://localhost:3000/api/displays/3",
+            "url":"http://localhost:4000/displays/3",
             "id":3,
             "name":"Display de prueba 3"
          }
       ],
       "groups":[
          {
-            "url":"http://localhost:3000/api/grupos/3",
+            "url":"http://localhost:4000/grupos/3",
             "id":3,
             "name":"Grupo de prueba 3"
          }
       ]
    },
    {
-      "url":"http://localhost:3000/api/images/2",
+      "url":"http://localhost:4000/images/2",
       "id":2,
       "name":"Imagen de prueba 2",
       "description":"Descripcion de la imagen de prueba nº2",
@@ -641,7 +641,7 @@ module.exports.images = [
       "src_url":"http://localhost:3000/img/300x250.png",
       "file":"png",
       "color_profile":"grises",
-      "resolution":{
+      "dimensions":{
          "width":300,
          "height":250
       },
@@ -656,21 +656,21 @@ module.exports.images = [
       ],
       "displays":[
          {
-            "url":"http://localhost:3000/api/displays/3",
+            "url":"http://localhost:4000/displays/3",
             "id":3,
             "name":"Display de prueba 3"
          }
       ],
       "groups":[
          {
-            "url":"http://localhost:3000/api/grupos/3",
+            "url":"http://localhost:4000/grupos/3",
             "id":3,
             "name":"Display de prueba 3"
          }
       ]
    },
    {
-      "url":"http://localhost:3000/api/images/3",
+      "url":"http://localhost:4000/images/3",
       "id":3,
       "name":"Imagen de prueba 3",
       "description":"Descripcion de la imagen de prueba nº3",
@@ -680,7 +680,7 @@ module.exports.images = [
       "src_url":"http://localhost:3000/img/320x200.png",
       "file":"png",
       "color_profile":"grises",
-      "resolution":{
+      "dimensions":{
          "width":320,
          "height":200
       },
@@ -695,21 +695,21 @@ module.exports.images = [
       ],
       "displays":[
          {
-            "url":"http://localhost:3000/api/displays/3",
+            "url":"http://localhost:4000/displays/3",
             "id":3,
             "name":"Display de prueba 3"
          }
       ],
       "groups":[
          {
-            "url":"http://localhost:3000/api/grupos/3",
+            "url":"http://localhost:4000/grupos/3",
             "id":3,
             "name":"Display de prueba 3"
          }
       ]
    },
    {
-      "url":"http://localhost:3000/api/images/4",
+      "url":"http://localhost:4000/images/4",
       "id":4,
       "name":"Imagen de prueba 4",
       "description":"Descripcion de la imagen de prueba nº4",
@@ -719,7 +719,7 @@ module.exports.images = [
       "src_url":"http://localhost:3000/img/320x240.png",
       "file":"png",
       "color_profile":"grises",
-      "resolution":{
+      "dimensions":{
          "width":320,
          "height":240
       },
@@ -734,21 +734,21 @@ module.exports.images = [
       ],
       "displays":[
          {
-            "url":"http://localhost:3000/api/displays/3",
+            "url":"http://localhost:4000/displays/3",
             "id":3,
             "name":"Display de prueba 3"
          }
       ],
       "groups":[
          {
-            "url":"http://localhost:3000/api/grupos/3",
+            "url":"http://localhost:4000/grupos/3",
             "id":3,
             "name":"Display de prueba 3"
          }
       ]
    },
    {
-      "url":"http://localhost:3000/api/images/5",
+      "url":"http://localhost:4000/images/5",
       "id":5,
       "name":"Imagen de prueba 5",
       "description":"Descripcion de la imagen de prueba nº5",
@@ -758,7 +758,7 @@ module.exports.images = [
       "src_url":"http://localhost:3000/img/640x480.png",
       "file":"png",
       "color_profile":"grises",
-      "resolution":{
+      "dimensions":{
          "width":640,
          "height":480
       },
@@ -773,21 +773,21 @@ module.exports.images = [
       ],
       "displays":[
          {
-            "url":"http://localhost:3000/api/displays/3",
+            "url":"http://localhost:4000/displays/3",
             "id":3,
             "name":"Display de prueba 3"
          }
       ],
       "groups":[
          {
-            "url":"http://localhost:3000/api/grupos/3",
+            "url":"http://localhost:4000/grupos/3",
             "id":3,
             "name":"Display de prueba 3"
          }
       ]
    },
    {
-      "url":"http://localhost:3000/api/images/6",
+      "url":"http://localhost:4000/images/6",
       "id":6,
       "name":"Imagen de prueba 6",
       "description":"Descripcion de la imagen de prueba nº6",
@@ -797,7 +797,7 @@ module.exports.images = [
       "src_url":"http://localhost:3000/img/800x480.png",
       "file":"png",
       "color_profile":"grises",
-      "resolution":{
+      "dimensions":{
          "width":800,
          "height":480
       },
@@ -812,21 +812,21 @@ module.exports.images = [
       ],
       "displays":[
          {
-            "url":"http://localhost:3000/api/displays/3",
+            "url":"http://localhost:4000/displays/3",
             "id":3,
             "name":"Display de prueba 3"
          }
       ],
       "groups":[
          {
-            "url":"http://localhost:3000/api/grupos/3",
+            "url":"http://localhost:4000/grupos/3",
             "id":3,
             "name":"Display de prueba 3"
          }
       ]
    },
    {
-      "url":"http://localhost:3000/api/images/7",
+      "url":"http://localhost:4000/images/7",
       "id":7,
       "name":"Imagen de prueba 4",
       "description":"Descripcion de la imagen de prueba nº7",
@@ -836,7 +836,7 @@ module.exports.images = [
       "src_url":"http://localhost:3000/img/800x600.png",
       "file":"png",
       "color_profile":"grises",
-      "resolution":{
+      "dimensions":{
          "width":800,
          "height":600
       },
@@ -851,21 +851,21 @@ module.exports.images = [
       ],
       "displays":[
          {
-            "url":"http://localhost:3000/api/displays/3",
+            "url":"http://localhost:4000/displays/3",
             "id":3,
             "name":"Display de prueba 3"
          }
       ],
       "groups":[
          {
-            "url":"http://localhost:3000/api/grupos/3",
+            "url":"http://localhost:4000/grupos/3",
             "id":3,
             "name":"Display de prueba 3"
          }
       ]
    },
    {
-      "url":"http://localhost:3000/api/images/8",
+      "url":"http://localhost:4000/images/8",
       "id":8,
       "name":"Imagen de prueba 8",
       "description":"Descripcion de la imagen de prueba nº8",
@@ -875,7 +875,7 @@ module.exports.images = [
       "src_url":"http://localhost:3000/img/854x480.png",
       "file":"png",
       "color_profile":"grises",
-      "resolution":{
+      "dimensions":{
          "width":854,
          "height":480
       },
@@ -890,21 +890,21 @@ module.exports.images = [
       ],
       "displays":[
          {
-            "url":"http://localhost:3000/api/displays/3",
+            "url":"http://localhost:4000/displays/3",
             "id":3,
             "name":"Display de prueba 3"
          }
       ],
       "groups":[
          {
-            "url":"http://localhost:3000/api/grupos/3",
+            "url":"http://localhost:4000/grupos/3",
             "id":3,
             "name":"Display de prueba 3"
          }
       ]
    },
    {
-      "url":"http://localhost:3000/api/images/9",
+      "url":"http://localhost:4000/images/9",
       "id":9,
       "name":"Imagen de prueba 9",
       "description":"Descripcion de la imagen de prueba nº9",
@@ -914,7 +914,7 @@ module.exports.images = [
       "src_url":"http://localhost:3000/img/1024x600.png",
       "file":"png",
       "color_profile":"grises",
-      "resolution":{
+      "dimensions":{
          "width":1024,
          "height":600
       },
@@ -929,21 +929,21 @@ module.exports.images = [
       ],
       "displays":[
          {
-            "url":"http://localhost:3000/api/displays/3",
+            "url":"http://localhost:4000/displays/3",
             "id":3,
             "name":"Display de prueba 3"
          }
       ],
       "groups":[
          {
-            "url":"http://localhost:3000/api/grupos/3",
+            "url":"http://localhost:4000/grupos/3",
             "id":3,
             "name":"Display de prueba 3"
          }
       ]
    },
    {
-      "url":"http://localhost:3000/api/images/10",
+      "url":"http://localhost:4000/images/10",
       "id":10,
       "name":"Imagen de prueba 10",
       "description":"Descripcion de la imagen de prueba nº10",
@@ -953,7 +953,7 @@ module.exports.images = [
       "src_url":"http://localhost:3000/img/1280x720.png",
       "file":"png",
       "color_profile":"grises",
-      "resolution":{
+      "dimensions":{
          "width":1280,
          "height":720
       },
@@ -968,14 +968,14 @@ module.exports.images = [
       ],
       "displays":[
          {
-            "url":"http://localhost:3000/api/displays/3",
+            "url":"http://localhost:4000/displays/3",
             "id":3,
             "name":"Display de prueba 3"
          }
       ],
       "groups":[
          {
-            "url":"http://localhost:3000/api/grupos/3",
+            "url":"http://localhost:4000/grupos/3",
             "id":3,
             "name":"Display de prueba 3"
          }
@@ -985,7 +985,7 @@ module.exports.images = [
 
 module.exports.groups = [
    {
-      "url":"http://localhost:3000/api/groups/1",
+      "url":"http://localhost:4000/groups/1",
       "id":1,
       "name":"Grupo de prueba 1",
       "description":"Descripcion del grupo de prueba nº1",
@@ -994,20 +994,20 @@ module.exports.groups = [
       "user":"Administrador",
       "displays":[
          {
-            "url":"http://localhost:3000/api/displays/3",
+            "url":"http://localhost:4000/displays/3",
             "id":3,
             "name":"Display de prueba 3"
          }
       ],
       "active_image":{
-         "url":"http://localhost:3000/api/images/3",
+         "url":"http://localhost:4000/images/3",
          "id":3,
          "name":"Imagen de prueba 3",
          "src_url":"http://localhost:3000/img/854x480.png"
       },
       "images":[
          {
-            "url":"http://localhost:3000/api/images/3",
+            "url":"http://localhost:4000/images/3",
             "id":3,
             "name":"Imagen de prueba 3",
             "src_url":"http://localhost:3000/img/854x480.png"
@@ -1020,7 +1020,7 @@ module.exports.groups = [
       ]
    },
    {
-      "url":"http://localhost:3000/api/groups/2",
+      "url":"http://localhost:4000/groups/2",
       "id":2,
       "name":"Grupo de prueba 2",
       "description":"Descripcion del grupo de prueba nº2",
@@ -1029,20 +1029,20 @@ module.exports.groups = [
       "user":"Administrador",
       "displays":[
          {
-            "url":"http://localhost:3000/api/displays/3",
+            "url":"http://localhost:4000/displays/3",
             "id":3,
             "name":"Display de prueba 3"
          }
       ],
       "active_image":{
-         "url":"http://localhost:3000/api/images/3",
+         "url":"http://localhost:4000/images/3",
          "id":3,
          "name":"Imagen de prueba 3",
          "src_url":"http://localhost:3000/img/854x480.png"
       },
       "images":[
          {
-            "url":"http://localhost:3000/api/images/3",
+            "url":"http://localhost:4000/images/3",
             "id":3,
             "name":"Imagen de prueba 3",
             "src_url":"http://localhost:3000/img/854x480.png"
@@ -1055,7 +1055,7 @@ module.exports.groups = [
       ]
    },
    {
-      "url":"http://localhost:3000/api/groups/3",
+      "url":"http://localhost:4000/groups/3",
       "id":3,
       "name":"Grupo de prueba 3",
       "description":"Descripcion del grupo de prueba nº3",
@@ -1064,20 +1064,20 @@ module.exports.groups = [
       "user":"Administrador",
       "displays":[
          {
-            "url":"http://localhost:3000/api/displays/3",
+            "url":"http://localhost:4000/displays/3",
             "id":3,
             "name":"Display de prueba 3"
          }
       ],
       "active_image":{
-         "url":"http://localhost:3000/api/images/3",
+         "url":"http://localhost:4000/images/3",
          "id":3,
          "name":"Imagen de prueba 3",
          "src_url":"http://localhost:3000/img/854x480.png"
       },
       "images":[
          {
-            "url":"http://localhost:3000/api/images/3",
+            "url":"http://localhost:4000/images/3",
             "id":3,
             "name":"Imagen de prueba 3",
             "src_url":"http://localhost:3000/img/854x480.png"
@@ -1090,7 +1090,7 @@ module.exports.groups = [
       ]
    },
    {
-      "url":"http://localhost:3000/api/groups/4",
+      "url":"http://localhost:4000/groups/4",
       "id":4,
       "name":"Grupo de prueba 4",
       "description":"Descripcion del grupo de prueba nº4",
@@ -1099,20 +1099,20 @@ module.exports.groups = [
       "user":"Administrador",
       "displays":[
          {
-            "url":"http://localhost:3000/api/displays/3",
+            "url":"http://localhost:4000/displays/3",
             "id":3,
             "name":"Display de prueba 3"
          }
       ],
       "active_image":{
-         "url":"http://localhost:3000/api/images/3",
+         "url":"http://localhost:4000/images/3",
          "id":3,
          "name":"Imagen de prueba 3",
          "src_url":"http://localhost:3000/img/854x480.png"
       },
       "images":[
          {
-            "url":"http://localhost:3000/api/images/3",
+            "url":"http://localhost:4000/images/3",
             "id":3,
             "name":"Imagen de prueba 3",
             "src_url":"http://localhost:3000/img/854x480.png"
@@ -1221,7 +1221,21 @@ module.exports.settings =
 
 module.exports.users = [
    {
+      "login":"admin",
       "name":"Administrador",
-      "password":"1234"
+      "password":"1234",
+      "admin":true
+   },
+   {
+     "login":"user1",
+     "name":"Usuario 1",
+     "password":"1234",
+     "admin":false
+   },
+   {
+     "login":"user2",
+     "name":"Usuario 2",
+     "password":"1234",
+     "admin":false
    }
 ];
