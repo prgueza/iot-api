@@ -18,7 +18,7 @@ mongoose.connect(
   {
     useMongoClient: true
   }
-)
+);
 
 app.use(morgan('dev')); // logger
 app.use(bodyParser.urlencoded({extended: true})); // body parser
@@ -27,8 +27,8 @@ app.use(bodyParser.json());
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header(
-    'Acces-Control-Allow-Headers',
-    'Origin, X-Requested-With, Content-Type, Accept, Authorization'
+    'Access-Control-Allow-Headers',
+    'Origin, X-Requested-With, Content-Type, Accept'
   );
   if (req.method === 'OPTIONS'){
     res.header('Access-Control-Allow-Methods', 'PUT, POST, PATCH, DELETE, GET');
