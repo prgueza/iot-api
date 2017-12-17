@@ -16,9 +16,9 @@ mongoose.connect(
   }
 );
 
-displays.forEach(function(d){
+const displaysData = displays.map((d) => {
   var _id = new mongoose.Types.ObjectId();
-  var display = new Display({
+  return display = new Display({
     _id: _id,
     url: 'http://localhost:4000/displays/' + _id,
     id: d.id,
@@ -35,18 +35,11 @@ displays.forEach(function(d){
     mac_address: d.mac,
     gateway: d.gateway
   });
-  display.save().then(result => {
-      console.log(_id + ' -- Display añadido...');
-    })
-    .catch(err => {
-      console.log(err);
-    });
-  }
-);
+});
 
-images.forEach(function(i){
+const ImagesData = images.map((i) => {
   var _id = new mongoose.Types.ObjectId();
-  var image = new Image({
+  return image = new Image({
     _id: _id,
     url: 'http://localhost:4000/images/' + _id,
     id: i.id,
@@ -64,18 +57,11 @@ images.forEach(function(i){
     tags_total: i.tags.length,
     tags: i.tags,
   });
-  image.save().then(result => {
-      console.log(_id + ' -- Imagen añadida...');
-    })
-    .catch(err => {
-      console.log(err);
-    });
-  }
-);
+});
 
-groups.forEach(function(g){
+const GroupsData = groups.map((g) => {
   var _id = new mongoose.Types.ObjectId();
-  var group = new Group({
+  return group = new Group({
     _id: _id,
     url: 'http://localhost:4000/groups/' + _id,
     id: g.id,
@@ -88,15 +74,11 @@ groups.forEach(function(g){
     tags_total: g.tags.length,
     tags: g.tags,
   });
-  group.save()
-    .then(result => console.log(_id + ' -- Grupo añadido...'))
-    .catch(err => console.log(err));
-  }
-);
+});
 
-users.forEach(function(u){
+const UsersData = users.map((u) => {
   var _id = new mongoose.Types.ObjectId();
-  var user = new User({
+  return user = new User({
     _id: _id,
     url: 'http://localhost:4000/users/' + _id,
     name: u.name,
@@ -104,8 +86,20 @@ users.forEach(function(u){
     password: u.password,
     admin: u.admin,
   });
-  user.save()
-    .then(result => console.log(_id + ' -- Usuario añadido...'))
-    .catch(err => console.log(err));
-  }
-);
+});
+
+Promise.all([
+      Display.remove({}).exec(),
+      Image.remove({}).exec(),
+      Group.remove({}).exec(),
+      User.remove({}).exec()
+    ])
+  .then(() => console.log('Datos eliminados...'))
+  .then(() => Promise.all([ displaysData.map((d) => {d.save()}) ]))
+  .then(() => console.log('Displays añadidos...'))
+  .then(() => Promise.all([ ImagesData.map((i) => {i.save()}) ]))
+  .then(() => console.log('Imagenes añadidas...'))
+  .then(() => Promise.all([ GroupsData.map((g) => {g.save()}) ]))
+  .then(() => console.log('Grupos añadidos...'))
+  .then(() => Promise.all([ UsersData.map((u) => {u.save()}) ]))
+  .then(() => console.log('Usuarios añadidos...'));

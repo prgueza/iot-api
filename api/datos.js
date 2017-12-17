@@ -1227,7 +1227,7 @@ module.exports.users = [
       "admin":true
    },
    {
-     "login":"user1",
+     "login":"user",
      "name":"Usuario 1",
      "password":"1234",
      "admin":false
