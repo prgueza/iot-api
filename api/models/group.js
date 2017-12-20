@@ -8,31 +8,10 @@ const groupSchema = mongoose.Schema({
     description: String,
     created_at: { type: Date, default: Date.now },
     updated_at: { type: Date, default: Date.now },
-    user: String,
-    displays:[
-       {
-         _id: mongoose.Schema.Types.ObjectId,
-         url: String,
-         id: Number,
-         name: String
-       }
-    ],
-    active_image:{
-       _id: mongoose.Schema.Types.ObjectId,
-       url: String,
-       id: Number,
-       name: String,
-       src_url: String
-    },
-    images:[
-       {
-         _id: mongoose.Schema.Types.ObjectId,
-         url: String,
-         id: Number,
-         name: String,
-         src_url: String
-       }
-    ],
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    displays:[{ type: mongoose.Schema.Types.ObjectId, ref: 'Display' }],
+    active_image: { type: mongoose.Schema.Types.ObjectId, ref: 'Image' },
+    images:[{ type: mongoose.Schema.Types.ObjectId, ref: 'Image' }],
     tags_total: Number,
     tags:[String]
 });

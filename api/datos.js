@@ -7,7 +7,7 @@ module.exports.displays = [
       "location":"Localizacion 1",
       "created_at":"2017-11-04T17:08:47Z",
       "updated_at":"2017-11-04T17:08:47Z",
-      "user":"Administrador",
+      "user":"5a3a5bdad7c4484fb3933e1a",
       "resolution":{
          "height":512,
          "width":512
@@ -66,7 +66,7 @@ module.exports.displays = [
       "location":"Localizacion 1",
       "created_at":"2017-11-05T17:08:47Z",
       "updated_at":"2017-11-05T17:08:47Z",
-      "user":"Administrador",
+      "user":"5a3a5bdad7c4484fb3933e1a",
       "resolution":{
          "height":512,
          "width":512
@@ -125,7 +125,7 @@ module.exports.displays = [
       "location":"Localizacion 3",
       "created_at":"2017-11-07T17:08:47Z",
       "updated_at":"2017-11-07T17:08:47Z",
-      "user":"Administrador",
+      "user":"5a3a5bdad7c4484fb3933e1a",
       "resolution":{
          "height":512,
          "width":512
@@ -184,7 +184,7 @@ module.exports.displays = [
       "location":"Localizacion 1",
       "created_at":"2017-11-08T17:08:47Z",
       "updated_at":"2017-11-08T17:08:47Z",
-      "user":"Administrador",
+      "user":"5a3a5bdad7c4484fb3933e1a",
       "resolution":{
          "height":512,
          "width":512
@@ -243,7 +243,7 @@ module.exports.displays = [
       "location":"Localizacion 1",
       "created_at":"2017-11-11T17:08:47Z",
       "updated_at":"2017-11-11T17:08:47Z",
-      "user":"Administrador",
+      "user":"5a3a5bdad7c4484fb3933e1a",
       "resolution":{
          "height":512,
          "width":512
@@ -302,7 +302,7 @@ module.exports.displays = [
       "location":"Localizacion 1",
       "created_at":"2017-11-14T17:08:47Z",
       "updated_at":"2017-11-14T17:08:47Z",
-      "user":"Administrador",
+      "user":"5a3a5bdad7c4484fb3933e1a",
       "resolution":{
          "height":512,
          "width":512
@@ -361,7 +361,7 @@ module.exports.displays = [
       "location":"Localizacion 1",
       "created_at":"2017-11-17T17:08:47Z",
       "updated_at":"2017-11-17T17:08:47Z",
-      "user":"Administrador",
+      "user":"5a3a5bdad7c4484fb3933e1a",
       "resolution":{
          "height":512,
          "width":512
@@ -420,7 +420,7 @@ module.exports.displays = [
       "location":"Localizacion 1",
       "created_at":"2017-11-18T17:08:47Z",
       "updated_at":"2017-11-18T17:08:47Z",
-      "user":"Administrador",
+      "user":"5a3a5bdad7c4484fb3933e1a",
       "resolution":{
          "height":512,
          "width":512
@@ -479,7 +479,7 @@ module.exports.displays = [
       "location":"Localizacion 1",
       "created_at":"2017-11-29T17:08:47Z",
       "updated_at":"2017-11-29T17:08:47Z",
-      "user":"Administrador",
+      "user":"5a3a5bdad7c4484fb3933e1a",
       "resolution":{
          "height":512,
          "width":512
@@ -538,7 +538,7 @@ module.exports.displays = [
       "location":"Localizacion 1",
       "created_at":"2017-11-30T17:08:47Z",
       "updated_at":"2017-11-30T17:08:47Z",
-      "user":"Administrador",
+      "user":"5a3a5bdad7c4484fb3933e1a",
       "resolution":{
          "height":512,
          "width":512
@@ -599,7 +599,7 @@ module.exports.images = [
       "description":"Descripcion de la imagen de prueba nº1",
       "created_at":"2017-10-16T17:08:47Z",
       "updated_at":"2017-10-16T17:08:47Z",
-      "user":"Administrador",
+      "user":"5a3a5bdad7c4484fb3933e1a",
       "src_url":"http://localhost:3000/img/180x150.png",
       "file":"png",
       "color_profile":"grises",
@@ -637,7 +637,7 @@ module.exports.images = [
       "description":"Descripcion de la imagen de prueba nº2",
       "created_at":"2017-10-16T17:08:47Z",
       "updated_at":"2017-10-16T17:08:47Z",
-      "user":"Administrador",
+      "user":"5a3a5bdad7c4484fb3933e1a",
       "src_url":"http://localhost:3000/img/300x250.png",
       "file":"png",
       "color_profile":"grises",
@@ -676,7 +676,7 @@ module.exports.images = [
       "description":"Descripcion de la imagen de prueba nº3",
       "created_at":"2017-10-16T17:08:47Z",
       "updated_at":"2017-10-16T17:08:47Z",
-      "user":"Administrador",
+      "user":"5a3a5bdad7c4484fb3933e1a",
       "src_url":"http://localhost:3000/img/320x200.png",
       "file":"png",
       "color_profile":"grises",
@@ -715,7 +715,7 @@ module.exports.images = [
       "description":"Descripcion de la imagen de prueba nº4",
       "created_at":"2017-10-16T17:08:47Z",
       "updated_at":"2017-10-16T17:08:47Z",
-      "user":"Administrador",
+      "user":"5a3a5bdad7c4484fb3933e1a",
       "src_url":"http://localhost:3000/img/320x240.png",
       "file":"png",
       "color_profile":"grises",
@@ -754,7 +754,7 @@ module.exports.images = [
       "description":"Descripcion de la imagen de prueba nº5",
       "created_at":"2017-10-16T17:08:47Z",
       "updated_at":"2017-10-16T17:08:47Z",
-      "user":"Administrador",
+      "user":"5a3a5bdad7c4484fb3933e1a",
       "src_url":"http://localhost:3000/img/640x480.png",
       "file":"png",
       "color_profile":"grises",
@@ -793,7 +793,7 @@ module.exports.images = [
       "description":"Descripcion de la imagen de prueba nº6",
       "created_at":"2017-10-16T17:08:47Z",
       "updated_at":"2017-10-16T17:08:47Z",
-      "user":"Administrador",
+      "user":"5a3a5bdad7c4484fb3933e1a",
       "src_url":"http://localhost:3000/img/800x480.png",
       "file":"png",
       "color_profile":"grises",
@@ -832,7 +832,7 @@ module.exports.images = [
       "description":"Descripcion de la imagen de prueba nº7",
       "created_at":"2017-10-16T17:08:47Z",
       "updated_at":"2017-10-16T17:08:47Z",
-      "user":"Administrador",
+      "user":"5a3a5bdad7c4484fb3933e1a",
       "src_url":"http://localhost:3000/img/800x600.png",
       "file":"png",
       "color_profile":"grises",
@@ -871,7 +871,7 @@ module.exports.images = [
       "description":"Descripcion de la imagen de prueba nº8",
       "created_at":"2017-10-16T17:08:47Z",
       "updated_at":"2017-10-16T17:08:47Z",
-      "user":"Administrador",
+      "user":"5a3a5bdad7c4484fb3933e1a",
       "src_url":"http://localhost:3000/img/854x480.png",
       "file":"png",
       "color_profile":"grises",
@@ -910,7 +910,7 @@ module.exports.images = [
       "description":"Descripcion de la imagen de prueba nº9",
       "created_at":"2017-10-16T17:08:47Z",
       "updated_at":"2017-10-16T17:08:47Z",
-      "user":"Administrador",
+      "user":"5a3a5bdad7c4484fb3933e1a",
       "src_url":"http://localhost:3000/img/1024x600.png",
       "file":"png",
       "color_profile":"grises",
@@ -949,7 +949,7 @@ module.exports.images = [
       "description":"Descripcion de la imagen de prueba nº10",
       "created_at":"2017-10-16T17:08:47Z",
       "updated_at":"2017-10-16T17:08:47Z",
-      "user":"Administrador",
+      "user":"5a3a5bdad7c4484fb3933e1a",
       "src_url":"http://localhost:3000/img/1280x720.png",
       "file":"png",
       "color_profile":"grises",
@@ -991,7 +991,7 @@ module.exports.groups = [
       "description":"Descripcion del grupo de prueba nº1",
       "created_at":"2017-10-20T17:08:47Z",
       "updated_at":"2017-10-20T17:08:47Z",
-      "user":"Administrador",
+      "user":"5a3a5bdad7c4484fb3933e1a",
       "displays":[
          {
             "url":"http://localhost:4000/displays/3",
@@ -1026,7 +1026,7 @@ module.exports.groups = [
       "description":"Descripcion del grupo de prueba nº2",
       "created_at":"2017-10-20T17:08:47Z",
       "updated_at":"2017-10-20T17:08:47Z",
-      "user":"Administrador",
+      "user":"5a3a5bdad7c4484fb3933e1a",
       "displays":[
          {
             "url":"http://localhost:4000/displays/3",
@@ -1061,7 +1061,7 @@ module.exports.groups = [
       "description":"Descripcion del grupo de prueba nº3",
       "created_at":"2017-10-20T17:08:47Z",
       "updated_at":"2017-10-20T17:08:47Z",
-      "user":"Administrador",
+      "user":"5a3a5bdad7c4484fb3933e1a",
       "displays":[
          {
             "url":"http://localhost:4000/displays/3",
@@ -1096,7 +1096,7 @@ module.exports.groups = [
       "description":"Descripcion del grupo de prueba nº4",
       "created_at":"2017-10-20T17:08:47Z",
       "updated_at":"2017-10-20T17:08:47Z",
-      "user":"Administrador",
+      "user":"5a3a5bdad7c4484fb3933e1a",
       "displays":[
          {
             "url":"http://localhost:4000/displays/3",
@@ -1222,7 +1222,7 @@ module.exports.settings =
 module.exports.users = [
    {
       "login":"admin",
-      "name":"Administrador",
+      "name":"5a3a5bdad7c4484fb3933e1a",
       "password":"1234",
       "admin":true
    },
