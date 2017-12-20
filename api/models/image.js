@@ -8,7 +8,7 @@ const imageSchema = mongoose.Schema({
     description: String,
     created_at: { type: Date, default: Date.now },
     updated_at: { type: Date, default: Date.now },
-    user: String,
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     src_url: String,
     file: String,
     color_profile: String,
@@ -20,22 +20,8 @@ const imageSchema = mongoose.Schema({
     category: String,
     tags_total: Number,
     tags:[String],
-    displays:[
-      {
-        _id: mongoose.Schema.Types.ObjectId,
-        url: String,
-        id: Number,
-        name: String
-      }
-    ],
-    groups:[
-      {
-        _id: mongoose.Schema.Types.ObjectId,
-        url: String,
-        id: Number,
-        name: String
-      }
-    ]
+    displays:[{ type: mongoose.Schema.Types.ObjectId, ref: 'Display' }],
+    groups:[{ type: mongoose.Schema.Types.ObjectId, ref: 'Group'}]
 });
 
 module.exports = mongoose.model('Image', imageSchema);

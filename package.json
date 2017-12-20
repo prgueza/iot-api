@@ -1,6 +1,6 @@
 {
   "name": "iot-api",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "RESTful API for iot-frontend",
   "main": "index.js",
   "scripts": {

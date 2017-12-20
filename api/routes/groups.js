@@ -25,7 +25,7 @@ router.get('/', (req, res, next) => {
         })
       }
       console.log(response);
-      res.status(200).json(response);
+      setTimeout(() => { res.status(200).json(response) }, 3000);
     })
     .catch(err => {
       console.log(err);
@@ -36,6 +36,10 @@ router.get('/', (req, res, next) => {
 router.get('/:id', (req, res, next) => {
   const _id = req.params.id;
   Group.findById(_id)
+    .populate('active_image', '_id id url name descrption created_at tags_total')
+    .populate('images', '_id id url name descrption created_at tags_total')
+    .populate('displays', '_id id url name descrption created_at tags_total')
+    .populate('user', '_id url name')
     .exec()
     .then(doc => {
       console.log("From database", doc);

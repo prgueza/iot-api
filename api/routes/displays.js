@@ -26,7 +26,7 @@ router.get('/', (req, res, next) => {
         })
       }
       console.log(response);
-      setTimeout(() => { res.status(200).json(response) }, 1000);
+      setTimeout(() => { res.status(200).json(response) }, 2000);
     })
     .catch(err => {
       console.log(err);
@@ -37,6 +37,10 @@ router.get('/', (req, res, next) => {
 router.get('/:id', (req, res, next) => {
   const _id = req.params.id;
   Display.findById(_id)
+    .populate('active_image', '_id id url name descrption created_at tags_total')
+    .populate('images', '_id id url name descrption created_at tags_total')
+    .populate('groups', '_id id url name descrption created_at tags_total')
+    .populate('user', '_id url name')
     .exec()
     .then(doc => {
       console.log("From database", doc);
@@ -55,7 +59,7 @@ router.get('/:id', (req, res, next) => {
 
 /* API POST */
 router.post('/', (req, res, next) => {
-  const { id, name, description, location, user, image, group, tags, dimensions, mac, gateway } = req.body;
+  const { id, name, description, location, user, images, image, groups, tags, dimensions, mac, gateway } = req.body;
   const _id = new mongoose.Types.ObjectId();
   const display = new Display({
     _id: _id,
@@ -66,10 +70,9 @@ router.post('/', (req, res, next) => {
     location: location,
     user: user,
     resolution: dimensions,
-    groups: [group],
-    images: [image],
+    groups: groups,
+    images: images,
     active_image: image,
-    dimensions: dimensions,
     tags_total: tags.length,
     tags: tags,
     mac_address: mac,

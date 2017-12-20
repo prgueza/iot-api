@@ -76,23 +76,10 @@ const GroupsData = groups.map((g) => {
   });
 });
 
-const UsersData = users.map((u) => {
-  var _id = new mongoose.Types.ObjectId();
-  return user = new User({
-    _id: _id,
-    url: 'http://localhost:4000/users/' + _id,
-    name: u.name,
-    login: u.login,
-    password: u.password,
-    admin: u.admin,
-  });
-});
-
 Promise.all([
       Display.remove({}).exec(),
       Image.remove({}).exec(),
       Group.remove({}).exec(),
-      User.remove({}).exec()
     ])
   .then(() => console.log('Datos eliminados...'))
   .then(() => Promise.all([ displaysData.map((d) => {d.save()}) ]))
@@ -100,6 +87,4 @@ Promise.all([
   .then(() => Promise.all([ ImagesData.map((i) => {i.save()}) ]))
   .then(() => console.log('Imagenes añadidas...'))
   .then(() => Promise.all([ GroupsData.map((g) => {g.save()}) ]))
-  .then(() => console.log('Grupos añadidos...'))
-  .then(() => Promise.all([ UsersData.map((u) => {u.save()}) ]))
-  .then(() => console.log('Usuarios añadidos...'));
+  .then(() => console.log('Grupos añadidos...'));
