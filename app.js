@@ -8,7 +8,8 @@ const mongoose = require('mongoose');
 const displaysRoutes = require('./api/routes/displays');
 const imagesRoutes = require('./api/routes/images');
 const groupsRoutes = require('./api/routes/groups');
-const settingsRoutes = require('./api/routes/settings');
+const resolutionsRoutes = require('./api/routes/resolutions');
+const locationsRoutes = require('./api/routes/locations');
 const usersRoutes = require('./api/routes/users');
 
 mongoose.connect(
@@ -21,6 +22,7 @@ mongoose.connect(
 );
 
 app.use(morgan('dev')); // logger
+app.use('/img', express.static('img'));
 app.use(bodyParser.urlencoded({extended: true})); // body parser
 app.use(bodyParser.json());
 
@@ -41,7 +43,8 @@ app.use((req, res, next) => {
 app.use('/displays', displaysRoutes);
 app.use('/images', imagesRoutes);
 app.use('/groups', groupsRoutes);
-app.use('/settings', settingsRoutes);
+app.use('/resolutions', resolutionsRoutes);
+app.use('/locations', locationsRoutes);
 app.use('/users', usersRoutes);
 
 // Error handling

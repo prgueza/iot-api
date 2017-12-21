@@ -1126,98 +1126,111 @@ module.exports.groups = [
    }
 ];
 
-module.exports.settings =
+module.exports.resolutions = [
    {
-      "resolutions":[
-         {
-            "id":1,
-            "name":"180x150",
-            "resolution":{
-               "width":180,
-               "height":150
-            }
-         },
-         {
-            "id":2,
-            "name":"300x250",
-            "resolution":{
-               "width":300,
-               "height":250
-            }
-         },
-         {
-            "id":3,
-            "name":"320x200",
-            "resolution":{
-               "width":320,
-               "height":200
-            }
-         },
-         {
-            "id":4,
-            "name":"320x240",
-            "resolution":{
-               "width":320,
-               "height":240
-            }
-         },
-         {
-            "id":5,
-            "name":"640x480",
-            "resolution":{
-               "width":640,
-               "height":480
-            }
-         },
-         {
-            "id":6,
-            "name":"800x480",
-            "resolution":{
-               "width":800,
-               "height":480
-            }
-         },
-         {
-            "id":7,
-            "name":"800x600",
-            "resolution":{
-               "width":800,
-               "height":600
-            }
-         },
-         {
-            "id":8,
-            "name":"854x480",
-            "resolution":{
-               "width":854,
-               "height":480
-            }
-         },
-         {
-            "id":9,
-            "name":"1024x600",
-            "resolution":{
-               "width":1024,
-               "height":600
-            }
-         },
-         {
-            "id":10,
-            "name":"1280x720",
-            "resolution":{
-               "width":1280,
-               "height":720
-            }
-         }
-      ],
-      "locations":[
-         "Localizacion 1",
-         "Localizacion 2",
-         "Localizacion 3",
-         "Localizacion 4"
-      ]
+      "id":1,
+      "name":"180x150",
+      "size":{
+         "width":180,
+         "height":150
+      }
+   },
+   {
+      "id":2,
+      "name":"300x250",
+      "size":{
+         "width":300,
+         "height":250
+      }
+   },
+   {
+      "id":3,
+      "name":"320x200",
+      "size":{
+         "width":320,
+         "height":200
+      }
+   },
+   {
+      "id":4,
+      "name":"320x240",
+      "size":{
+         "width":320,
+         "height":240
+      }
+   },
+   {
+      "id":5,
+      "name":"640x480",
+      "size":{
+         "width":640,
+         "height":480
+      }
+   },
+   {
+      "id":6,
+      "name":"800x480",
+      "size":{
+         "width":800,
+         "height":480
+      }
+   },
+   {
+      "id":7,
+      "name":"800x600",
+      "size":{
+         "width":800,
+         "height":600
+      }
+   },
+   {
+      "id":8,
+      "name":"854x480",
+      "size":{
+         "width":854,
+         "height":480
+      }
+   },
+   {
+      "id":9,
+      "name":"1024x600",
+      "size":{
+         "width":1024,
+         "height":600
+      }
+   },
+   {
+      "id":10,
+      "name":"1280x720",
+      "size":{
+         "width":1280,
+         "height":720
+      }
    }
-;
+]
+
+module.exports.locations = [
+   {
+     "id":1,
+     "name":"Localizacion 1",
+     "description":"Localizacion 1..."
+   },
+   {
+     "id":2,
+     "name":"Localizacion 2",
+     "description":"Localizacion 2..."
+   },
+   {
+     "id":3,
+     "name":"Localizacion 3",
+     "description":"Localizacion 3..."
+   },
+   {
+     "id":4,
+     "name":"Localizacion 4",
+     "description":"Localizacion 4..."
+   }
+ ];
 
 module.exports.users = [
    {

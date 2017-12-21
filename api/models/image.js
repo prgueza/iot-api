@@ -9,13 +9,10 @@ const imageSchema = mongoose.Schema({
     created_at: { type: Date, default: Date.now },
     updated_at: { type: Date, default: Date.now },
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    src_url: String,
+    src_url: { type: String, required: true },
     file: String,
     color_profile: String,
-    dimensions:{
-      width: Number,
-      height: Number
-    },
+    resolution: { type: mongoose.Schema.Types.ObjectId, ref: 'Resolution'},
     size: Number,
     category: String,
     tags_total: Number,

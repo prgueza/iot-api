@@ -1,4 +1,4 @@
-const { displays, groups, images, users } = require('./datos');
+const { displays, groups, images, users, resolutions, locations } = require('./datos');
 const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 
@@ -6,6 +6,9 @@ const Display = require('./models/display');
 const Image = require('./models/image');
 const Group = require('./models/group');
 const User = require('./models/user');
+const Resolution = require('./models/resolution');
+const Location = require('./models/location');
+
 
 mongoose.connect(
   'mongodb://administrador:' +
@@ -24,9 +27,9 @@ const displaysData = displays.map((d) => {
     id: d.id,
     name: d.name,
     description: d.description,
-    location: d.location,
+    location: '5a3c0b332900cb640a07da27',
     user: d.user,
-    resolution: d.resolution,
+    resolution: '5a3c327887309b662f490c13',
     groups: [],
     images: [],
     active_image: undefined,
@@ -50,7 +53,7 @@ const ImagesData = images.map((i) => {
     size: i.size,
     src_url: i.src_url,
     color_profile: i.color_profile,
-    dimensions: i.dimensions,
+    resolution: '5a3c327887309b662f490c13',
     category: i.category,
     groups: [],
     displays: [],
@@ -76,10 +79,36 @@ const GroupsData = groups.map((g) => {
   });
 });
 
+const ResolutionsData = resolutions.map((r) => {
+  var _id = new mongoose.Types.ObjectId();
+  return resolution = new Resolution({
+    _id: _id,
+    url: 'http://localhost:4000/resolutions/' + _id,
+    id: r.id,
+    name: r.name,
+    size: {
+      width: r.size.width,
+      height: r.size.height
+    }
+  });
+});
+
+const LocationsData = locations.map((l) => {
+  var _id = new mongoose.Types.ObjectId();
+  return location = new Location({
+    _id: _id,
+    url: 'http://localhost:4000/locations/' + _id,
+    id: l.id,
+    name: l.name,
+    description: l.description,
+  });
+});
+
 Promise.all([
       Display.remove({}).exec(),
       Image.remove({}).exec(),
       Group.remove({}).exec(),
+      //Resolution.remove({}).exec()
     ])
   .then(() => console.log('Datos eliminados...'))
   .then(() => Promise.all([ displaysData.map((d) => {d.save()}) ]))
@@ -87,4 +116,8 @@ Promise.all([
   .then(() => Promise.all([ ImagesData.map((i) => {i.save()}) ]))
   .then(() => console.log('Imagenes añadidas...'))
   .then(() => Promise.all([ GroupsData.map((g) => {g.save()}) ]))
-  .then(() => console.log('Grupos añadidos...'));
+  .then(() => console.log('Grupos añadidos...'))
+  //.then(() => Promise.all([ ResolutionsData.map((r) => {r.save()}) ]))
+  //.then(() => console.log('Resoluciones añadidas...'))
+  //.then(() => Promise.all([ LocationsData.map((l) => {l.save()}) ]))
+  //.then(() => console.log('Localizaciones añadidas...'));
