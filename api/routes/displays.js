@@ -41,6 +41,8 @@ router.get('/:id', (req, res, next) => {
     .populate('images', '_id id url name descrption created_at tags_total')
     .populate('groups', '_id id url name descrption created_at tags_total')
     .populate('user', '_id url name')
+    .populate('resolution', '_id url name resolution')
+    .populate('location', '_id url name')
     .exec()
     .then(doc => {
       console.log("From database", doc);

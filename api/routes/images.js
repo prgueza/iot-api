@@ -2,6 +2,32 @@ const express = require('express');
 const router = express.Router();
 const { displays, images, groups } = require('../datos');
 const mongoose = require('mongoose');
+const multer = require('multer');
+
+const storage = multer.diskStorage({
+  destination: function(req, file, cb){
+    cb(null, './img/');
+  },
+  filename: function(req, file, cb){
+    cb(null, file.originalname);
+  }
+});
+
+const fileFilter = (req, file, cb) => {
+  if(file.mimetype === 'image/jpeg' || file.mimetype === 'image/png'){
+    cb(null, true);
+  } else {
+    cb(null, false);
+  }
+};
+
+const upload = multer({
+  storage: storage,
+  limits: {
+    filesize: 1024 * 1024 * 5
+  },
+  fileFilter: fileFilter
+});
 
 const Image = require('../models/image.js');
 
@@ -21,11 +47,11 @@ router.get('/', (req, res, next) => {
             name: doc.name,
             description: doc.description,
             tags_total: doc.tags.length,
+            tags: doc.tags,
             created_at: doc.created_at,
           }
         })
       }
-      console.log(response);
       setTimeout(() => { res.status(200).json(response) }, 1000);
     })
     .catch(err => {
@@ -40,9 +66,9 @@ router.get('/:id', (req, res, next) => {
     .populate('displays', '_id id url name descrption created_at tags_total')
     .populate('groups', '_id id url name descrption created_at tags_total')
     .populate('user', '_id url name')
+    .populate('resolution', '_id url name resolution')
     .exec()
     .then(doc => {
-      console.log("From database", doc);
       if (doc) {
         res.status(200).json(doc);
       } else {
@@ -57,7 +83,8 @@ router.get('/:id', (req, res, next) => {
 
 
 /* API POST */
-router.post('/', (req, res, next) => {
+router.post('/', upload.single('imageFile'), (req, res, next) => {
+  console.log(req.file);
   const { id, name, description, user, display, group, tags, dimensions, category, color_profile } = req.body;
   const _id = new mongoose.Types.ObjectId();
   const image = new Image({
@@ -67,22 +94,21 @@ router.post('/', (req, res, next) => {
     name: name,
     description: description,
     user: user,
-    src_url: 'http://localhost/3000/img/' + name + '.png',
-    file: 'png',
+    src_url: req.file.path,
+    file: req.file.mimetype,
     color_profile: color_profile,
-    dimensions: dimensionss,
+    dimensions: dimensions,
     size: 0,
     category: category,
     tags_total: tags.length,
     tags: tags,
-    displays: [display],
-    groups: [grupo]
+    displays: display,
+    groups: group
   });
 
   image
     .save()
     .then(result => {
-      console.log(result);
       res.status(201).json({
         message: 'Handling POST requests to /images',
         createdImage: image});
