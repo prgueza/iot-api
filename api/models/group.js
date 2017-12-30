@@ -2,17 +2,16 @@ const mongoose = require('mongoose');
 
 const groupSchema = mongoose.Schema({
     _id: mongoose.Schema.Types.ObjectId,
-    url: String,
-    id: Number,
-    name: String,
-    description: String,
+    url: { type: String, required: true },
+    id: { type: Number, required: true },
+    name: { type: String, required: true },
+    description: { type: String, default: 'Sin descripcion' },
     created_at: { type: Date, default: Date.now },
     updated_at: { type: Date, default: Date.now },
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    displays:[{ type: mongoose.Schema.Types.ObjectId, ref: 'Display' }],
-    active_image: { type: mongoose.Schema.Types.ObjectId, ref: 'Image' },
+    active_image: { type: mongoose.Schema.Types.ObjectId, ref: 'Image', default: null },
     images:[{ type: mongoose.Schema.Types.ObjectId, ref: 'Image' }],
-    tags_total: Number,
+    displays:[{ type: mongoose.Schema.Types.ObjectId, ref: 'Display' }],
     tags:[String]
 });
 

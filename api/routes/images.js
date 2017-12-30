@@ -52,7 +52,7 @@ router.get('/', (req, res, next) => {
           }
         })
       }
-      setTimeout(() => { res.status(200).json(response) }, 1000);
+      setTimeout(() => { res.status(200).json(response) }, 0);
     })
     .catch(err => {
       console.log(err);
@@ -66,7 +66,7 @@ router.get('/:id', (req, res, next) => {
     .populate('displays', '_id id url name descrption created_at tags_total')
     .populate('groups', '_id id url name descrption created_at tags_total')
     .populate('user', '_id url name')
-    .populate('resolution', '_id url name resolution')
+    .populate('resolution', '_id url name size')
     .exec()
     .then(doc => {
       if (doc) {
@@ -141,14 +141,18 @@ router.put('/:id', (req, res, next) => {
 router.delete('/:id', (req, res, next) => {
   const _id = req.params.id;
   Image
-    .remove({_id: _id})
+    .remove({ _id: _id })
     .exec()
     .then(result => {
-      res.status(200).json(result);
+      res.status(200).json({
+        message: 'Success',
+        result: result
+      });
     })
     .catch(err => {
-      console.log(err);
-      res.status(500).json({error: err});
+      res.status(500).json({
+        message: 'Internal Server Error',
+        error: err});
     });
 });
 

@@ -12,7 +12,7 @@ const Location = require('./models/location');
 
 mongoose.connect(
   'mongodb://administrador:' +
-    'boardinghouse' +
+    '7MZ5oRy4e0YWG4v0' +
     '@iot-api-shard-00-00-yznka.mongodb.net:27017,iot-api-shard-00-01-yznka.mongodb.net:27017,iot-api-shard-00-02-yznka.mongodb.net:27017/test?ssl=true&replicaSet=iot-api-shard-0&authSource=admin',
   {
     useMongoClient: true
@@ -71,7 +71,7 @@ const GroupsData = groups.map((g) => {
     name: g.name,
     description: g.description,
     user: g.user,
-    active_image: undefined,
+    active_image: null,
     images: [],
     displays: [],
     tags_total: g.tags.length,

@@ -26,7 +26,7 @@ router.get('/', (req, res, next) => {
         })
       }
       console.log(response);
-      setTimeout(() => { res.status(200).json(response) }, 2000);
+      setTimeout(() => { res.status(200).json(response) }, 0);
     })
     .catch(err => {
       console.log(err);
@@ -41,7 +41,7 @@ router.get('/:id', (req, res, next) => {
     .populate('images', '_id id url name descrption created_at tags_total')
     .populate('groups', '_id id url name descrption created_at tags_total')
     .populate('user', '_id url name')
-    .populate('resolution', '_id url name resolution')
+    .populate('resolution', '_id url name size')
     .populate('location', '_id url name')
     .exec()
     .then(doc => {
@@ -108,7 +108,7 @@ router.post('/', (req, res, next) => {
 router.put('/:id', (req, res, next) => {
   const _id = req.params.id;
   Display
-    .update({ _id: _id }, {$set: req.body })
+    .update({ _id: _id }, { $set: req.body })
     .then(result => {
       console.log(result);
       res.status(200).json(result);
