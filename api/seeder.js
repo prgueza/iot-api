@@ -28,7 +28,7 @@ const displaysData = displays.map((d) => {
     name: d.name,
     description: d.description,
     location: '5a3c0b332900cb640a07da27',
-    user: d.user,
+    created_by: d.created_by,
     resolution: '5a3c327887309b662f490c13',
     groups: [],
     images: [],
@@ -48,7 +48,7 @@ const ImagesData = images.map((i) => {
     id: i.id,
     name: i.name,
     description: i.description,
-    user: i.user,
+    created_by: i.created_by,
     file: i.file,
     size: i.size,
     src_url: i.src_url,
@@ -70,7 +70,8 @@ const GroupsData = groups.map((g) => {
     id: g.id,
     name: g.name,
     description: g.description,
-    user: g.user,
+    created_by: g.created_by,
+    updated_by: g.updated_by,
     active_image: null,
     images: [],
     displays: [],
@@ -104,11 +105,25 @@ const LocationsData = locations.map((l) => {
   });
 });
 
+const UsersData = users.map((u) => {
+  var _id = new mongoose.Types.ObjectId();
+  return user = new User({
+    _id: _id,
+    url: 'http://localhost:4000/users/' + _id,
+    name: u.name,
+    login: u.login,
+    password: u.password,
+    email: u.email,
+    admin: u.admin
+  });
+});
+
 Promise.all([
       Display.remove({}).exec(),
       Image.remove({}).exec(),
       Group.remove({}).exec(),
-      //Resolution.remove({}).exec()
+      //User.remove({}).exec(),
+      Resolution.remove({}).exec()
     ])
   .then(() => console.log('Datos eliminados...'))
   .then(() => Promise.all([ displaysData.map((d) => {d.save()}) ]))
@@ -117,7 +132,9 @@ Promise.all([
   .then(() => console.log('Imagenes añadidas...'))
   .then(() => Promise.all([ GroupsData.map((g) => {g.save()}) ]))
   .then(() => console.log('Grupos añadidos...'))
-  //.then(() => Promise.all([ ResolutionsData.map((r) => {r.save()}) ]))
-  //.then(() => console.log('Resoluciones añadidas...'))
+  //.then(() => Promise.all([ UsersData.map((u) => {u.save()}) ]))
+  //.then(() => console.log('Usuarios añadidos...'))
+  .then(() => Promise.all([ ResolutionsData.map((r) => {r.save()}) ]))
+  .then(() => console.log('Resoluciones añadidas...'))
   //.then(() => Promise.all([ LocationsData.map((l) => {l.save()}) ]))
   //.then(() => console.log('Localizaciones añadidas...'));

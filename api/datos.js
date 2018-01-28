@@ -7,7 +7,7 @@ module.exports.displays = [
       "location":"Localizacion 1",
       "created_at":"2017-11-04T17:08:47Z",
       "updated_at":"2017-11-04T17:08:47Z",
-      "user":"5a3a5bdad7c4484fb3933e1a",
+      "created_by":"5a50ab891d35a91ea0f514b3",
       "resolution":{
          "height":512,
          "width":512
@@ -52,11 +52,6 @@ module.exports.displays = [
          "etiqueta 3"
       ],
       "mac_address":"7C:D1:C3:8D:02:84",
-      "gateway":{
-         "id":1,
-         "name":"Gateway nº1",
-         "ip_address":"192.168.0.3"
-      }
    },
    {
       "url":"http://localhost:4000/displays/2",
@@ -66,7 +61,7 @@ module.exports.displays = [
       "location":"Localizacion 1",
       "created_at":"2017-11-05T17:08:47Z",
       "updated_at":"2017-11-05T17:08:47Z",
-      "user":"5a3a5bdad7c4484fb3933e1a",
+      "created_by":"5a50ab891d35a91ea0f514b3",
       "resolution":{
          "height":512,
          "width":512
@@ -111,11 +106,6 @@ module.exports.displays = [
          "etiqueta 3"
       ],
       "mac_address":"7C:D1:C3:8D:02:85",
-      "gateway":{
-         "id":1,
-         "name":"Gateway nº1",
-         "ip_address":"192.168.0.3"
-      }
    },
    {
       "url":"http://localhost:4000/displays/3",
@@ -125,7 +115,7 @@ module.exports.displays = [
       "location":"Localizacion 3",
       "created_at":"2017-11-07T17:08:47Z",
       "updated_at":"2017-11-07T17:08:47Z",
-      "user":"5a3a5bdad7c4484fb3933e1a",
+      "created_by":"5a50ab891d35a91ea0f514b3",
       "resolution":{
          "height":512,
          "width":512
@@ -170,11 +160,6 @@ module.exports.displays = [
          "etiqueta 3"
       ],
       "mac_address":"7C:D1:C3:8D:02:86",
-      "gateway":{
-         "id":1,
-         "name":"Gateway nº1",
-         "ip_address":"192.168.0.3"
-      }
    },
    {
       "url":"http://localhost:4000/displays/4",
@@ -184,7 +169,7 @@ module.exports.displays = [
       "location":"Localizacion 1",
       "created_at":"2017-11-08T17:08:47Z",
       "updated_at":"2017-11-08T17:08:47Z",
-      "user":"5a3a5bdad7c4484fb3933e1a",
+      "created_by":"5a50ab891d35a91ea0f514b3",
       "resolution":{
          "height":512,
          "width":512
@@ -229,11 +214,6 @@ module.exports.displays = [
          "etiqueta 3"
       ],
       "mac_address":"7C:D1:C3:8D:02:87",
-      "gateway":{
-         "id":1,
-         "name":"Gateway nº1",
-         "ip_address":"192.168.0.3"
-      }
    },
    {
       "url":"http://localhost:4000/displays/5",
@@ -243,7 +223,7 @@ module.exports.displays = [
       "location":"Localizacion 1",
       "created_at":"2017-11-11T17:08:47Z",
       "updated_at":"2017-11-11T17:08:47Z",
-      "user":"5a3a5bdad7c4484fb3933e1a",
+      "created_by":"5a50ab891d35a91ea0f514b3",
       "resolution":{
          "height":512,
          "width":512
@@ -288,11 +268,6 @@ module.exports.displays = [
          "etiqueta 3"
       ],
       "mac_address":"7C:D1:C3:8D:02:88",
-      "gateway":{
-         "id":1,
-         "name":"Gateway nº1",
-         "ip_address":"192.168.0.3"
-      }
    },
    {
       "url":"http://localhost:4000/displays/6",
@@ -302,7 +277,7 @@ module.exports.displays = [
       "location":"Localizacion 1",
       "created_at":"2017-11-14T17:08:47Z",
       "updated_at":"2017-11-14T17:08:47Z",
-      "user":"5a3a5bdad7c4484fb3933e1a",
+      "created_by":"5a50ab891d35a91ea0f514b3",
       "resolution":{
          "height":512,
          "width":512
@@ -347,11 +322,6 @@ module.exports.displays = [
          "etiqueta 3"
       ],
       "mac_address":"7C:D1:C3:8D:02:89",
-      "gateway":{
-         "id":2,
-         "name":"Gateway nº2",
-         "ip_address":"192.168.0.4"
-      }
    },
    {
       "url":"http://localhost:4000/displays/7",
@@ -361,7 +331,7 @@ module.exports.displays = [
       "location":"Localizacion 1",
       "created_at":"2017-11-17T17:08:47Z",
       "updated_at":"2017-11-17T17:08:47Z",
-      "user":"5a3a5bdad7c4484fb3933e1a",
+      "created_by":"5a50ab891d35a91ea0f514b3",
       "resolution":{
          "height":512,
          "width":512
@@ -406,11 +376,6 @@ module.exports.displays = [
          "etiqueta 3"
       ],
       "mac_address":"7C:D1:C3:8D:02:8A",
-      "gateway":{
-         "id":2,
-         "name":"Gateway nº2",
-         "ip_address":"192.168.0.4"
-      }
    },
    {
       "url":"http://localhost:4000/displays/8",
@@ -420,7 +385,7 @@ module.exports.displays = [
       "location":"Localizacion 1",
       "created_at":"2017-11-18T17:08:47Z",
       "updated_at":"2017-11-18T17:08:47Z",
-      "user":"5a3a5bdad7c4484fb3933e1a",
+      "created_by":"5a50ab891d35a91ea0f514b3",
       "resolution":{
          "height":512,
          "width":512
@@ -465,11 +430,6 @@ module.exports.displays = [
          "etiqueta 3"
       ],
       "mac_address":"7C:D1:C3:8D:02:8B",
-      "gateway":{
-         "id":2,
-         "name":"Gateway nº2",
-         "ip_address":"192.168.0.4"
-      }
    },
    {
       "url":"http://localhost:4000/displays/9",
@@ -479,7 +439,7 @@ module.exports.displays = [
       "location":"Localizacion 1",
       "created_at":"2017-11-29T17:08:47Z",
       "updated_at":"2017-11-29T17:08:47Z",
-      "user":"5a3a5bdad7c4484fb3933e1a",
+      "created_by":"5a50ab891d35a91ea0f514b3",
       "resolution":{
          "height":512,
          "width":512
@@ -524,11 +484,6 @@ module.exports.displays = [
          "etiqueta 3"
       ],
       "mac_address":"7C:D1:C3:8D:02:8C",
-      "gateway":{
-         "id":2,
-         "name":"Gateway nº2",
-         "ip_address":"192.168.0.4"
-      }
    },
    {
       "url":"http://localhost:4000/displays/10",
@@ -538,7 +493,7 @@ module.exports.displays = [
       "location":"Localizacion 1",
       "created_at":"2017-11-30T17:08:47Z",
       "updated_at":"2017-11-30T17:08:47Z",
-      "user":"5a3a5bdad7c4484fb3933e1a",
+      "created_by":"5a50ab891d35a91ea0f514b3",
       "resolution":{
          "height":512,
          "width":512
@@ -583,11 +538,6 @@ module.exports.displays = [
          "etiqueta 3"
       ],
       "mac_address":"7C:D1:C3:8D:02:8D",
-      "gateway":{
-         "id":2,
-         "name":"Gateway nº2",
-         "ip_address":"192.168.0.4"
-      }
    }
 ];
 
@@ -599,7 +549,7 @@ module.exports.images = [
       "description":"Descripcion de la imagen de prueba nº1",
       "created_at":"2017-10-16T17:08:47Z",
       "updated_at":"2017-10-16T17:08:47Z",
-      "user":"5a3a5bdad7c4484fb3933e1a",
+      "created_by":"5a50ab891d35a91ea0f514b3",
       "src_url":"http://localhost:3000/img/180x150.png",
       "file":"png",
       "color_profile":"grises",
@@ -637,7 +587,7 @@ module.exports.images = [
       "description":"Descripcion de la imagen de prueba nº2",
       "created_at":"2017-10-16T17:08:47Z",
       "updated_at":"2017-10-16T17:08:47Z",
-      "user":"5a3a5bdad7c4484fb3933e1a",
+      "created_by":"5a50ab891d35a91ea0f514b3",
       "src_url":"http://localhost:3000/img/300x250.png",
       "file":"png",
       "color_profile":"grises",
@@ -676,7 +626,7 @@ module.exports.images = [
       "description":"Descripcion de la imagen de prueba nº3",
       "created_at":"2017-10-16T17:08:47Z",
       "updated_at":"2017-10-16T17:08:47Z",
-      "user":"5a3a5bdad7c4484fb3933e1a",
+      "created_by":"5a50ab891d35a91ea0f514b3",
       "src_url":"http://localhost:3000/img/320x200.png",
       "file":"png",
       "color_profile":"grises",
@@ -715,7 +665,7 @@ module.exports.images = [
       "description":"Descripcion de la imagen de prueba nº4",
       "created_at":"2017-10-16T17:08:47Z",
       "updated_at":"2017-10-16T17:08:47Z",
-      "user":"5a3a5bdad7c4484fb3933e1a",
+      "created_by":"5a50ab891d35a91ea0f514b3",
       "src_url":"http://localhost:3000/img/320x240.png",
       "file":"png",
       "color_profile":"grises",
@@ -754,7 +704,7 @@ module.exports.images = [
       "description":"Descripcion de la imagen de prueba nº5",
       "created_at":"2017-10-16T17:08:47Z",
       "updated_at":"2017-10-16T17:08:47Z",
-      "user":"5a3a5bdad7c4484fb3933e1a",
+      "created_by":"5a50ab891d35a91ea0f514b3",
       "src_url":"http://localhost:3000/img/640x480.png",
       "file":"png",
       "color_profile":"grises",
@@ -793,7 +743,7 @@ module.exports.images = [
       "description":"Descripcion de la imagen de prueba nº6",
       "created_at":"2017-10-16T17:08:47Z",
       "updated_at":"2017-10-16T17:08:47Z",
-      "user":"5a3a5bdad7c4484fb3933e1a",
+      "created_by":"5a50ab891d35a91ea0f514b3",
       "src_url":"http://localhost:3000/img/800x480.png",
       "file":"png",
       "color_profile":"grises",
@@ -828,11 +778,11 @@ module.exports.images = [
    {
       "url":"http://localhost:4000/images/7",
       "id":7,
-      "name":"Imagen de prueba 4",
+      "name":"Imagen de prueba 7",
       "description":"Descripcion de la imagen de prueba nº7",
       "created_at":"2017-10-16T17:08:47Z",
       "updated_at":"2017-10-16T17:08:47Z",
-      "user":"5a3a5bdad7c4484fb3933e1a",
+      "created_by":"5a50ab891d35a91ea0f514b3",
       "src_url":"http://localhost:3000/img/800x600.png",
       "file":"png",
       "color_profile":"grises",
@@ -871,7 +821,7 @@ module.exports.images = [
       "description":"Descripcion de la imagen de prueba nº8",
       "created_at":"2017-10-16T17:08:47Z",
       "updated_at":"2017-10-16T17:08:47Z",
-      "user":"5a3a5bdad7c4484fb3933e1a",
+      "created_by":"5a50ab891d35a91ea0f514b3",
       "src_url":"http://localhost:3000/img/854x480.png",
       "file":"png",
       "color_profile":"grises",
@@ -910,7 +860,7 @@ module.exports.images = [
       "description":"Descripcion de la imagen de prueba nº9",
       "created_at":"2017-10-16T17:08:47Z",
       "updated_at":"2017-10-16T17:08:47Z",
-      "user":"5a3a5bdad7c4484fb3933e1a",
+      "created_by":"5a50ab891d35a91ea0f514b3",
       "src_url":"http://localhost:3000/img/1024x600.png",
       "file":"png",
       "color_profile":"grises",
@@ -949,7 +899,7 @@ module.exports.images = [
       "description":"Descripcion de la imagen de prueba nº10",
       "created_at":"2017-10-16T17:08:47Z",
       "updated_at":"2017-10-16T17:08:47Z",
-      "user":"5a3a5bdad7c4484fb3933e1a",
+      "created_by":"5a50ab891d35a91ea0f514b3",
       "src_url":"http://localhost:3000/img/1280x720.png",
       "file":"png",
       "color_profile":"grises",
@@ -991,7 +941,8 @@ module.exports.groups = [
       "description":"Descripcion del grupo de prueba nº1",
       "created_at":"2017-10-20T17:08:47Z",
       "updated_at":"2017-10-20T17:08:47Z",
-      "user":"5a3a5bdad7c4484fb3933e1a",
+      "created_by":"5a50ab891d35a91ea0f514b3",
+      "updated_by":"5a3a5bdad7c4484fb3933e1a",
       "displays":[
          {
             "url":"http://localhost:4000/displays/3",
@@ -1026,7 +977,8 @@ module.exports.groups = [
       "description":"Descripcion del grupo de prueba nº2",
       "created_at":"2017-10-20T17:08:47Z",
       "updated_at":"2017-10-20T17:08:47Z",
-      "user":"5a3a5bdad7c4484fb3933e1a",
+      "created_by":"5a50ab891d35a91ea0f514b3",
+      "updated_by":"5a3a5bdad7c4484fb3933e1a",
       "displays":[
          {
             "url":"http://localhost:4000/displays/3",
@@ -1061,7 +1013,8 @@ module.exports.groups = [
       "description":"Descripcion del grupo de prueba nº3",
       "created_at":"2017-10-20T17:08:47Z",
       "updated_at":"2017-10-20T17:08:47Z",
-      "user":"5a3a5bdad7c4484fb3933e1a",
+      "created_by":"5a50ab891d35a91ea0f514b3",
+      "updated_by":"5a3a5bdad7c4484fb3933e1a",
       "displays":[
          {
             "url":"http://localhost:4000/displays/3",
@@ -1096,7 +1049,8 @@ module.exports.groups = [
       "description":"Descripcion del grupo de prueba nº4",
       "created_at":"2017-10-20T17:08:47Z",
       "updated_at":"2017-10-20T17:08:47Z",
-      "user":"5a3a5bdad7c4484fb3933e1a",
+      "created_by":"5a50ab891d35a91ea0f514b3",
+      "updated_by":"5a3a5bdad7c4484fb3933e1a",
       "displays":[
          {
             "url":"http://localhost:4000/displays/3",
@@ -1233,22 +1187,63 @@ module.exports.locations = [
  ];
 
 module.exports.users = [
-   {
-      "login":"admin",
-      "name":"5a3a5bdad7c4484fb3933e1a",
-      "password":"1234",
-      "admin":true
-   },
-   {
-     "login":"user",
-     "name":"Usuario 1",
-     "password":"1234",
-     "admin":false
-   },
-   {
-     "login":"user2",
-     "name":"Usuario 2",
-     "password":"1234",
-     "admin":false
-   }
+  {
+    "id":1,
+    "login":"admin",
+    "name":"Admin",
+    "email":"admin@test.com",
+    "password":"1234",
+    "admin":true
+  },
+  {
+   "id":2,
+   "login":"user",
+   "name":"Usuario 1",
+   "email":"user1@test.com",
+   "password":"1234",
+   "admin":false
+  },
+  {
+   "id":3,
+   "login":"user2",
+   "name":"Usuario 2",
+   "email":"user2@test.com",
+   "password":"1234",
+   "admin":false
+  }
 ];
+
+module.exports.gateways = [
+  {
+    "id":1,
+    "name":"Puerta de acceso 1",
+    "description":"Descripcion de la puerta de acceso nº1",
+    "ip_addres":"192.168.0.1",
+    "mac_address":"7C:D1:C3:8D:01:84",
+    "displays": []
+  },
+  {
+    "id":2,
+    "name":"Puerta de acceso 2",
+    "description":"Descripcion de la puerta de acceso nº2",
+    "ip_addres":"192.168.0.2",
+    "mac_address":"7C:D1:C3:8D:01:85",
+    "displays": []
+  },
+  {
+    "id":3,
+    "name":"Puerta de acceso 3",
+    "description":"Descripcion de la puerta de acceso nº3",
+    "ip_addres":"192.168.0.3",
+    "mac_address":"7C:D1:C3:8D:01:86",
+    "displays": []
+  },
+  {
+    "id":4,
+    "name":"Puerta de acceso 4",
+    "description":"Descripcion de la puerta de acceso nº4",
+    "ip_addres":"192.168.0.4",
+    "mac_address":"7C:D1:C3:8D:01:87",
+    "displays": []
+  }
+]

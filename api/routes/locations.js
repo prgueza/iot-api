@@ -1,55 +1,20 @@
 const express = require('express');
 const router = express.Router();
-const mongoose = require('mongoose');
 
-const Location = require('../models/location.js');
-
-// TODO: filter response and write missing methods
+/* CONTROLLER */
+const LocationsController = require('../controllers/locations.js');
 
 /* API GET */
-router.get('/', (req, res, next) => {
-  Location.find()
-    .exec()
-    .then(docs => {
-      console.log(docs);
-      res.status(200).json(docs);
-    })
-    .catch(err => {
-      console.log(err);
-      res.status(500).json({error: err});
-    });
-});
-
-router.get('/:id', (req, res, next) => {
-  const _id = req.params.id;
-  Location.findById(_id)
-    .exec()
-    .then(docs => {
-      console.log(docs);
-      res.status(200).json(docs);
-    })
-    .catch(err => {
-      console.log(err);
-      res.status(500).json({error: err});
-    });
-});
-
+router.get('/', LocationsController.locations_get_all);
+router.get('/:id', LocationsController.locations_get_one);
 
 /* API POST */
-router.post('/', (req, res, next) => {
-  res.status(200).json({ mensaje: 'exito' });
-});
-
+router.post('/', LocationsController.location_create);
 
 /* API PUT */
-router.put('/:id', (req, res, next) => {
-
-});
-
+router.put('/:id', LocationsController.location_update);
 
 /* API DELETE */
-router.delete('/:id', (req, res, next) => {
-
-});
+router.delete('/:id', LocationsController.location_delete);
 
 module.exports = router;

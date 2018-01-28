@@ -8,8 +8,9 @@ const displaySchema = mongoose.Schema({
     description: { type: String, required: true },
     location: { type: mongoose.Schema.Types.ObjectId, ref: 'Location' },
     created_at: { type: Date, default: Date.now },
+    created_by: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     updated_at: { type: Date, default: Date.now },
-    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    updated_by: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     resolution: { type: mongoose.Schema.Types.ObjectId, ref: 'Resolution'},
     groups:[{ type: mongoose.Schema.Types.ObjectId, ref: 'Group' }],
     images:[{ type: mongoose.Schema.Types.ObjectId, ref: 'Image' }],
@@ -17,12 +18,7 @@ const displaySchema = mongoose.Schema({
     tags_total: {type: Number, required: true },
     tags: [String],
     mac_address: String,
-    gateway: {
-      _id: mongoose.Schema.Types.ObjectId,
-      id: Number,
-      name: String,
-      ip_address: String
-   }
+    gateway: { type: mongoose.Schema.Types.ObjectId, ref: 'Gateway' }
 });
 
 module.exports = mongoose.model('Display', displaySchema);
