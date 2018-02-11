@@ -24,7 +24,8 @@ exports.group_get_all = (req, res, next) => {
             description: doc.description,
             tags_total: doc.tags.length,
             tags: doc.tags,
-            created_at: doc.created_at
+            created_at: doc.created_at,
+            updated_at: doc.updated_at
           }
         })
       }
@@ -83,11 +84,11 @@ exports.group_get_one = (req, res, next) => {
 exports.group_create = (req, res, next) => {
   // get data for new group
   const { id, name, description, created_by, updated_by, displays, images, active_image, tags } = req.body;
-  // construct a new id for the new group
+  // create a new id for the new group
   const _id = new mongoose.Types.ObjectId();
-  // construct displays and images ids from data received
-  const d_ids = displays.map((d) => mongoose.Types.ObjectId(d));
-  const i_ids = images.map((i) =>  mongoose.Types.ObjectId(i));
+  // create displays and images ids from data received
+  const d_ids = displays && displays.map((d) => mongoose.Types.ObjectId(d));
+  const i_ids = images && images.map((i) =>  mongoose.Types.ObjectId(i));
   // build the new group with its model
   const group = new Group({
     _id: _id,
@@ -130,6 +131,7 @@ exports.group_create = (req, res, next) => {
         description: doc.description,
         tags_total: doc.tags.length,
         created_at: doc.created_at,
+        updated_at: doc.updated_at
       }
       res.status(201).json({
         message: 'Success at adding a new group to the collection',
@@ -149,9 +151,34 @@ exports.group_create = (req, res, next) => {
 
 /* PUT */
 exports.group_update = (req, res, next) => {
+  // get the id from the request for the query
   const _id = req.params.id;
+  // get displays and images ids from the request
+  const { displays, images } = req.body;
+  // create displays and images ids from data received
+  const d_ids = displays && displays.map((d) => mongoose.Types.ObjectId(d));
+  const i_ids = images && images.map((i) =>  mongoose.Types.ObjectId(i));
+  // update the group based on its id
+  const updateObject = req.body;
+  updateObject.updated_at = new Date();
   Group
     .findOneAndUpdate({ _id: _id }, { $set: req.body }, { new: true })
+    // update displays involved
+    .then(() => {
+      Display
+        // add the group id to the group array
+        .updateMany({ _id: { $in: d_ids } }, { $addToSet: { groups: _id } })
+        .then(doc => console.log(doc))
+    })
+    // update images involved
+    .then(() => {
+      Image
+        // add the group id to the group array
+        .updateMany({ _id: { $in: i_ids } }, { $addToSet: { groups: _id } })
+        .then(doc => console.log(doc))
+    })
+    // send a response to the app
+    .then((res) => Group.findById(_id).exec())
     .then(doc => {
       const result = {
         _id: doc._id,
@@ -162,6 +189,7 @@ exports.group_update = (req, res, next) => {
         description: doc.description,
         tags_total: doc.tags.length,
         created_at: doc.created_at,
+        updated_at: doc.updated_at,
       }
       res.status(200).json({
         message: 'Success at updating a group from the collection',
@@ -169,6 +197,7 @@ exports.group_update = (req, res, next) => {
         result: result
       });
     })
+    // catch any errors
     .catch(err => {
       console.log(err);
       res.status(500).json({
@@ -183,7 +212,7 @@ exports.group_delete = (req, res, next) => {
   // get id from request parameters
   const _id = req.params.id;
   // delete document from collection
-  Group
+  Group // TODO: remove references from this group in other resources
     .remove({ _id: _id })
     .exec()
     // send result back to the application

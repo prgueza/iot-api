@@ -550,7 +550,7 @@ module.exports.images = [
       "created_at":"2017-10-16T17:08:47Z",
       "updated_at":"2017-10-16T17:08:47Z",
       "created_by":"5a50ab891d35a91ea0f514b3",
-      "src_url":"http://localhost:3000/img/180x150.png",
+      "src_url":"http://localhost:3000/img/test1.png",
       "file":"png",
       "color_profile":"grises",
       "dimensions":{
@@ -588,7 +588,7 @@ module.exports.images = [
       "created_at":"2017-10-16T17:08:47Z",
       "updated_at":"2017-10-16T17:08:47Z",
       "created_by":"5a50ab891d35a91ea0f514b3",
-      "src_url":"http://localhost:3000/img/300x250.png",
+      "src_url":"http://localhost:3000/img/test2.png",
       "file":"png",
       "color_profile":"grises",
       "dimensions":{
@@ -627,7 +627,7 @@ module.exports.images = [
       "created_at":"2017-10-16T17:08:47Z",
       "updated_at":"2017-10-16T17:08:47Z",
       "created_by":"5a50ab891d35a91ea0f514b3",
-      "src_url":"http://localhost:3000/img/320x200.png",
+      "src_url":"http://localhost:3000/img/test3.png",
       "file":"png",
       "color_profile":"grises",
       "dimensions":{
@@ -666,7 +666,7 @@ module.exports.images = [
       "created_at":"2017-10-16T17:08:47Z",
       "updated_at":"2017-10-16T17:08:47Z",
       "created_by":"5a50ab891d35a91ea0f514b3",
-      "src_url":"http://localhost:3000/img/320x240.png",
+      "src_url":"http://localhost:3000/img/test4.png",
       "file":"png",
       "color_profile":"grises",
       "dimensions":{
@@ -705,7 +705,7 @@ module.exports.images = [
       "created_at":"2017-10-16T17:08:47Z",
       "updated_at":"2017-10-16T17:08:47Z",
       "created_by":"5a50ab891d35a91ea0f514b3",
-      "src_url":"http://localhost:3000/img/640x480.png",
+      "src_url":"http://localhost:3000/img/test5.png",
       "file":"png",
       "color_profile":"grises",
       "dimensions":{
@@ -744,7 +744,7 @@ module.exports.images = [
       "created_at":"2017-10-16T17:08:47Z",
       "updated_at":"2017-10-16T17:08:47Z",
       "created_by":"5a50ab891d35a91ea0f514b3",
-      "src_url":"http://localhost:3000/img/800x480.png",
+      "src_url":"http://localhost:3000/img/test6.png",
       "file":"png",
       "color_profile":"grises",
       "dimensions":{

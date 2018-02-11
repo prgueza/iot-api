@@ -1,14 +1,13 @@
 const mongoose = require('mongoose');
 
 /* DATA MODELS */
-const Group = require('../models/group');
-const Display = require('../models/display');
-const Image = require('../models/image');
+const Gateway = require('../models/gateway');
+const Device = require('../models/device');
 
 /* GET ALL */
-exports.displays_get_all = (req, res, next) => {
-  Display.find()
-    .select('_id id name description tags url created_at updated_at')
+exports.gateways_get_all = (req, res, next) => {
+  Gateway.find()
+    .select('_id id name description url created_at updated_at')
     .exec()
     .then(docs => {
       const response = {
@@ -20,7 +19,6 @@ exports.displays_get_all = (req, res, next) => {
             id: doc.id,
             name: doc.name,
             description: doc.description,
-            tags_total: doc.tags.length,
             created_at: doc.created_at,
             updated_at: doc.updated_at,
           }
@@ -36,15 +34,14 @@ exports.displays_get_all = (req, res, next) => {
 }
 
 /* GET ONE */
-exports.displays_get_one = (req, res, next) => {
+exports.gateways_get_one = (req, res, next) => {
   const _id = req.params.id;
-  Display.findById(_id)
-    .select('_id id url name description location resolution tags images groups created_by created_at updated_at')
-    .populate('active_image', '_id id url name descrption created_at tags_total')
-    .populate('images', '_id id url name descrption created_at tags_total')
-    .populate('groups', '_id id url name descrption created_at tags_total')
+  Gateway.findById(_id)
+    .select('_id id url name description created_by created_at updated_at')
+    .populate('devices_linked', '_id id url name descrption created_at')
+    .populate('devices_in_range', '_id id url name descrption created_at')
     .populate('created_by', '_id url name')
-    .populate('resolution', '_id url name size')
+    .populate('updated_by', '_id url name')
     .populate('location', '_id url name')
     .exec()
     .then(doc => {
@@ -61,39 +58,34 @@ exports.displays_get_one = (req, res, next) => {
 }
 
 /* POST */
-exports.display_create = (req, res, next) => {
-  const { id, name, description, location, user, images, image, groups, tags, dimensions, mac, gateway } = req.body;
+exports.gateway_create = (req, res, next) => {
+  const { id, name, description, location, user, mac, devices_linked, devices_in_range } = req.body;
   const _id = new mongoose.Types.ObjectId();
-  const display = new Display({
+  const gateway = new Gateway({
     _id: _id,
-    url: 'http://localhost:4000/displays/' + _id,
+    url: 'http://localhost:4000/gateways/' + _id,
     id: id,
     name: name,
     description: description,
     location: location,
+    devices_linked: devices_linked,
+    devices_in_range: devices_in_range,
     user: user,
-    resolution: dimensions,
-    groups: groups,
-    images: images,
-    active_image: image,
-    tags_total: tags.length,
-    tags: tags,
     mac_address: mac,
-    gateway: gateway
   });
 
-  display
+  gateway
     .save()
     .then(result => {
       console.log(result);
       res.status(201).json({
-        message: 'Display created',
-        createdDisplay: {
+        message: 'Gateway created',
+        createdGateway: {
           _id: result._id,
           id: result.id,
           name: result.name,
           description: result.description,
-          url: 'http://localhost:4000/displays/' + result._id
+          url: 'http://localhost:4000/gateways/' + result._id
         }
       });
     })
@@ -104,9 +96,9 @@ exports.display_create = (req, res, next) => {
 }
 
 /* PUT */
-exports.display_update = (req, res, next) => {
+exports.gateway_update = (req, res, next) => {
   const _id = req.params.id;
-  Display
+  Gateway
     .update({ _id: _id }, { $set: req.body })
     .then(result => {
       console.log(result);
@@ -119,9 +111,9 @@ exports.display_update = (req, res, next) => {
 }
 
 /* DELETE */
-exports.display_delete = (req, res, next) => {
+exports.gateway_delete = (req, res, next) => {
   const _id = req.params.id;
-  Display
+  Gateway
     .remove({_id: _id})
     .exec()
     .then(result => {

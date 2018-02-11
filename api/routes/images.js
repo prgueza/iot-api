@@ -33,7 +33,7 @@ router.get('/', ImagesController.images_get_all);
 router.get('/:id', ImagesController.images_get_one);
 
 /* API POST */
-router.post('/', upload.single('imageFile'), ImagesController.image_create);
+router.post('/', ImagesController.image_create);
 
 /* API PUT */
 router.put('/:id', ImagesController.image_update);

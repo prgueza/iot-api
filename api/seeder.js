@@ -123,7 +123,7 @@ Promise.all([
       Image.remove({}).exec(),
       Group.remove({}).exec(),
       //User.remove({}).exec(),
-      Resolution.remove({}).exec()
+      //Resolution.remove({}).exec()
     ])
   .then(() => console.log('Datos eliminados...'))
   .then(() => Promise.all([ displaysData.map((d) => {d.save()}) ]))
@@ -134,7 +134,7 @@ Promise.all([
   .then(() => console.log('Grupos añadidos...'))
   //.then(() => Promise.all([ UsersData.map((u) => {u.save()}) ]))
   //.then(() => console.log('Usuarios añadidos...'))
-  .then(() => Promise.all([ ResolutionsData.map((r) => {r.save()}) ]))
-  .then(() => console.log('Resoluciones añadidas...'))
+  //.then(() => Promise.all([ ResolutionsData.map((r) => {r.save()}) ]))
+  //.then(() => console.log('Resoluciones añadidas...'))
   //.then(() => Promise.all([ LocationsData.map((l) => {l.save()}) ]))
   //.then(() => console.log('Localizaciones añadidas...'));
