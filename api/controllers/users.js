@@ -103,17 +103,18 @@ exports.user_login = (req, res, next) => {
           const token = jwt.sign(
             { // payload
             login: user.login,
-            userId: user._id,
+            userID: user._id,
             },
             // secret key
-            process.ENV.JWT_KEY,
+            process.env.JWT_KEY,
             { // options
               expiresIn: "1h"
             }
           );
           return res.status(200).json({
             message: 'Auth Successful',
-            token: token
+            token: token,
+            userID: user._id
           });
         } else { // password doesn't match!
           return res.status(401).json({

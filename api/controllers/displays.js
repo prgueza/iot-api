@@ -46,6 +46,7 @@ exports.displays_get_one = (req, res, next) => {
     .populate('created_by', '_id url name')
     .populate('resolution', '_id url name size')
     .populate('location', '_id url name')
+    .populate('device', '_id url name')
     .exec()
     .then(doc => {
       if (doc) {
@@ -62,8 +63,12 @@ exports.displays_get_one = (req, res, next) => {
 
 /* POST */
 exports.display_create = (req, res, next) => {
-  const { id, name, description, location, user, images, image, groups, tags, dimensions, mac, gateway } = req.body;
+  const { id, name, description, location, user, images, image, groups, tags, dimensions, device } = req.body;
   const _id = new mongoose.Types.ObjectId();
+  // create displays and groups ids from data received
+  const i_ids = images && images.map((i) => mongoose.Types.ObjectId(i));
+  const g_ids = groups && groups.map((g) =>  mongoose.Types.ObjectId(g));
+
   const display = new Display({
     _id: _id,
     url: 'http://localhost:4000/displays/' + _id,
@@ -78,28 +83,50 @@ exports.display_create = (req, res, next) => {
     active_image: image,
     tags_total: tags.length,
     tags: tags,
-    mac_address: mac,
-    gateway: gateway
+    device: device
   });
 
   display
     .save()
-    .then(result => {
-      console.log(result);
+    // update images involved
+    .then(() => {
+      Image
+        // add the image id to the display array
+        .updateMany({ _id: { $in: i_ids } }, { $addToSet: { displays: _id } })
+        .then(doc => console.log(doc))
+    })
+    // update groupss involved
+    .then(() => {
+      Group
+        // add the image id to the group array
+        .updateMany({ _id: { $in: g_ids } }, { $addToSet: { displays: _id } })
+        .then(doc => console.log(doc))
+    })
+    // send a response to the app
+    .then((res) => Display.findById(_id).exec())
+    .then((doc) => {
+      const result = {
+        _id: doc._id,
+        url: doc.url,
+        id: doc.id,
+        name: doc.name,
+        description: doc.description,
+        tags_total: doc.tags.length,
+        created_at: doc.created_at,
+      }
       res.status(201).json({
-        message: 'Display created',
-        createdDisplay: {
-          _id: result._id,
-          id: result.id,
-          name: result.name,
-          description: result.description,
-          url: 'http://localhost:4000/displays/' + result._id
-        }
+        message: 'Success at adding a new display to the collection',
+        success: true,
+        result: result
       });
     })
+    // catch any errors
     .catch(err => {
       console.log(err);
-      res.status(500).json({error: err});
+      res.status(500).json({
+        message: 'Internal Server Error',
+        error: err
+      });
     });
 }
 

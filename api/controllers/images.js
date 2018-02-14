@@ -67,7 +67,7 @@ exports.image_create = (req, res, next) => {
   // create displays and groups ids from data received
   const d_ids = displays && displays.map((d) => mongoose.Types.ObjectId(d));
   const g_ids = groups && groups.map((g) =>  mongoose.Types.ObjectId(g));
-  // build the new image with its model
+  // build the new image from its model
   const image = new Image({
     _id: _id,
     url: 'http://localhost:4000/images/' + _id,

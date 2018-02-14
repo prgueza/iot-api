@@ -17,8 +17,7 @@ const displaySchema = mongoose.Schema({
     active_image: { type: mongoose.Schema.Types.ObjectId, ref: 'Image' },
     tags_total: {type: Number, required: true },
     tags: [String],
-    mac_address: String,
-    gateway: { type: mongoose.Schema.Types.ObjectId, ref: 'Gateway' }
+    device: { type: mongoose.Schema.Types.ObjectId, ref: 'Device' },
 });
 
 module.exports = mongoose.model('Display', displaySchema);

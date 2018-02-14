@@ -8,7 +8,7 @@ const Gateway = require('../models/gateway');
 /* GET ALL */
 exports.devices_get_all = (req, res, next) => {
   Device.find()
-    .select('_id id name description url mac_address ip_address created_at updated_at')
+    .select('_id id name description url mac_address bt_address created_at updated_at')
     .exec()
     .then(docs => {
       const response = {
@@ -21,7 +21,7 @@ exports.devices_get_all = (req, res, next) => {
             name: doc.name,
             description: doc.description,
             mac_address: doc.mac_address,
-            ip_address: doc.ip_address,
+            bt_address: doc.bt_address,
             created_at: doc.created_at,
             updated_at: doc.updated_at,
           }
@@ -40,7 +40,7 @@ exports.devices_get_all = (req, res, next) => {
 exports.devices_get_one = (req, res, next) => {
   const _id = req.params.id;
   Device.findById(_id)
-    .select('_id id url name description ip_address mac_address created_by created_at updated_at')
+    .select('_id id url name description resolution bt_address mac_address bt_address display created_by created_at updated_at')
     .populate('display', '_id url name')
     .populate('gateway', '_id url name')
     .populate('created_by', '_id url name')
@@ -62,7 +62,7 @@ exports.devices_get_one = (req, res, next) => {
 
 /* POST */
 exports.device_create = (req, res, next) => {
-  const { id, name, description, location, user, mac_address, ip_address, display, gateway, status } = req.body;
+  const { id, name, description, created_by, resolution, mac_address, bt_address, gateway } = req.body;
   const _id = new mongoose.Types.ObjectId();
   const device = new Device({
     _id: _id,
@@ -70,12 +70,11 @@ exports.device_create = (req, res, next) => {
     id: id,
     name: name,
     description: description,
-    location: location,
-    display: display,
+    resolution: resolution,
     gateway: gateway,
-    user: user,
+    created_by: created_by,
     mac_address: mac_address,
-    ip_address: ip_address,
+    bt_address: bt_address,
   });
 
   device
