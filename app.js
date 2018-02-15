@@ -13,6 +13,7 @@ const locationsRoutes = require('./api/routes/locations');
 const usersRoutes = require('./api/routes/users');
 const gatewaysRoutes = require('./api/routes/gateways');
 const devicesRoutes = require('./api/routes/devices');
+const userGroupsRoutes = require('./api/routes/userGroup');
 
 mongoose.connect(
   'mongodb://administrador:' +
@@ -51,6 +52,7 @@ app.use('/locations', locationsRoutes);
 app.use('/users', usersRoutes);
 app.use('/gateways', gatewaysRoutes);
 app.use('/devices', devicesRoutes);
+app.use('/userGroups', userGroupsRoutes);
 
 // Error handling
 app.use((req, res, next) => {

@@ -10,6 +10,7 @@ const deviceSchema = mongoose.Schema({
     mac_address: String,
     display: { type: mongoose.Schema.Types.ObjectId, ref: 'Display' },
     resolution: { type: mongoose.Schema.Types.ObjectId, ref: 'Resolution' },
+    userGroup: { type: mongoose.Schema.Types.ObjectId, ref: 'UserGroup' },
     gateway: { type: mongoose.Schema.Types.ObjectId, ref: 'Gateway' },
     created_by: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     updated_by: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },

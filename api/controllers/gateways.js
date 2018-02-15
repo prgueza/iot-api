@@ -39,9 +39,8 @@ exports.gateways_get_all = (req, res, next) => {
 exports.gateways_get_one = (req, res, next) => {
   const _id = req.params.id;
   Gateway.findById(_id)
-    .select('_id id url name description created_by created_at updated_at ip_address mac_address')
-    .populate('devices_linked', '_id id url name descrption created_at')
-    .populate('devices_in_range', '_id id url name descrption created_at')
+    .select('_id id url name description created_by created_at updated_at ip_address mac_address devices')
+    .populate('devices', '_id id url name')
     .populate('created_by', '_id url name')
     .populate('updated_by', '_id url name')
     .populate('location', '_id url name')
