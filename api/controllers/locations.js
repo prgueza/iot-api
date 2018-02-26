@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 
 /* DATA MODELS */
 const Location = require('../models/location.js');
+const Gateway = require('../models/gateway.js');
 
 // TODO: filter response and write missing methods
 
@@ -84,6 +85,9 @@ exports.location_delete = (req, res, next) => {
   Location
     .remove({_id: req.params.id})
     .exec()
+    // update gateways involved
+    .then(() => { return Gateway.updateMany({ location: _id }, { $unSet: { location: "" } }) })
+    // send response
     .then(result => {
       res.status(200).json(result);
     })

@@ -83,13 +83,8 @@ exports.gateway_create = (req, res, next) => {
   gateway
     .save()
     // update devices involved
-    .then(() => {
-      Device
-        // add the gateway id to the device array
-        .updateMany({ _id: { $in: d_ids } }, { $set: { gateway: _id } })
-        .then(doc => console.log(doc))
-    })
-    // send a response to the app
+    .then(() => { return Device.updateMany({ _id: { $in: d_ids } }, { $set: { gateway: _id } }) })
+    // send response
     .then((res) => Gateway.findById(_id).exec())
     .then((doc) => {
       const result = {
@@ -121,9 +116,19 @@ exports.gateway_create = (req, res, next) => {
 
 /* PUT */
 exports.gateway_update = (req, res, next) => {
+  // get _id from params
   const _id = req.params.id;
+  // get data from body
+  const { devices } = req.body;
+  // create devices ids from data received
+  const d_ids = devices && devices.map((d) => mongoose.Types.ObjectId(d));
+  // update gateway
   Gateway
     .update({ _id: _id }, { $set: req.body })
+    // update devices involved
+    .then(() => { return Device.updateMany({ gateway: _id }, { $unSet: { gateway: "" } }) })
+    .then(() => { return Device.updateMany({ _id: { $in: d_ids } }, { $set: { gateway: _id } }) })
+    // send response
     .then(result => {
       console.log(result);
       res.status(200).json(result);
@@ -140,6 +145,9 @@ exports.gateway_delete = (req, res, next) => {
   Gateway
     .remove({_id: _id})
     .exec()
+    // update devices involved
+    .then(() => { return Device.updateMany({ gateway: _id }, { $unSet: { gateway: "" } }) })
+    // send response
     .then(result => {
       res.status(200).json(result);
     })

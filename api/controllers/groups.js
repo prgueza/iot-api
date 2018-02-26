@@ -4,35 +4,16 @@ const mongoose = require('mongoose');
 const Group = require('../models/group');
 const Display = require('../models/display');
 const Image = require('../models/image');
+const UserGroup = require('../models/userGroup');
 
 /* GET ALL */
 exports.group_get_all = (req, res, next) => {
-  // find all groups from the collection
   Group.find()
+    .select('_id id name description tags url created_at updated_at')
     .exec()
-    // return docs as JSON
     .then(docs => {
-      const response = {
-        count: docs.length, // count of all groups
-        date: Date.now(), // date and time of the query
-        data: docs.map((doc) =>{ // data
-          return{ // only some of the fields
-            _id: doc._id,
-            url: doc.url,
-            id: doc.id,
-            name: doc.name,
-            description: doc.description,
-            tags_total: doc.tags.length,
-            tags: doc.tags,
-            created_at: doc.created_at,
-            updated_at: doc.updated_at
-          }
-        })
-      }
-      // simulate delay for dev
-      setTimeout(() => { res.status(200).json(response) }, process.env.DELAY);
+      setTimeout(() => { res.status(200).json(docs) }, process.env.DELAY);
     })
-    // catch any errors
     .catch(err => {
       res.status(500).json({
         message: 'Internal Server Error',
@@ -47,32 +28,22 @@ exports.group_get_one = (req, res, next) => {
   const _id = req.params.id;
   // find group by id
   Group.findById(_id)
-    // select fields
-    .select('_id url id name description created_at created_by updated_at updated_by active_image images displays tags')
-    // populate active image
+    .select('_id url id name description created_at created_by updated_at updated_by active_image images displays tags resolution')
     .populate('active_image', '_id id url src_url name description created_at tags_total')
-    // populate images
     .populate('images', '_id id url src_url name description created_at tags_total')
-    // populate displays
     .populate('displays', '_id id url name description created_at tags_total')
-    // populate user
+    .populate('resolution', '_id url name size')
     .populate('created_by', '_id url name')
     .populate('updated_by', '_id url name')
     .exec()
     .then(doc => {
-      // if the group is found
-      if (doc) {
-        // set response status to 200 and return the doc
-        res.status(200).json(doc);
-      } else {
-        // set response status to 404 and return an error message
-        res.status(404).json({
-          message: 'No valid entry found for provided id'
-        });
+      if (doc) { // if the group is found
+        res.status(200).json(doc); // set response status to 200 and return the doc
+      } else { // set response status to 404 and return an error message
+        res.status(404).json({ message: 'No valid entry found for provided id' });
       }
     })
-    // catch any errors
-    .catch(err => {
+    .catch(err => { // catch any errors
       res.status(500).json({
         message: 'Internal Server Error',
         error: err
@@ -83,12 +54,13 @@ exports.group_get_one = (req, res, next) => {
 /* POST */
 exports.group_create = (req, res, next) => {
   // get data for new group
-  const { id, name, description, created_by, updated_by, displays, images, active_image, tags } = req.body;
+  const { id, name, description, created_by, updated_by, displays, images, active_image, userGroup, resolution, tags } = req.body;
   // create a new id for the new group
   const _id = new mongoose.Types.ObjectId();
   // create displays and images ids from data received
   const d_ids = displays && displays.map((d) => mongoose.Types.ObjectId(d));
   const i_ids = images && images.map((i) =>  mongoose.Types.ObjectId(i));
+  const u_id  = mongoose.Types.ObjectId(userGroup);
   // build the new group with its model
   const group = new Group({
     _id: _id,
@@ -98,29 +70,24 @@ exports.group_create = (req, res, next) => {
     description: description,
     created_by: created_by,
     updated_by: updated_by,
+    tags_total: tags.length,
     tags: tags,
     active_image: active_image,
     displays: displays,
-    images: images
+    images: images,
+    resolution: resolution,
+    userGroup: userGroup
   });
   // save group
   group
     .save()
     // update displays involved
-    .then(() => {
-      Display
-        // add the group id to the group array
-        .updateMany({ _id: { $in: d_ids } }, { $addToSet: { groups: _id } })
-        .then(doc => console.log(doc))
-    })
+    .then(() => { return Display.updateMany({ _id: { $in: d_ids } }, { $addToSet: { groups: _id } }) }) // add the group to selected displays
     // update images involved
-    .then(() => {
-      Image
-        // add the group id to the group array
-        .updateMany({ _id: { $in: i_ids } }, { $addToSet: { groups: _id } })
-        .then(doc => console.log(doc))
-    })
-    // send a response to the app
+    .then(() => { return Image.updateMany({ _id: { $in: i_ids } }, { $addToSet: { groups: _id } }) }) // add the group to selected images
+    // update userGroups involved
+    .then(() => { return UserGroup.update({ _id: u_id }, { $addToSet: { groups: _id } }) }) // add the group to selected userGroup
+    // send response
     .then((res) => Group.findById(_id).exec())
     .then((doc) => {
       const result = {
@@ -154,30 +121,28 @@ exports.group_update = (req, res, next) => {
   // get the id from the request for the query
   const _id = req.params.id;
   // get displays and images ids from the request
-  const { displays, images } = req.body;
+  const { displays, images, userGroup } = req.body;
   // create displays and images ids from data received
   const d_ids = displays && displays.map((d) => mongoose.Types.ObjectId(d));
   const i_ids = images && images.map((i) =>  mongoose.Types.ObjectId(i));
+  const u_id  = mongoose.Types.ObjectId(userGroup);
   // update the group based on its id
   const updateObject = req.body;
   updateObject.updated_at = new Date();
+  // update the group based on its id
   Group
+    // update group
     .findOneAndUpdate({ _id: _id }, { $set: req.body }, { new: true })
     // update displays involved
-    .then(() => {
-      Display
-        // add the group id to the group array
-        .updateMany({ _id: { $in: d_ids } }, { $addToSet: { groups: _id } })
-        .then(doc => console.log(doc))
-    })
+    .then(() => { return Display.updateMany({ groups: _id }, { $pull: { groups: _id } }) }) // remove the group from all displays that have its ref
+    .then(() => { return Display.updateMany({ _id: { $in: d_ids } }, { $addToSet: { groups: _id } }) }) // add the group to selected displays
     // update images involved
-    .then(() => {
-      Image
-        // add the group id to the group array
-        .updateMany({ _id: { $in: i_ids } }, { $addToSet: { groups: _id } })
-        .then(doc => console.log(doc))
-    })
-    // send a response to the app
+    .then(() => { return Image.updateMany({ groups: _id }, { $pull: { groups: _id } }) }) // remove the group from all images that have its ref
+    .then(() => { return Image.updateMany({ _id: { $in: i_ids } }, { $addToSet: { groups: _id } }) }) // add the group to selected images
+    // update userGroups involved
+    .then(() => { return UserGroup.updateMany({ groups: _id }, { $pull: { groups: _id } }) }) // remove the group from all userGroups that have its ref
+    .then(() => { return UserGroup.update({ _id: u_id }, { $addToSet: { groups: _id } }) }) // add the group to selected userGroup
+    // send response
     .then((res) => Group.findById(_id).exec())
     .then(doc => {
       const result = {
@@ -212,10 +177,16 @@ exports.group_delete = (req, res, next) => {
   // get id from request parameters
   const _id = req.params.id;
   // delete document from collection
-  Group // TODO: remove references from this group in other resources
+  Group
     .remove({ _id: _id })
     .exec()
-    // send result back to the application
+    // update displays involved
+    .then(() => { return Display.updateMany({ groups: _id }, { $pull: { groups: _id } }) }) // remove the group from all displays that have its ref
+    // update images involved
+    .then(() => { return Image.updateMany({ groups: _id }, { $pull: { groups: _id } }) }) // remove the group from all images that have its ref
+    // update userGroups involved
+    .then(() => { return UserGroup.updateMany({ groups: _id }, { $pull: { groups: _id } }) }) // remove the group from all userGroups that have its ref
+    // send response
     .then((result) => {
       res.status(200).json({
         message: 'Success',

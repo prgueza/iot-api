@@ -8,11 +8,22 @@ const UserGroup = require('../models/userGroup.js');
 /* GET ALL */
 exports.userGroups_get_all = (req, res, next) => {
   UserGroup.find()
-    .select('_id url name description created_at devices displays images groups')
-    .populate('devices', '_id url name')
+    .select('_id url name description created_at devices displays images groups users')
+    .populate({
+      path: 'devices',
+      select: '_id url name display description',
+      populate: [{
+        path: 'display',
+        select: '_id url name'
+      },{
+        path: 'resolution',
+        select: '_id url name'
+      }]
+    })
     .populate('displays', '_id url name')
     .populate('images', '_id url name')
     .populate('groups', '_id url name')
+    .populate('users', '_id url name')
     .exec()
     .then(docs => {
       res.status(200).json(docs);
@@ -27,7 +38,24 @@ exports.userGroups_get_all = (req, res, next) => {
 exports.userGroups_get_one = (req, res, next) => {
   const _id = req.params.id;
   UserGroup.findById(_id)
-    .select('_id url name description created_at')
+    .select('_id url name description created_at devices displays images groups')
+    .populate({
+      path: 'devices',
+      select: '_id url name display description',
+      populate: [{
+        path: 'display',
+        select: '_id url name'
+      },{
+        path: 'resolution',
+        select: '_id url name'
+      }]
+    })
+    .populate({
+      path: 'displays',
+      select: '_id id url name description tags_total created_at updated_at'
+    })
+    .populate('images', '_id id url name description tags_total created_at updated_at')
+    .populate('groups', '_id id url name description tags_total created_at updated_at')
     .exec()
     .then(docs => {
       res.status(200).json(docs);
