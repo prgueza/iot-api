@@ -6,11 +6,12 @@ const resolutionSchema = mongoose.Schema({
     id: Number,
     name: { type: String, required: true },
     description: { type: String, default: 'Sin descripción' },
-    created_at: { type: Date, default: Date.now },
     size:{
        width: { type: Number, default: 0 },
        height: { type: Number, default: 0 }
-    }
-});
+    },
+    created_by: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    updated_by: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
+}, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } });
 
 module.exports = mongoose.model('Resolution', resolutionSchema);

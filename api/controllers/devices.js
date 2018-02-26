@@ -11,25 +11,8 @@ exports.devices_get_all = (req, res, next) => {
   Device.find()
     .select('_id id name description url mac_address bt_address created_at updated_at')
     .exec()
-    .then(docs => {
-      const response = {
-        count: docs.length,
-        data: docs.map((doc) => {
-          return{
-            _id: doc._id,
-            url: doc.url,
-            id: doc.id,
-            name: doc.name,
-            description: doc.description,
-            mac_address: doc.mac_address,
-            bt_address: doc.bt_address,
-            created_at: doc.created_at,
-            updated_at: doc.updated_at,
-          }
-        })
-      }
-      console.log(response);
-      setTimeout(() => { res.status(200).json(response) }, 0);
+    .then((docs) => {
+      setTimeout(() => { res.status(200).json(docs) }, 0);
     })
     .catch(err => {
       console.log(err);
@@ -88,20 +71,11 @@ exports.device_create = (req, res, next) => {
 
   device
     .save()
-    // update gateway involved
-    .then(() => {
-      return Gateway
-        // add the image id to the display array
-        .update({ _id: g_id }, { $addToSet: { devices: _id } })
-        .then(doc => console.log(doc))
-    })
     // update userGroups involved
-    .then(() => {
-      return UserGroup
-        // add the image id to the display array
-        .update({ _id: u_id }, { $addToSet: { devices: _id } })
-        .then(doc => console.log(doc))
-    })
+    .then(() => { return UserGroup.update({ _id: u_id }, { $addToSet: { devices: _id } }) }) // add the device to the selected userGroup
+    // update gateways involved
+    .then(() => { return Gateway.update({ _id: g_id }, { $addToSet: { devices: _id } }) }) // add the device to selected images
+    // send response
     .then((res) => Device.findById(_id).exec())
     .then((doc) => {
       const result = {
@@ -137,39 +111,17 @@ exports.device_update = (req, res, next) => {
   // create userGroup id from data received
   const u_id = mongoose.Types.ObjectId(userGroup);
   const g_id = mongoose.Types.ObjectId(gateway);
-  // update the group based on its id
-  const updateObject = req.body;
-  updateObject.updated_at = new Date();
+  // update the device based on its id
   Device
-    .findOneAndUpdate({ _id: _id }, { $set: updateObject }, { new: true })
-    // update userGroups involved
-    .then(() => {
-      return UserGroup
-        // add the group id to the group array
-        .update({ devices: _id }, { $pull: { devices: _id } })
-        .then(doc => console.log(doc))
-    })
-    .then(() => {
-      return UserGroup
-        // add the group id to the group array
-        .update({ _id: u_id }, { $addToSet: { devices: _id } })
-        .then(doc => console.log(doc))
-    })
+    // update device
+    .findOneAndUpdate({ _id: _id }, { $set: req.body }, { new: true })
     // update gateways involved
-    .then(() => {
-      return Gateway
-        // add the image id to the display array
-        .update({ devices: _id }, { $pull: { devices: _id } })
-        .then(doc => console.log(doc))
-    })
-    .then(() => {
-      console.log(g_id);
-      return Gateway
-        // add the image id to the display array
-        .update({ _id: g_id }, { $addToSet: { devices: _id } })
-        .then(doc => console.log(doc))
-    })
-    // send a response to the app
+    .then(() => { return Gateway.updateMany({ device: _id }, { $pull: { devices: _id } }) }) // remove the device from all gateways that have its ref
+    .then(() => { return Gateway.update({ _id: d_id }, { $set: { display: _id } }) }) // add the device to selected gateways
+    // update userGroups involved
+    .then(() => { return UserGroup.updateMany({ devices: _id }, { $pull: { devices: _id } }) }) // remove the display from all userGroups that have its ref
+    .then(() => { return UserGroup.update({ _id: u_id }, { $addToSet: { devices: _id } }) }) // add the display to the selected userGroup
+    // send response
     .then((res) => Device.findById(_id).exec())
     .then(doc => {
       const result = {
@@ -201,7 +153,12 @@ exports.device_delete = (req, res, next) => {
   const _id = req.params.id;
   Device
     .remove({_id: _id})
-    .exec()
+    .then((res) => result = res)
+    // update gateways involved
+    .then(() => { return Gateway.updateMany({ devices: _id }, { $pull: { devices: _id } }) }) // remove the device from all gateways that have its ref
+    // update userGroups involved
+    .then(() => { return UserGroup.updateMany({ devices: _id }, { $pull: { devices: _id } }) }) // remove the device from all userGroups that have its ref
+    // send response
     .then(result => {
       res.status(200).json(result);
     })

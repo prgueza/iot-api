@@ -6,14 +6,15 @@ const groupSchema = mongoose.Schema({
     id: { type: Number, required: true },
     name: { type: String, required: true },
     description: { type: String, default: 'Sin descripcion' },
-    created_at: { type: Date, default: Date.now },
-    updated_at: { type: Date, default: Date.now },
-    created_by: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    updated_by: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     active_image: { type: mongoose.Schema.Types.ObjectId, ref: 'Image', default: null },
-    images:[{ type: mongoose.Schema.Types.ObjectId, ref: 'Image' }],
+    tags_total: { type: Number, required: true },
+    tags:[String],
     displays:[{ type: mongoose.Schema.Types.ObjectId, ref: 'Display' }],
-    tags:[String]
-});
+    images:[{ type: mongoose.Schema.Types.ObjectId, ref: 'Image' }],
+    resolution: { type: mongoose.Schema.Types.ObjectId, ref: 'Resolution' },
+    userGroup: { type: mongoose.Schema.Types.ObjectId, ref: 'UserGroup' },
+    created_by: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    updated_by: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
+}, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } });
 
 module.exports = mongoose.model('Group', groupSchema);

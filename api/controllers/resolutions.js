@@ -2,6 +2,10 @@ const mongoose = require('mongoose');
 
 /* DATA MODELS */
 const Resolution = require('../models/resolution.js');
+const Image = require('../models/image.js');
+const Group = require('../models/group.js');
+const Device = require('../models/device.js');
+
 
 // TODO: filter response and write missing methods
 
@@ -11,7 +15,6 @@ exports.resolutions_get_all = (req, res, next) => {
     .select('_id url name description size created_at')
     .exec()
     .then(docs => {
-      console.log(docs);
       res.status(200).json(docs);
     })
     .catch(err => {
@@ -86,6 +89,13 @@ exports.resolution_delete = (req, res, next) => {
   Resolution
     .remove({_id: req.params.id})
     .exec()
+    // update devices involved
+    .then(() => { return Device.updateMany({ resolution: _id }, { $unSet: { resolution: "" } }) })
+    // update images involved
+    .then(() => { return Image.updateMany({ resolution: _id }, { $unSet: { resolution: "" } }) })
+    // update groups involved
+    .then(() => { return Group.updateMany({ resolution: _id }, { $unSet: { resolution: "" } }) })
+    // send response
     .then(result => {
       res.status(200).json(result);
     })

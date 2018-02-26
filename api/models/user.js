@@ -8,8 +8,7 @@ const userSchema = mongoose.Schema({
     name: { type: String, required: true },
     email: { type: String, required: true },
     admin: { type: Boolean, default: false },
-    created_at: { type: Date, default: Date.now },
-    updated_at: { type: Date, default: Date.now }
-});
+    userGroup: { type: mongoose.Schema.Types.ObjectId, ref: 'UserGroup' },
+}, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } });
 
 module.exports = mongoose.model('User', userSchema);
