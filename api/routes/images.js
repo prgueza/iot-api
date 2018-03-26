@@ -5,14 +5,16 @@ const multer = require('multer');
 /* CONTROLLER */
 const ImagesController = require('../controllers/images.js');
 
+/* MULTER CONFIGURATIONS */
 const storage = multer.diskStorage({
   destination: function(req, file, cb){
-    cb(null, './img/');
+    cb(null, 'img/');
   },
   filename: function(req, file, cb){
-    cb(null, file.originalname);
+    cb(null, req.params.id + '.png');
   }
 });
+
 const fileFilter = (req, file, cb) => {
   if(file.mimetype === 'image/jpeg' || file.mimetype === 'image/png'){
     cb(null, true);
@@ -20,6 +22,7 @@ const fileFilter = (req, file, cb) => {
     cb(null, false);
   }
 };
+
 const upload = multer({
   storage: storage,
   limits: {
@@ -34,6 +37,7 @@ router.get('/:id', ImagesController.images_get_one);
 
 /* API POST */
 router.post('/', ImagesController.image_create);
+router.post('/:id', upload.single('image'), ImagesController.image_upload);
 
 /* API PUT */
 router.put('/:id', ImagesController.image_update);

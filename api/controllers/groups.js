@@ -127,12 +127,9 @@ exports.group_update = (req, res, next) => {
   const i_ids = images && images.map((i) =>  mongoose.Types.ObjectId(i));
   const u_id  = mongoose.Types.ObjectId(userGroup);
   // update the group based on its id
-  const updateObject = req.body;
-  updateObject.updated_at = new Date();
-  // update the group based on its id
   Group
     // update group
-    .findOneAndUpdate({ _id: _id }, { $set: req.body }, { new: true })
+    .update({ _id: _id }, { $set: req.body })
     // update displays involved
     .then(() => { return Display.updateMany({ groups: _id }, { $pull: { groups: _id } }) }) // remove the group from all displays that have its ref
     .then(() => { return Display.updateMany({ _id: { $in: d_ids } }, { $addToSet: { groups: _id } }) }) // add the group to selected displays
@@ -156,7 +153,7 @@ exports.group_update = (req, res, next) => {
         created_at: doc.created_at,
         updated_at: doc.updated_at,
       }
-      res.status(200).json({
+      res.status(201).json({
         message: 'Success at updating a group from the collection',
         success: true,
         result: result

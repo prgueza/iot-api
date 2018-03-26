@@ -82,11 +82,12 @@ exports.location_update = (req, res, next) => {
 
 /* DELETE */
 exports.location_delete = (req, res, next) => {
+  const _id = req.params.id;
   Location
-    .remove({_id: req.params.id})
+    .remove({_id: _id})
     .exec()
     // update gateways involved
-    .then(() => { return Gateway.updateMany({ location: _id }, { $unSet: { location: "" } }) })
+    .then(() => { return Gateway.updateMany({ location: _id }, { $unset: { location: null } }) })
     // send response
     .then(result => {
       res.status(200).json(result);

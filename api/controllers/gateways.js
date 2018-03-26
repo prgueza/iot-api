@@ -7,27 +7,12 @@ const Device = require('../models/device');
 /* GET ALL */
 exports.gateways_get_all = (req, res, next) => {
   Gateway.find()
-    .select('_id id name description url created_at updated_at ip_address mac_address')
+    .select('_id id name description url created_at updated_at ip_address mac_address devices')
+    .populate('devices', '_id id name description updated_at updated_by bt_address mac_address')
     .exec()
     .then(docs => {
-      const response = {
-        count: docs.length,
-        data: docs.map((doc) => {
-          return{
-            _id: doc._id,
-            url: doc.url,
-            id: doc.id,
-            name: doc.name,
-            description: doc.description,
-            created_at: doc.created_at,
-            updated_at: doc.updated_at,
-            ip_address: doc.ip_address,
-            mac_address: doc.mac_address,
-          }
-        })
-      }
-      console.log(response);
-      setTimeout(() => { res.status(200).json(response) }, 0);
+      console.log(docs);
+      setTimeout(() => { res.status(200).json(docs) }, 0);
     })
     .catch(err => {
       console.log(err);

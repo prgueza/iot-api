@@ -12,7 +12,7 @@ exports.images_get_all = (req, res, next) => {
     .select('_id id name description tags url created_at updated_at')
     .exec()
     .then(docs => {
-      setTimeout(() => { res.status(200).json(docs) }, process.ENV.delay);
+      setTimeout(() => { res.status(200).json(docs) }, 0);
     })
     .catch(err => {
       console.log(err);
@@ -185,5 +185,44 @@ exports.image_delete = (req, res, next) => {
       res.status(500).json({
         message: 'Internal Server Error',
         error: err});
+    });
+}
+
+/* IMAGE UPLOAD */
+exports.image_upload = (req, res, next) => {
+  const _id = req.params.id
+  const updateObject = {
+    file: req.file.mimetype,
+    size: req.file.size,
+    src_url: "http://localhost:4000/" + req.file.path
+  }
+  Image
+    .findOneAndUpdate({ _id: _id }, { $set: updateObject }, { new: true })
+    // send response
+    .then(doc => {
+      const result = {
+        _id: doc._id,
+        url: doc.url,
+        id: doc.id,
+        name: doc.name,
+        updated_by: doc.user,
+        description: doc.description,
+        tags_total: doc.tags.length,
+        created_at: doc.created_at,
+        updated_at: doc.updated_at,
+      }
+      res.status(200).json({
+        message: 'Success at uploading an image to the collection',
+        success: true,
+        result: result
+      });
+    })
+    // catch any errors
+    .catch(err => {
+      console.log(err);
+      res.status(500).json({
+        message: 'Internal Server Error',
+        error: err
+      });
     });
 }

@@ -92,15 +92,9 @@ exports.resolution_delete = (req, res, next) => {
     // update devices involved
     .then(() => { return Device.updateMany({ resolution: _id }, { $unSet: { resolution: "" } }) })
     // update images involved
-<<<<<<< HEAD
     .then(() => { return Image.updateMany({ resolution: _id }, { $unSet: { resolution: "" } }) })
     // update groups involved
     .then(() => { return Group.updateMany({ resolution: _id }, { $unSet: { resolution: "" } }) })
-=======
-    .then(() => { return Image.updateMany({ resolution: _id } }, { $unSet: { resolution: "" } }) })
-    // update groups involved
-    .then(() => { return Group.updateMany({ resolution: _id } }, { $unSet: { resolution: "" } }) })
->>>>>>> c48455304b68a2584cdda183015e8180b998dc99
     // send response
     .then(result => {
       res.status(200).json(result);

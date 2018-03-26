@@ -26,12 +26,12 @@ exports.displays_get_all = (req, res, next) => {
 exports.displays_get_one = (req, res, next) => {
   const _id = req.params.id;
   Display.findById(_id)
-    .select('_id id url name description location tags images groups userGroup created_by created_at updated_at')
-    .populate('active_image', '_id id url name descrption created_at tags_total')
+    .select('_id id url name description category location tags images groups userGroup created_by created_at updated_at')
+    .populate('active_image', '_id id url name src_url description created_at tags_total')
     .populate('userGroup', '_id id url name')
     .populate({
       path: 'device',
-      select: '_id url name resolution',
+      select: '_id url name resolution description',
       populate: [{
         path: 'resolution',
         select: '_id url name size'
@@ -44,8 +44,8 @@ exports.displays_get_one = (req, res, next) => {
         }
       }]
     })
-    .populate('images', '_id id url name descrption created_at tags_total')
-    .populate('groups', '_id id url name descrption created_at tags_total')
+    .populate('images', '_id id url name description src_url created_at tags_total')
+    .populate('groups', '_id id url name description created_at tags_total')
     .populate('created_by', '_id url name')
     .populate('updated_by', '_id url name')
     .exec()
@@ -64,7 +64,7 @@ exports.displays_get_one = (req, res, next) => {
 
 /* POST */
 exports.display_create = (req, res, next) => {
-  const { id, name, description, location, updated_by, created_by, images, image, groups, tags, device, userGroup } = req.body;
+  const { id, name, description, category, updated_by, created_by, images, image, groups, tags, device, userGroup } = req.body;
   // _id for the new document
   const _id = new mongoose.Types.ObjectId();
   // create displays and groups ids from data received
@@ -79,9 +79,9 @@ exports.display_create = (req, res, next) => {
     id: id,
     name: name,
     description: description,
-    location: location,
     updated_by: updated_by,
     created_by: created_by,
+    category: category,
     groups: groups,
     images: images,
     active_image: image,
@@ -140,11 +140,9 @@ exports.display_update = (req, res, next) => {
   const g_ids = groups && groups.map((g) =>  mongoose.Types.ObjectId(g));
   const d_id  = mongoose.Types.ObjectId(device);
   const u_id  = mongoose.Types.ObjectId(userGroup);
-  const updateObject = req.body;
-  updateObject.updated_at = new Date();
   Display
     // update display
-    .findOneAndUpdate({ _id: _id }, { $set: updateObject }, { new: true })
+    .findOneAndUpdate({ _id: _id }, { $set: req.body }, { new: true })
     // update images involved
     .then(() => { return Image.updateMany({ displays: _id }, { $pull: { displays: _id } }) }) // remove the display from all images that have its ref
     .then(() => { return Image.updateMany({ _id: { $in: i_ids } }, { $addToSet: { displays: _id } }) }) // add the display to selected images
