@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const fs = require('fs');
 
 /* DATA MODELS */
 const Group = require('../models/group');
@@ -24,7 +25,7 @@ exports.images_get_all = (req, res, next) => {
 exports.images_get_one = (req, res, next) => {
   const _id = req.params.id;
   Image.findById(_id)
-    .select('_id id url name description created_by updated_by file size src_url color_profile resolution category groups displays tags created_at updated_at')
+    .select('_id id url name description created_by updated_by extension path size src_url color_profile resolution category groups displays tags created_at updated_at')
     .populate('displays', '_id id url name')
     .populate('groups', '_id id url name')
     .populate('resolution', '_id url name size')
@@ -190,39 +191,47 @@ exports.image_delete = (req, res, next) => {
 
 /* IMAGE UPLOAD */
 exports.image_upload = (req, res, next) => {
-  const _id = req.params.id
-  const updateObject = {
-    file: req.file.mimetype,
-    size: req.file.size,
-    src_url: "http://localhost:4000/" + req.file.path
-  }
+  const _id = req.params.id;
   Image
-    .findOneAndUpdate({ _id: _id }, { $set: updateObject }, { new: true })
-    // send response
-    .then(doc => {
-      const result = {
-        _id: doc._id,
-        url: doc.url,
-        id: doc.id,
-        name: doc.name,
-        updated_by: doc.user,
-        description: doc.description,
-        tags_total: doc.tags.length,
-        created_at: doc.created_at,
-        updated_at: doc.updated_at,
+    .findById(_id)
+    .then((doc) => doc.path && fs.unlink(doc.path))
+    .then(() => {
+      const updateObject = {
+        extension: req.file.mimetype,
+        size: req.file.size,
+        path: req.file.path,
+        src_url: "http://localhost:4000/" + req.file.path
       }
-      res.status(200).json({
-        message: 'Success at uploading an image to the collection',
-        success: true,
-        result: result
-      });
+      Image
+        .findOneAndUpdate({ _id: _id }, { $set: updateObject }, { new: true })
+        // send response
+        .then(doc => {
+          const result = {
+            _id: doc._id,
+            url: doc.url,
+            id: doc.id,
+            name: doc.name,
+            updated_by: doc.user,
+            description: doc.description,
+            tags_total: doc.tags.length,
+            src_url: doc.src_url,
+            size: doc.size,
+            extension: doc.extension,
+            created_at: doc.created_at,
+            updated_at: doc.updated_at,
+          }
+          res.status(200).json({
+            message: 'Success at uploading an image to the collection',
+            success: true,
+            result: result
+          });
+        })
     })
-    // catch any errors
     .catch(err => {
       console.log(err);
       res.status(500).json({
         message: 'Internal Server Error',
         error: err
       });
-    });
+    });;
 }

@@ -1,4 +1,5 @@
 const express = require('express');
+const moment = require('moment');
 const router = express.Router();
 const multer = require('multer');
 
@@ -11,7 +12,7 @@ const storage = multer.diskStorage({
     cb(null, 'img/');
   },
   filename: function(req, file, cb){
-    cb(null, req.params.id + '.png');
+    cb(null, req.params.id + moment() + '.png');
   }
 });
 

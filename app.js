@@ -54,9 +54,6 @@ app.use('/gateways', gatewaysRoutes);
 app.use('/devices', devicesRoutes);
 app.use('/userGroups', userGroupsRoutes);
 
-// Image uploads
-app.use('/img', imagesRoutes);
-
 // Error handling
 app.use((req, res, next) => {
   const err = new Error('Not Found');
