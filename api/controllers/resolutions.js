@@ -86,15 +86,16 @@ exports.resolution_update = (req, res, next) => {
 
 /* DELETE */
 exports.resolution_delete = (req, res, next) => {
+  const _id = req.params.id;
   Resolution
-    .remove({_id: req.params.id})
+    .remove({_id: _id})
     .exec()
     // update devices involved
-    .then(() => { return Device.updateMany({ resolution: _id }, { $unSet: { resolution: "" } }) })
+    .then(() => { return Device.updateMany({ resolution: _id }, { $unset: { resolution: null } }) })
     // update images involved
-    .then(() => { return Image.updateMany({ resolution: _id }, { $unSet: { resolution: "" } }) })
+    .then(() => { return Image.updateMany({ resolution: _id }, { $unset: { resolution: null } }) })
     // update groups involved
-    .then(() => { return Group.updateMany({ resolution: _id }, { $unSet: { resolution: "" } }) })
+    .then(() => { return Group.updateMany({ resolution: _id }, { $unset: { resolution: null } }) })
     // send response
     .then(result => {
       res.status(200).json(result);

@@ -131,7 +131,7 @@ exports.gateway_delete = (req, res, next) => {
     .remove({_id: _id})
     .exec()
     // update devices involved
-    .then(() => { return Device.updateMany({ gateway: _id }, { $unSet: { gateway: "" } }) })
+    .then(() => { return Device.updateMany({ gateway: _id }, { $unset: { gateway: null } }) })
     // send response
     .then(result => {
       res.status(200).json(result);
