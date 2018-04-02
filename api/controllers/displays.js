@@ -138,20 +138,20 @@ exports.display_update = (req, res, next) => {
   // create displays and images ids from data received
   const i_ids = images && images.map((i) => mongoose.Types.ObjectId(i));
   const g_ids = groups && groups.map((g) =>  mongoose.Types.ObjectId(g));
-  const d_id  = mongoose.Types.ObjectId(device);
+  const d_id  = device && mongoose.Types.ObjectId(device);
   const u_id  = mongoose.Types.ObjectId(userGroup);
   Display
     // update display
     .findOneAndUpdate({ _id: _id }, { $set: req.body }, { new: true })
     // update images involved
-    .then(() => { return Image.updateMany({ displays: _id }, { $pull: { displays: _id } }) }) // remove the display from all images that have its ref
-    .then(() => { return Image.updateMany({ _id: { $in: i_ids } }, { $addToSet: { displays: _id } }) }) // add the display to selected images
+    .then(() => { return i_ids && Image.updateMany({ displays: _id }, { $pull: { displays: _id } }) }) // remove the display from all images that have its ref
+    .then(() => { return i_ids && Image.updateMany({ _id: { $in: i_ids } }, { $addToSet: { displays: _id } }) }) // add the display to selected images
     // update groups involved
-    .then(() => { return Group.updateMany({ displays: _id }, { $pull: { displays: _id } }) }) // remove the display from all groups that have its ref
-    .then(() => { return Group.updateMany({ _id: { $in: g_ids } }, { $addToSet: { displays: _id } }) }) // add the display to selected groups
+    .then(() => { return g_ids && Group.updateMany({ displays: _id }, { $pull: { displays: _id } }) }) // remove the display from all groups that have its ref
+    .then(() => { return g_ids && Group.updateMany({ _id: { $in: g_ids } }, { $addToSet: { displays: _id } }) }) // add the display to selected groups
     // update devices involved
-    .then(() => { return Device.updateMany({ display: _id }, { $unset: { display: ""} }) }) // remove the display from all devices that have its ref
-    .then(() => { return Device.update({ _id: d_id }, { $set: { display: _id } }) }) // add the display to selected device
+    .then(() => { return d_id && Device.updateMany({ display: _id }, { $unset: { display: ""} }) }) // remove the display from all devices that have its ref
+    .then(() => { return d_id && Device.update({ _id: d_id }, { $set: { display: _id } }) }) // add the display to selected device
     // update userGroups involved
     .then(() => { return UserGroup.updateMany({ displays: _id }, { $pull: { displays: _id } }) }) // remove the display from all userGroups that have its ref
     .then(() => { return UserGroup.update({ _id: u_id }, { $addToSet: { displays: _id } }) }) // add the display to the selected userGroup
