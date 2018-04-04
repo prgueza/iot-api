@@ -117,7 +117,7 @@ exports.device_update = (req, res, next) => {
     .findOneAndUpdate({ _id: _id }, { $set: req.body }, { new: true })
     // update gateways involved
     .then(() => { return Gateway.updateMany({ device: _id }, { $pull: { devices: _id } }) }) // remove the device from all gateways that have its ref
-    .then(() => { return Gateway.update({ _id: d_id }, { $set: { display: _id } }) }) // add the device to selected gateways
+    .then(() => { return Gateway.update({ _id: g_id }, { $set: { display: _id } }) }) // add the device to selected gateways
     // update userGroups involved
     .then(() => { return UserGroup.updateMany({ devices: _id }, { $pull: { devices: _id } }) }) // remove the display from all userGroups that have its ref
     .then(() => { return UserGroup.update({ _id: u_id }, { $addToSet: { devices: _id } }) }) // add the display to the selected userGroup
