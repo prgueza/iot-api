@@ -111,7 +111,7 @@ exports.gateway_update = (req, res, next) => {
   Gateway
     .update({ _id: _id }, { $set: req.body })
     // update devices involved
-    .then(() => { return Device.updateMany({ gateway: _id }, { $unSet: { gateway: "" } }) })
+    .then(() => { return Device.updateMany({ gateway: _id }, { $unset: { gateway: undefined } }) })
     .then(() => { return Device.updateMany({ _id: { $in: d_ids } }, { $set: { gateway: _id } }) })
     // send response
     .then(result => {

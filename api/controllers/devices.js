@@ -9,11 +9,15 @@ const UserGroup = require('../models/userGroup');
 /* GET ALL */
 exports.devices_get_all = (req, res, next) => {
   Device.find()
-    .select('_id id name description url mac_address bt_address created_at updated_at')
+    .select('_id url name description mac found batt rssi initcode created_at updated_at')
     .exec()
     .then((docs) => {
-      setTimeout(() => { res.status(200).json(docs) }, 0);
-    })
+      return res.status(200).json(
+        docs.map((doc) => {
+          doc.url = 'http://localhost:4000/devices/' + doc._id;
+          return doc;
+        })
+    )})
     .catch(err => {
       console.log(err);
       res.status(500).json({error: err});
@@ -24,7 +28,7 @@ exports.devices_get_all = (req, res, next) => {
 exports.devices_get_one = (req, res, next) => {
   const _id = req.params.id;
   Device.findById(_id)
-    .select('_id id url name description resolution bt_address mac_address bt_address display userGroup created_by created_at updated_at')
+    .select('_id url name description resolution mac mac_address found batt rssi initcode display userGroup created_by created_at updated_at')
     .populate('display', '_id url name')
     .populate('gateway', '_id url name')
     .populate('created_by', '_id url name')
@@ -35,6 +39,7 @@ exports.devices_get_one = (req, res, next) => {
     .exec()
     .then(doc => {
       if (doc) {
+        doc.url = 'http://localhost:4000/devices/' + doc._id;
         res.status(200).json(doc);
       } else {
         res.status(404).json({message: 'No valid entry found for provided id'});
@@ -48,7 +53,7 @@ exports.devices_get_one = (req, res, next) => {
 
 /* POST */
 exports.device_create = (req, res, next) => {
-  const { id, name, description, created_by, resolution, mac_address, bt_address, gateway, userGroup } = req.body;
+  const { id, name, description, created_by, resolution, mac, gateway, userGroup } = req.body;
   console.log(req.body);
   // create a new id for the device
   const _id = new mongoose.Types.ObjectId();
@@ -58,14 +63,12 @@ exports.device_create = (req, res, next) => {
   const device = new Device({
     _id: _id,
     url: 'http://localhost:4000/devices/' + _id,
-    id: id,
     name: name,
     description: description,
     resolution: resolution,
     gateway: gateway,
     created_by: created_by,
-    mac_address: mac_address,
-    bt_address: bt_address,
+    mac: mac,
     userGroup: userGroup,
   });
 
@@ -81,7 +84,6 @@ exports.device_create = (req, res, next) => {
       const result = {
         _id: doc._id,
         url: doc.url,
-        id: doc.id,
         name: doc.name,
         description: doc.description,
         created_at: doc.created_at,
@@ -127,7 +129,6 @@ exports.device_update = (req, res, next) => {
       const result = {
         _id: doc._id,
         url: doc.url,
-        id: doc.id,
         name: doc.name,
         description: doc.description,
         created_at: doc.created_at,
