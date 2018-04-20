@@ -7,12 +7,12 @@ const Device = require('../models/device');
 /* GET ALL */
 exports.gateways_get_all = (req, res, next) => {
   Gateway.find()
-    .select('_id id name description url created_at updated_at ip_address mac_address devices')
-    .populate('devices', '_id id name description updated_at updated_by bt_address mac_address')
+    .select('_id url sync_url name ip mac port description created_at updated_at')
     .exec()
     .then(docs => {
       console.log(docs);
       setTimeout(() => { res.status(200).json(docs) }, 0);
+      // setTimeout(() => { res.status(500).json({error: "forced error"}) }, 0);
     })
     .catch(err => {
       console.log(err);
@@ -24,8 +24,7 @@ exports.gateways_get_all = (req, res, next) => {
 exports.gateways_get_one = (req, res, next) => {
   const _id = req.params.id;
   Gateway.findById(_id)
-    .select('_id id url name description created_by created_at updated_at ip_address mac_address devices')
-    .populate('devices', '_id id url name')
+    .select('_id url name description ip mac port created_by created_at updated_at')
     .populate('created_by', '_id url name')
     .populate('updated_by', '_id url name')
     .populate('location', '_id url name')
@@ -46,7 +45,7 @@ exports.gateways_get_one = (req, res, next) => {
 /* POST */
 exports.gateway_create = (req, res, next) => {
   // get data for new gateway
-  const { id, name, description, location, created_by, mac_address, ip_address, devices } = req.body;
+  const { name, description, location, created_by, mac, ip, port } = req.body;
   // create a new id for the gateway
   const _id = new mongoose.Types.ObjectId();
   // create devices ids from data received
@@ -55,33 +54,31 @@ exports.gateway_create = (req, res, next) => {
   const gateway = new Gateway({
     _id: _id,
     url: 'http://localhost:4000/gateways/' + _id,
+    sync_url: 'http://' + ip + ':' + port + '/devices',
     id: id,
     name: name,
     description: description,
     location: location,
-    devices: devices,
     created_by: created_by,
-    mac_address: mac_address,
-    ip_address: ip_address,
+    mac: mac,
+    ip: ip,
+    port: port
   });
   // save gateway
   gateway
     .save()
-    // update devices involved
-    .then(() => { return Device.updateMany({ _id: { $in: d_ids } }, { $set: { gateway: _id } }) })
     // send response
     .then((res) => Gateway.findById(_id).exec())
     .then((doc) => {
       const result = {
         _id: doc._id,
         url: doc.url,
-        id: doc.id,
         name: doc.name,
         description: doc.description,
         created_at: doc.created_at,
         updated_at: doc.updated_at,
-        ip_address: doc.ip_address,
-        mac_address: doc.mac_address,
+        ip: doc.ip,
+        mac: doc.mac,
       }
       res.status(201).json({
         message: 'Success at adding a new gateway to the collection',
@@ -103,16 +100,10 @@ exports.gateway_create = (req, res, next) => {
 exports.gateway_update = (req, res, next) => {
   // get _id from params
   const _id = req.params.id;
-  // get data from body
-  const { devices } = req.body;
-  // create devices ids from data received
-  const d_ids = devices && devices.map((d) => mongoose.Types.ObjectId(d));
+  if ( req.body.port ) { req.body.sync_url = 'http://' + req.body.ip + ':' + req.body.port + '/devices' }
   // update gateway
   Gateway
     .update({ _id: _id }, { $set: req.body })
-    // update devices involved
-    .then(() => { return Device.updateMany({ gateway: _id }, { $unset: { gateway: undefined } }) })
-    .then(() => { return Device.updateMany({ _id: { $in: d_ids } }, { $set: { gateway: _id } }) })
     // send response
     .then(result => {
       console.log(result);
@@ -130,8 +121,6 @@ exports.gateway_delete = (req, res, next) => {
   Gateway
     .remove({_id: _id})
     .exec()
-    // update devices involved
-    .then(() => { return Device.updateMany({ gateway: _id }, { $unset: { gateway: null } }) })
     // send response
     .then(result => {
       res.status(200).json(result);

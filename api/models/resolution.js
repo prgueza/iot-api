@@ -3,7 +3,8 @@ const mongoose = require('mongoose');
 const resolutionSchema = mongoose.Schema({
     _id: mongoose.Schema.Types.ObjectId,
     url: String,
-    id: Number,
+    screen_code: { type: String, required: true },
+    color_profile: { type: String, default: 'grayscale' },
     name: { type: String, required: true },
     description: { type: String, default: 'Sin descripción' },
     size:{

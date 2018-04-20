@@ -12,7 +12,7 @@ const Device = require('../models/device.js');
 /* GET ALL */
 exports.resolutions_get_all = (req, res, next) => {
   Resolution.find()
-    .select('_id url name description size created_at')
+    .select('_id url name description size screen_code color_profile created_at')
     .exec()
     .then(docs => {
       res.status(200).json(docs);
@@ -27,7 +27,7 @@ exports.resolutions_get_all = (req, res, next) => {
 exports.resolutions_get_one = (req, res, next) => {
   const _id = req.params.id;
   Resolution.findById(_id)
-    .select('_id url name description size created_at')
+    .select('_id url name description size screen_code created_at')
     .exec()
     .then(docs => {
       console.log(docs);
@@ -41,13 +41,15 @@ exports.resolutions_get_one = (req, res, next) => {
 
 /* POST */
 exports.resolution_create = (req, res, next) => {
-  const { name, description, size } = req.body;
+  const { name, description, size, screen_code, color_profile } = req.body;
   const _id = new mongoose.Types.ObjectId();
   const resolution = new Resolution({
     _id: _id,
     url: 'http://localhost:4000/locations/' + _id,
     name: name,
     description: description,
+    screen_code: screen_code,
+    color_profile: color_profile,
     size: size,
   });
 
@@ -61,7 +63,10 @@ exports.resolution_create = (req, res, next) => {
           _id: result._id,
           name: result.name,
           description: result.description,
-          url: 'http://localhost:4000/location/' + result._id
+          size: result.size,
+          screen_code: result.screen_code,
+          color_profile: result.color_profile,
+          url: 'http://localhost:4000/resolution/' + result._id
         }
       });
     })

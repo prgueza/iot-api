@@ -5,6 +5,6 @@ const router = express.Router();
 const UpdateController = require('../controllers/update.js');
 
 /* API GET */
-router.get('/', UpdateController.update);
+router.post('/', UpdateController.update);
 
 module.exports = router;

@@ -9,7 +9,8 @@ const UserGroup = require('../models/userGroup');
 /* GET ALL */
 exports.devices_get_all = (req, res, next) => {
   Device.find()
-    .select('_id url name description mac found batt rssi initcode created_at updated_at')
+    .select('_id url name description gateway mac found batt rssi screen initcode created_at updated_at')
+    .populate('gateway', '_id url name mac')
     .exec()
     .then((docs) => {
       return res.status(200).json(
@@ -28,7 +29,7 @@ exports.devices_get_all = (req, res, next) => {
 exports.devices_get_one = (req, res, next) => {
   const _id = req.params.id;
   Device.findById(_id)
-    .select('_id url name description resolution mac mac_address found batt rssi initcode display userGroup created_by created_at updated_at')
+    .select('_id url name description  mac mac found batt rssi initcode screen display userGroup created_by created_at updated_at')
     .populate('display', '_id url name')
     .populate('gateway', '_id url name')
     .populate('created_by', '_id url name')
@@ -53,20 +54,19 @@ exports.devices_get_one = (req, res, next) => {
 
 /* POST */
 exports.device_create = (req, res, next) => {
-  const { id, name, description, created_by, resolution, mac, gateway, userGroup } = req.body;
+  const { id, name, description, created_by, resolution, mac, pref_gateway, userGroup } = req.body;
   console.log(req.body);
   // create a new id for the device
   const _id = new mongoose.Types.ObjectId();
   // create userGroup and gateway id from data received
   const u_id = mongoose.Types.ObjectId(userGroup);
-  const g_id = mongoose.Types.ObjectId(gateway);
   const device = new Device({
     _id: _id,
     url: 'http://localhost:4000/devices/' + _id,
     name: name,
     description: description,
     resolution: resolution,
-    gateway: gateway,
+    pref_gateway: pref_gateway,
     created_by: created_by,
     mac: mac,
     userGroup: userGroup,
@@ -76,8 +76,6 @@ exports.device_create = (req, res, next) => {
     .save()
     // update userGroups involved
     .then(() => { return UserGroup.update({ _id: u_id }, { $addToSet: { devices: _id } }) }) // add the device to the selected userGroup
-    // update gateways involved
-    .then(() => { return Gateway.update({ _id: g_id }, { $addToSet: { devices: _id } }) }) // add the device to selected images
     // send response
     .then((res) => Device.findById(_id).exec())
     .then((doc) => {
@@ -117,9 +115,6 @@ exports.device_update = (req, res, next) => {
   Device
     // update device
     .findOneAndUpdate({ _id: _id }, { $set: req.body }, { new: true })
-    // update gateways involved
-    .then(() => { return Gateway.updateMany({ device: _id }, { $pull: { devices: _id } }) }) // remove the device from all gateways that have its ref
-    .then(() => { return Gateway.update({ _id: g_id }, { $set: { display: _id } }) }) // add the device to selected gateways
     // update userGroups involved
     .then(() => { return UserGroup.updateMany({ devices: _id }, { $pull: { devices: _id } }) }) // remove the display from all userGroups that have its ref
     .then(() => { return UserGroup.update({ _id: u_id }, { $addToSet: { devices: _id } }) }) // add the display to the selected userGroup
@@ -155,8 +150,6 @@ exports.device_delete = (req, res, next) => {
   Device
     .remove({_id: _id})
     .then((res) => result = res)
-    // update gateways involved
-    .then(() => { return Gateway.updateMany({ devices: _id }, { $pull: { devices: _id } }) }) // remove the device from all gateways that have its ref
     // update userGroups involved
     .then(() => { return UserGroup.updateMany({ devices: _id }, { $pull: { devices: _id } }) }) // remove the device from all userGroups that have its ref
     // send response
