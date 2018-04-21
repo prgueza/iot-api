@@ -41,7 +41,7 @@ exports.location_create = (req, res, next) => {
   const _id = new mongoose.Types.ObjectId();
   const location = new Location({
     _id: _id,
-    url: 'http://localhost:4000/locations/' + _id,
+    url: process.env.API_URL + 'locations/' + _id,
     name: name,
     description: description,
   });
@@ -49,14 +49,13 @@ exports.location_create = (req, res, next) => {
   location
     .save()
     .then(result => {
-      console.log(result);
       res.status(201).json({
         message: 'Location created',
         createdLocation: {
           _id: result._id,
           name: result.name,
           description: result.description,
-          url: 'http://localhost:4000/location/' + result._id
+          url: result.url
         }
       });
     })

@@ -10,7 +10,7 @@ const UserGroup = require('../models/userGroup');
 /* GET ALL */
 exports.displays_get_all = (req, res, next) => {
   Display.find()
-    .select('_id id name description tags url created_at updated_at')
+    .select('_id name description tags url created_at updated_at')
     .exec()
     .then(docs => {
       console.log(docs);
@@ -26,9 +26,9 @@ exports.displays_get_all = (req, res, next) => {
 exports.displays_get_one = (req, res, next) => {
   const _id = req.params.id;
   Display.findById(_id)
-    .select('_id id url name description category location tags images groups userGroup created_by created_at updated_at')
-    .populate('active_image', '_id id url name src_url description created_at tags_total')
-    .populate('userGroup', '_id id url name')
+    .select('_id url name description category location tags images groups userGroup created_by created_at updated_at')
+    .populate('active_image', '_id url name src_url description created_at tags_total')
+    .populate('userGroup', '_id url name')
     .populate({
       path: 'device',
       select: '_id url name resolution description',
@@ -44,8 +44,8 @@ exports.displays_get_one = (req, res, next) => {
         }
       }]
     })
-    .populate('images', '_id id url name description src_url created_at tags_total')
-    .populate('groups', '_id id url name description created_at tags_total')
+    .populate('images', '_id url name description src_url created_at tags_total')
+    .populate('groups', '_id url name description created_at tags_total')
     .populate('created_by', '_id url name')
     .populate('updated_by', '_id url name')
     .exec()
@@ -64,7 +64,7 @@ exports.displays_get_one = (req, res, next) => {
 
 /* POST */
 exports.display_create = (req, res, next) => {
-  const { id, name, description, category, updated_by, created_by, images, image, groups, tags, device, userGroup } = req.body;
+  const { name, description, category, updated_by, created_by, images, image, groups, tags, device, userGroup } = req.body;
   // _id for the new document
   const _id = new mongoose.Types.ObjectId();
   // create displays and groups ids from data received
@@ -75,8 +75,7 @@ exports.display_create = (req, res, next) => {
   // build the new display from its model
   const display = new Display({
     _id: _id,
-    url: 'http://localhost:4000/displays/' + _id,
-    id: id,
+    url: process.env.API_URL + 'displays/' + _id,
     name: name,
     description: description,
     updated_by: updated_by,
@@ -107,7 +106,6 @@ exports.display_create = (req, res, next) => {
       const result = {
         _id: doc._id,
         url: doc.url,
-        id: doc.id,
         name: doc.name,
         description: doc.description,
         tags_total: doc.tags.length,

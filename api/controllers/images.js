@@ -10,7 +10,7 @@ const UserGroup = require('../models/userGroup');
 /* GET ALL */
 exports.images_get_all = (req, res, next) => {
   Image.find()
-    .select('_id id name description tags url created_at updated_at')
+    .select('_id name description tags url created_at updated_at')
     .exec()
     .then(docs => {
       setTimeout(() => { res.status(200).json(docs) }, 0);
@@ -25,9 +25,9 @@ exports.images_get_all = (req, res, next) => {
 exports.images_get_one = (req, res, next) => {
   const _id = req.params.id;
   Image.findById(_id)
-    .select('_id id url name description created_by updated_by extension path size src_url color_profile resolution category groups displays tags created_at updated_at')
-    .populate('displays', '_id id url name')
-    .populate('groups', '_id id url name')
+    .select('_id url name description created_by updated_by extension path size src_url color_profile resolution category groups displays tags created_at updated_at')
+    .populate('displays', '_id url name')
+    .populate('groups', '_id url name')
     .populate('resolution', '_id url name size')
     .populate('created_by', '_id url name')
     .populate('updated_by', '_id url name')
@@ -48,7 +48,7 @@ exports.images_get_one = (req, res, next) => {
 /* POST */
 exports.image_create = (req, res, next) => {
   // get data for new image
-  const { id, name, description, created_by, updated_by, displays, groups, tags, resolution, category, color_profile, userGroup } = req.body;
+  const { name, description, created_by, updated_by, displays, groups, tags, resolution, category, color_profile, userGroup } = req.body;
   // create a new id for the image
   const _id = new mongoose.Types.ObjectId();
   // create displays and groups ids from data received
@@ -58,8 +58,7 @@ exports.image_create = (req, res, next) => {
   // build the new image from its model
   const image = new Image({
     _id: _id,
-    url: 'http://localhost:4000/images/' + _id,
-    id: id,
+    url: process.env.API_URL + 'images/' + _id,
     name: name,
     description: description,
     created_by: created_by,
@@ -88,7 +87,6 @@ exports.image_create = (req, res, next) => {
       const result = {
         _id: doc._id,
         url: doc.url,
-        id: doc.id,
         name: doc.name,
         description: doc.description,
         tags_total: doc.tags.length,
@@ -139,7 +137,6 @@ exports.image_update = (req, res, next) => {
     const result = {
       _id: doc._id,
       url: doc.url,
-      id: doc.id,
       name: doc.name,
       updated_by: doc.user,
       description: doc.description,
@@ -200,7 +197,7 @@ exports.image_upload = (req, res, next) => {
         extension: req.file.mimetype,
         size: req.file.size,
         path: req.file.path,
-        src_url: "http://localhost:4000/" + req.file.path
+        src_url: process.env.API_URL + req.file.path
       }
       Image
         .findOneAndUpdate({ _id: _id }, { $set: updateObject }, { new: true })
@@ -209,7 +206,6 @@ exports.image_upload = (req, res, next) => {
           const result = {
             _id: doc._id,
             url: doc.url,
-            id: doc.id,
             name: doc.name,
             updated_by: doc.user,
             description: doc.description,

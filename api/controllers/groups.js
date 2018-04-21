@@ -9,7 +9,7 @@ const UserGroup = require('../models/userGroup');
 /* GET ALL */
 exports.group_get_all = (req, res, next) => {
   Group.find()
-    .select('_id id name description tags url created_at updated_at')
+    .select('_id name description tags url created_at updated_at')
     .exec()
     .then(docs => {
       setTimeout(() => { res.status(200).json(docs) }, process.env.DELAY);
@@ -28,10 +28,10 @@ exports.group_get_one = (req, res, next) => {
   const _id = req.params.id;
   // find group by id
   Group.findById(_id)
-    .select('_id url id name description created_at created_by updated_at updated_by active_image images displays tags resolution')
-    .populate('active_image', '_id id url src_url name description created_at tags_total')
-    .populate('images', '_id id url src_url name description created_at tags_total')
-    .populate('displays', '_id id url name description created_at tags_total')
+    .select('_id url name description created_at created_by updated_at updated_by active_image images displays tags resolution')
+    .populate('active_image', '_id url src_url name description created_at tags_total')
+    .populate('images', '_id url src_url name description created_at tags_total')
+    .populate('displays', '_id url name description created_at tags_total')
     .populate('resolution', '_id url name size')
     .populate('created_by', '_id url name')
     .populate('updated_by', '_id url name')
@@ -54,7 +54,7 @@ exports.group_get_one = (req, res, next) => {
 /* POST */
 exports.group_create = (req, res, next) => {
   // get data for new group
-  const { id, name, description, created_by, updated_by, displays, images, active_image, userGroup, resolution, tags } = req.body;
+  const { name, description, created_by, updated_by, displays, images, active_image, userGroup, resolution, tags } = req.body;
   // create a new id for the new group
   const _id = new mongoose.Types.ObjectId();
   // create displays and images ids from data received
@@ -64,8 +64,7 @@ exports.group_create = (req, res, next) => {
   // build the new group with its model
   const group = new Group({
     _id: _id,
-    url: 'http://localhost:4000/groups/' + _id,
-    id: id,
+    url: process.env.API_URL + 'groups/' + _id,
     name: name,
     description: description,
     created_by: created_by,
@@ -93,7 +92,6 @@ exports.group_create = (req, res, next) => {
       const result = {
         _id: doc._id,
         url: doc.url,
-        id: doc.id,
         name: doc.name,
         description: doc.description,
         tags_total: doc.tags.length,
@@ -145,7 +143,6 @@ exports.group_update = (req, res, next) => {
       const result = {
         _id: doc._id,
         url: doc.url,
-        id: doc.id,
         name: doc.name,
         updated_by: doc.user,
         description: doc.description,

@@ -15,7 +15,7 @@ exports.devices_get_all = (req, res, next) => {
     .then((docs) => {
       return res.status(200).json(
         docs.map((doc) => {
-          doc.url = 'http://localhost:4000/devices/' + doc._id;
+          doc.url = process.env.API_URL + 'devices/' + doc._id;
           return doc;
         })
     )})
@@ -40,7 +40,7 @@ exports.devices_get_one = (req, res, next) => {
     .exec()
     .then(doc => {
       if (doc) {
-        doc.url = 'http://localhost:4000/devices/' + doc._id;
+        doc.url = process.env.API_URL + 'devices/' + doc._id;
         res.status(200).json(doc);
       } else {
         res.status(404).json({message: 'No valid entry found for provided id'});
@@ -62,7 +62,7 @@ exports.device_create = (req, res, next) => {
   const u_id = mongoose.Types.ObjectId(userGroup);
   const device = new Device({
     _id: _id,
-    url: 'http://localhost:4000/devices/' + _id,
+    url: proces.env.API_URL + 'devices/' + _id,
     name: name,
     description: description,
     resolution: resolution,
@@ -112,6 +112,7 @@ exports.device_update = (req, res, next) => {
   const u_id = mongoose.Types.ObjectId(userGroup);
   const g_id = mongoose.Types.ObjectId(gateway);
   // update the device based on its id
+  if (!req.body.userGroup) req.body.userGroup = undefined;
   Device
     // update device
     .findOneAndUpdate({ _id: _id }, { $set: req.body }, { new: true })

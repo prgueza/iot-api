@@ -72,7 +72,7 @@ exports.userGroup_create = (req, res, next) => {
   const _id = new mongoose.Types.ObjectId();
   const userGroup = new UserGroup({
     _id: _id,
-    url: 'http://localhost:4000/userGroups/' + _id,
+    url: process.env.API_URL + 'userGroups/' + _id,
     name: name,
     description: description,
   });
@@ -87,7 +87,7 @@ exports.userGroup_create = (req, res, next) => {
           _id: result._id,
           name: result.name,
           description: result.description,
-          url: 'http://localhost:4000/userGroup/' + result._id
+          url: result.url
         }
       });
     })

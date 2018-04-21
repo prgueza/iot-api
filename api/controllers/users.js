@@ -57,7 +57,7 @@ exports.user_signup = (req, res, next) => {
             const _id = new mongoose.Types.ObjectId();
             const user = new User({
               _id: _id,
-              url: 'http://localhost:4000/users/' + _id,
+              url: process.env.API_URL + 'users/' + _id,
               login: req.body.login,
               name: req.body.name,
               email: req.body.email,
@@ -115,6 +115,8 @@ exports.user_login = (req, res, next) => {
             { // payload
             login: user.login,
             userID: user._id,
+            userGroup: user.userGroup._id,
+            admin: user.admin
             },
             // secret key
             process.env.JWT_KEY,
@@ -122,13 +124,40 @@ exports.user_login = (req, res, next) => {
               expiresIn: "1h"
             }
           );
-          delete user.password; // avoid sending password field
-          return res.status(200).json({
-            message: 'Auth Successful',
-            token: token,
-            userID: user._id, // TODO: delete this line
-            user: user
-          });
+
+          UserGroup.findById(user.userGroup._id)
+            .select('_id url name displays images devices')
+            .populate('displays', '_id url name description tags created_at updated_at')
+            .populate('images', '_id url name description tags created_at updated_at')
+            .populate('groups', '_id url name description tags created_at updated_at')
+            .populate({
+              path: 'devices',
+              select: '_id url name description found mac batt rssi initcode screen gateway created_at updated_at',
+              populate: [{
+                path: 'gateway',
+                select: '_id url name location created_at updated_at'
+              },{
+                path: 'display',
+                select: '_id url name created_at updated_at'
+              }]
+            })
+            .exec()
+            .then((userGroup) => {
+              return res.status(200).json({
+                message: 'Auth Successful',
+                token: token,
+                user: {
+                  _id: user._id,
+                  url: user.url,
+                  name: user.name,
+                  userGroup: user.userGroup, // TODO: won't be used later on
+                  admin: user.admin,
+                  created_at: user.created_at,
+                  updated_at: user.updated_at
+                },
+                data: userGroup
+              });
+            })
         } else { // password doesn't match!
           return res.status(401).json({
             message: 'Auth failed'

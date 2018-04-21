@@ -4,6 +4,11 @@ const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 
+process.env.API_URL = 'http://localhost:4000/';
+process.env.MONGO_ATLAS_PW = '7MZ5oRy4e0YWG4v0';
+process.env.JWT_KEY = 'secret';
+process.env.DELAY = 0;
+
 // Routes
 const displaysRoutes = require('./api/routes/displays');
 const imagesRoutes = require('./api/routes/images');

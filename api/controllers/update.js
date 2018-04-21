@@ -13,18 +13,20 @@ exports.update = (req, res, next) => {
   var new_devices = [];
   var data = [];
   var errors = [];
+  var requests = [];
+
+  console.log(req.body.data);
 
   var filteredData = [];
   var gateways_ips = [];
 
-  var urls = req.body.data.map((g) => g.sync_url);
-  var requests = urls.map((url) => axios.get(url, {timeout: 10000}).catch((err) => err.message));
-  console.log(urls);
-
-  Device.find()
-    .select('_id mac pref_gateway')
+  Gateway.find()
+    .select('sync_url')
     .exec()
-    .then((docs) => old_devices = docs.map((doc) => doc._id))
+    .then((gateways) => {
+      var urls = gateways.map((g) => g.sync_url);
+      requests = urls.map((url) => axios.get(url, {timeout: 10000}).catch((err) => err.message));
+    })
     .then(() => { axios.all(requests)
       .then((responses) => {
         // get devices lists
@@ -33,7 +35,7 @@ exports.update = (req, res, next) => {
         filteredData = data.filter((gateway_list) => gateway_list != undefined);
         gateways_ips = filteredData.map((gateway_list) => gateway_list.gateway_ip );
       })
-      .then(() => { return Device.updateMany({ _id: { $in: old_devices } }, { found: false }) })     // set all devices to "not found"
+      .then(() => { return Device.updateMany({}, { found: false }) })     // set all devices to "not found"
       .then(() => { return Gateway.find({ ip: { $in: gateways_ips } })
         .then((gateways) => {
           var bulk_ops = [];
@@ -70,14 +72,14 @@ exports.update = (req, res, next) => {
           }});
           return Device.bulkWrite(bulk_ops);
         })
-        .then(() => Device.find()
+        .then(() => Device.find({userGroup: req.body.data.userGroup._id})
           .select('_id url name description mac found batt rssi initcode screen gateway created_at updated_at')
           .populate('gateway', '_id name description mac url')
           .exec()
           .then((docs) => {
             return res.status(200).json(
               docs.map((doc) => {
-                doc.url = 'http://localhost:4000/devices/' + doc._id;
+                doc.url = process.env.API_URL + 'devices/' + doc._id;
                 return doc;
               })
           )})

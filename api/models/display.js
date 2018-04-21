@@ -3,7 +3,6 @@ const mongoose = require('mongoose');
 const displaySchema = mongoose.Schema({
     _id: mongoose.Schema.Types.ObjectId,
     url: String,
-    id: { type: Number, required: true },
     name: { type: String, required: true },
     description: { type: String, required: true },
     tags_total: { type: Number, required: true },

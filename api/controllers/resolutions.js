@@ -45,7 +45,7 @@ exports.resolution_create = (req, res, next) => {
   const _id = new mongoose.Types.ObjectId();
   const resolution = new Resolution({
     _id: _id,
-    url: 'http://localhost:4000/locations/' + _id,
+    url: process.env.API_URL + 'resolutions/' + _id,
     name: name,
     description: description,
     screen_code: screen_code,
@@ -66,7 +66,7 @@ exports.resolution_create = (req, res, next) => {
           size: result.size,
           screen_code: result.screen_code,
           color_profile: result.color_profile,
-          url: 'http://localhost:4000/resolution/' + result._id
+          url: result.url
         }
       });
     })

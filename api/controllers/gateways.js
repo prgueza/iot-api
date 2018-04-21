@@ -53,7 +53,7 @@ exports.gateway_create = (req, res, next) => {
   // build the new gateway from its model
   const gateway = new Gateway({
     _id: _id,
-    url: 'http://localhost:4000/gateways/' + _id,
+    url: process.env.API_URL + 'gateways/' + _id,
     sync_url: 'http://' + ip + ':' + port + '/devices',
     id: id,
     name: name,
