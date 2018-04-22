@@ -9,7 +9,7 @@ const UserGroup = require('../models/userGroup.js');
 /* GET ALL */
 exports.users_get_all = (req, res, next) => {
   User.find()
-    .select('_id id url name login password email created_at updated_at admin userGroup')
+    .select('_id id url name login email created_at updated_at admin userGroup')
     .populate('userGroup', '_id url name')
     .exec()
     .then(docs => {
@@ -62,7 +62,7 @@ exports.user_signup = (req, res, next) => {
               name: req.body.name,
               email: req.body.email,
               admin: req.body.admin,
-              userGroup: req.body.userGroup,
+              userGroup: req.body.userGroup || undefined,
               password: hash,
             });
             user

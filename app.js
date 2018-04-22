@@ -8,6 +8,7 @@ process.env.API_URL = 'http://localhost:4000/';
 process.env.MONGO_ATLAS_PW = '7MZ5oRy4e0YWG4v0';
 process.env.JWT_KEY = 'secret';
 process.env.DELAY = 0;
+process.env.DEV = 'development';
 
 // Routes
 const displaysRoutes = require('./api/routes/displays');
@@ -21,14 +22,26 @@ const devicesRoutes = require('./api/routes/devices');
 const updateRoutes = require('./api/routes/update');
 const userGroupsRoutes = require('./api/routes/userGroup');
 
-mongoose.connect(
-  'mongodb://administrador:' +
-    process.env.MONGO_ATLAS_PW +
-    '@iot-api-shard-00-00-yznka.mongodb.net:27017,iot-api-shard-00-01-yznka.mongodb.net:27017,iot-api-shard-00-02-yznka.mongodb.net:27017/test?ssl=true&replicaSet=iot-api-shard-0&authSource=admin',
-  {
-    useMongoClient: true
-  }
-);
+
+if (process.env.DEV == 'development') {
+  mongoose.connect(
+    'mongodb://administrador:' +
+      process.env.MONGO_ATLAS_PW +
+      '@iot-api-shard-00-00-yznka.mongodb.net:27017,iot-api-shard-00-01-yznka.mongodb.net:27017,iot-api-shard-00-02-yznka.mongodb.net:27017/test?ssl=true&replicaSet=iot-api-shard-0&authSource=admin',
+    {
+      useMongoClient: true
+    }
+  ).then(() => console.log("Conected to development database"))
+} else {
+  mongoose.connect(
+    'mongodb://administrador:' +
+      process.env.MONGO_ATLAS_PW +
+      '@iot-api-prod-shard-00-00-kjtyd.mongodb.net:27017,iot-api-prod-shard-00-01-kjtyd.mongodb.net:27017,iot-api-prod-shard-00-02-kjtyd.mongodb.net:27017/test?ssl=true&replicaSet=iot-api-prod-shard-0&authSource=admin',
+    {
+      useMongoClient: true
+    }
+  ).then(() => console.log("Connected to production database"))
+}
 
 app.use(morgan('dev')); // logger
 app.use('/img', express.static('img'));

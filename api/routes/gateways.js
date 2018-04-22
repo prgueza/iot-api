@@ -3,9 +3,10 @@ const router = express.Router();
 
 /* CONTROLLER */
 const GatewayController = require('../controllers/gateways.js');
+const checkAuth = require('../middleware/check-auth');
 
 /* API GET */
-router.get('/', GatewayController.gateways_get_all);
+router.get('/', checkAuth, GatewayController.gateways_get_all);
 router.get('/:id', GatewayController.gateways_get_one);
 
 /* API POST */

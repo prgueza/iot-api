@@ -6,18 +6,22 @@ const Device = require('../models/device');
 
 /* GET ALL */
 exports.gateways_get_all = (req, res, next) => {
-  Gateway.find()
-    .select('_id url sync_url name ip mac port description created_at updated_at')
-    .exec()
-    .then(docs => {
-      console.log(docs);
-      setTimeout(() => { res.status(200).json(docs) }, 0);
-      // setTimeout(() => { res.status(500).json({error: "forced error"}) }, 0);
-    })
-    .catch(err => {
-      console.log(err);
-      res.status(500).json({error: err});
-    });
+  if (!req.AuthData.admin) {
+    res.status(401).json({error: "Not allowed"})
+  } else {
+    Gateway.find()
+      .select('_id url sync_url name ip mac port description created_at updated_at')
+      .exec()
+      .then(docs => {
+        console.log(docs);
+        setTimeout(() => { res.status(200).json(docs) }, 0);
+        // setTimeout(() => { res.status(500).json({error: "forced error"}) }, 0);
+      })
+      .catch(err => {
+        console.log(err);
+        res.status(500).json({error: err});
+      });
+  }
 }
 
 /* GET ONE */

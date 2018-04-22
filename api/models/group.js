@@ -11,7 +11,7 @@ const groupSchema = mongoose.Schema({
     tags:[String],
     displays:[{ type: mongoose.Schema.Types.ObjectId, ref: 'Display' }],
     images:[{ type: mongoose.Schema.Types.ObjectId, ref: 'Image' }],
-    resolution: { type: mongoose.Schema.Types.ObjectId, ref: 'Resolution' },
+    screen: { type: mongoose.Schema.Types.ObjectId, ref: 'Screen' },
     userGroup: { type: mongoose.Schema.Types.ObjectId, ref: 'UserGroup' },
     created_by: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     updated_by: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }

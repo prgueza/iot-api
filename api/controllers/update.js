@@ -9,13 +9,13 @@ const UserGroup = require('../models/userGroup');
 /* GET */
 exports.update = (req, res, next) => {
 
+  console.log(req.AuthData);
+
   var old_devices = [];
   var new_devices = [];
   var data = [];
   var errors = [];
   var requests = [];
-
-  console.log(req.body.data);
 
   var filteredData = [];
   var gateways_ips = [];
@@ -72,7 +72,9 @@ exports.update = (req, res, next) => {
           }});
           return Device.bulkWrite(bulk_ops);
         })
-        .then(() => Device.find({userGroup: req.body.data.userGroup._id})
+        .then(() => {
+          var query = !req.AuthData.admin ? { userGroup: req.AuthData.userGroup } : {} // Only restrict search if the user isn't admin
+          Device.find(query)
           .select('_id url name description mac found batt rssi initcode screen gateway created_at updated_at')
           .populate('gateway', '_id name description mac url')
           .exec()
@@ -83,7 +85,7 @@ exports.update = (req, res, next) => {
                 return doc;
               })
           )})
-        )
+        })
      })
     })
     .catch(err => {
