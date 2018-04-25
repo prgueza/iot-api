@@ -1,10 +1,15 @@
-const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose')
+const bcrypt = require('bcrypt')
+const jwt = require('jsonwebtoken')
 
 /* DATA MODELS */
-const User = require('../models/user.js');
-const UserGroup = require('../models/userGroup.js');
+const User = require('../models/user.js')
+const UserGroup = require('../models/userGroup.js')
+const Display = require('../models/display.js')
+const Image = require('../models/image.js')
+const Group = require('../models/group.js')
+const Device = require('../models/device.js')
+const Screen = require('../models/screen.js')
 
 /* GET ALL */
 exports.users_get_all = (req, res, next) => {
@@ -13,29 +18,29 @@ exports.users_get_all = (req, res, next) => {
     .populate('userGroup', '_id url name')
     .exec()
     .then(docs => {
-      setTimeout(() => { res.status(200).json(docs) }, 0);
+      setTimeout(() => { res.status(200).json(docs) }, 0)
     })
     .catch(err => {
-      res.status(500).json({error: err});
-    });
+      res.status(500).json({error: err})
+    })
 }
 
 /* GET ONE */
 exports.users_get_one = (req, res, next) => {
-  const id = req.params.id;
+  const id = req.params.id
   User.findById(id)
     .select('_id url name login password email created_at updated_at admin')
     .exec()
     .then(doc => {
       if (doc) {
-        res.status(200).json(doc);
+        res.status(200).json(doc)
       } else {
-        res.status(404).json({message: 'No valid entry found for provided id'});
+        res.status(404).json({message: 'No valid entry found for provided id'})
       }
     })
     .catch(err => {
-      res.status(500).json({error: err});
-    });
+      res.status(500).json({error: err})
+    })
 }
 
 /* SIGN UP */
@@ -46,15 +51,15 @@ exports.user_signup = (req, res, next) => {
       if(user.length >= 1){
         return res.status(409).json({
           message: 'Login exists'
-        });
+        })
       } else {
         bcrypt.hash(req.body.password, 10, (err, hash) => {
           if (err) {
             return res.status(500).json({
               error: err
-            });
+            })
           } else {
-            const _id = new mongoose.Types.ObjectId();
+            const _id = new mongoose.Types.ObjectId()
             const user = new User({
               _id: _id,
               url: process.env.API_URL + 'users/' + _id,
@@ -64,7 +69,7 @@ exports.user_signup = (req, res, next) => {
               admin: req.body.admin,
               userGroup: req.body.userGroup || undefined,
               password: hash,
-            });
+            })
             user
               .save()
               .then(() => {
@@ -74,16 +79,16 @@ exports.user_signup = (req, res, next) => {
               })
               .then(result => { res.status(201).json({
                 message: 'User created'
-                });
+                })
               })
               .catch(err => { res.status(500).json({
                   error: err
-                });
+                })
               })
           }
-        });
+        })
       }
-    });
+    })
 }
 
 /* LOGIN */
@@ -99,7 +104,7 @@ exports.user_login = (req, res, next) => {
       if (!user) { // not found
         return res.status(401).json({
           message: 'Auth failed'
-        });
+        })
       }
       // found => check if password is correct
       bcrypt.compare(req.body.password, user.password, (err, result) => {
@@ -107,7 +112,7 @@ exports.user_login = (req, res, next) => {
         if (err) {
           return res.status(401).json({
             message: 'Auth failed'
-          });
+          })
         }
         if (result) { // passowrd matches!
           // create token
@@ -123,94 +128,69 @@ exports.user_login = (req, res, next) => {
             { // options
               expiresIn: "1h"
             }
-          );
+          )
 
-          UserGroup.findById(user.userGroup._id)
-            .select('_id url name displays images devices')
-            .populate('displays', '_id url name description tags created_at updated_at')
-            .populate('images', '_id url name description tags created_at updated_at')
-            .populate('groups', '_id url name description tags created_at updated_at')
-            .populate({
-              path: 'devices',
-              select: '_id url name description found mac batt rssi initcode screen gateway created_at updated_at',
-              populate: [{
-                path: 'gateway',
-                select: '_id url name location created_at updated_at'
-              },{
-                path: 'display',
-                select: '_id url name created_at updated_at'
-              }]
+          Promise.all([
+            Display.find({userGroup: user.userGroup._id}).select('_id url name description tags updated_at created_at').exec(),
+            Image.find({userGroup: user.userGroup._id}).select('_id url name description tags updated_at created_at').exec(),
+            Group.find({userGroup: user.userGroup._id}).select('_id url name description tags updated_at created_at').exec(),
+            Device.find({userGroup: user.userGroup._id}).select('_id url name description display updated_at created_at').populate('display', '_id url name description').exec(),
+            Screen.find({}).select('_id url name').exec()
+          ])
+          .then((data) => {
+            return res.status(200).json({
+              message: 'Auth Successful',
+              token: token,
+              user: {
+                _id: user._id,
+                url: user.url,
+                name: user.name,
+                admin: user.admin,
+                created_at: user.created_at,
+                updated_at: user.updated_at
+              },
+              data: {
+                displays: data[0],
+                images: data[1],
+                groups: data[2],
+                devices: data[3]
+              }
             })
-            .exec()
-            .then((userGroup) => {
-              return res.status(200).json({
-                message: 'Auth Successful',
-                token: token,
-                user: {
-                  _id: user._id,
-                  url: user.url,
-                  name: user.name,
-                  userGroup: user.userGroup, // TODO: won't be used later on
-                  admin: user.admin,
-                  created_at: user.created_at,
-                  updated_at: user.updated_at
-                },
-                data: userGroup
-              });
-            })
+          })
         } else { // password doesn't match!
-          return res.status(401).json({
-            message: 'Auth failed'
-          });
+          return res.status(401).json({message: 'Auth failed'})
         }
-      });
+      })
     })
     .catch((err) => {
       res.status(500).json({
         message: 'Internal Server Error',
         error: err
-      });
-    });
+      })
+    })
 }
 
 /* PUT */
 exports.user_update = (req, res, next) => {
-  const _id = req.params.id;
-  User
-    .update({ _id: _id }, { $set: req.body }, { new: true })
-    .then(() => {
-      if (!req.body.userGroup){ // If there is no userGroup assignation
-        return User.update({ _id: _id }, { $unset: { userGroup: "" } }) // Unset userGroup from the document
-      } else { // If there is userGroup assignation
-        return UserGroup.updateMany({ users: _id }, { $pull: { users: _id } }) // pull the user id from all userGroups
-          .then(() => {
-            return UserGroup.update({ _id: mongoose.Types.ObjectId(req.body.userGroup) }, { $addToSet: { users: _id } }) // add the user id to the new userGroup
-          })
-      }
-    })
-    .then(result => {
-      res.status(200).json(result);
-    })
-    .catch(err => {
-      console.log(err);
-      res.status(500).json({error: err});
-    });
+  if (!req.AuthData.admin) {
+    res.status(401).json({message: 'Not allowed'})
+  } else {
+    User
+      .update({ _id: req.body._is }, { $set: req.body }, { new: true })
+      .then(result => res.status(200).json(result))
+      .catch(err => res.status(500).json({error: err}))
+  }
 }
 
 /* DELETE */
 exports.user_delete = (req, res, next) => {
-  const _id = req.params.id;
-  User
-    .remove({_id: _id}) // remove user document
-    .exec()
-    .then(() => { // remove user from the userGroup
-      return UserGroup.update({ users: _id }, { $pull: { users: _id }})
-    })
-    .then(result => {
-      res.status(200).json(result);
-    })
-    .catch(err => {
-      console.log(err);
-      res.status(500).json({error: err});
-    });
+  if (!req.AuthData.admin) {
+    res.status(401).json({message: 'Not allowed'})
+  } else {
+    User
+      .remove({_id: req.params.id}) // remove user document
+      .exec()
+      .then(result => res.status(200).json(result))
+      .catch(err => res.status(500).json({error: err}))
+  }
 }

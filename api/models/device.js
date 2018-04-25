@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require('mongoose')
 
 const deviceSchema = mongoose.Schema({
     _id: mongoose.Schema.Types.ObjectId,
@@ -16,6 +16,6 @@ const deviceSchema = mongoose.Schema({
     userGroup: { type: mongoose.Schema.Types.ObjectId, ref: 'UserGroup' },
     gateway: { type: mongoose.Schema.Types.ObjectId, ref: 'Gateway' },
     updated_by: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-}, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } });
+}, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
 
-module.exports = mongoose.model('Device', deviceSchema);
+module.exports = mongoose.model('Device', deviceSchema)

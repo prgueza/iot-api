@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require('mongoose')
 
 const locationSchema = mongoose.Schema({
     _id: mongoose.Schema.Types.ObjectId,
@@ -7,6 +7,6 @@ const locationSchema = mongoose.Schema({
     description: { type: String, default: 'Sin descripción' },
     created_by: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     updated_by: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
-}, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } });
+}, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
 
-module.exports = mongoose.model('Location', locationSchema);
+module.exports = mongoose.model('Location', locationSchema)

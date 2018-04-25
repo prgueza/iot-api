@@ -2,7 +2,7 @@ const express = require('express')
 const router = express.Router()
 
 /* CONTROLLER */
-const ResolutionController = require('../controllers/resolutions.js')
+const ScreenController = require('../controllers/screens.js')
 const checkAuth = require('../middleware/check-auth')
 
 /* API GET */

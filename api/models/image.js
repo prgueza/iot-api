@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require('mongoose')
 
 const imageSchema = mongoose.Schema({
     _id: mongoose.Schema.Types.ObjectId,
@@ -13,10 +13,9 @@ const imageSchema = mongoose.Schema({
     tags: [String],
     displays:[{ type: mongoose.Schema.Types.ObjectId, ref: 'Display' }],
     groups:[{ type: mongoose.Schema.Types.ObjectId, ref: 'Group' }],
-    screen: { type: mongoose.Schema.Types.ObjectId, ref: 'Screen' },
     userGroup: { type: mongoose.Schema.Types.ObjectId, ref: 'UserGroup' },
     created_by: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     updated_by: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
-}, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } });
+}, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
 
-module.exports = mongoose.model('Image', imageSchema);
+module.exports = mongoose.model('Image', imageSchema)
