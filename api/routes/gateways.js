@@ -1,20 +1,21 @@
-const express = require('express');
-const router = express.Router();
+const express = require('express')
+const router = express.Router()
 
 /* CONTROLLER */
-const GatewayController = require('../controllers/gateways.js');
+const GatewayController = require('../controllers/gateways.js')
+const checkAuth = require('../middleware/check-auth')
 
 /* API GET */
-router.get('/', GatewayController.gateways_get_all);
-router.get('/:id', GatewayController.gateways_get_one);
+router.get('/', checkAuth, GatewayController.gateways_get_all)
+router.get('/:id', checkAuth, GatewayController.gateways_get_one)
 
 /* API POST */
-router.post('/', GatewayController.gateway_create);
+router.post('/', checkAuth, GatewayController.gateway_create)
 
 /* API PUT */
-router.put('/:id', GatewayController.gateway_update);
+router.put('/:id', checkAuth, GatewayController.gateway_update)
 
 /* API DELETE */
-router.delete('/:id', GatewayController.gateway_delete);
+router.delete('/:id', checkAuth, GatewayController.gateway_delete)
 
-module.exports = router;
+module.exports = router

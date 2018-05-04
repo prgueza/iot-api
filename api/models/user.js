@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require('mongoose')
 
 const userSchema = mongoose.Schema({
     _id: mongoose.Schema.Types.ObjectId,
@@ -9,6 +9,6 @@ const userSchema = mongoose.Schema({
     email: { type: String, required: true },
     admin: { type: Boolean, default: false },
     userGroup: { type: mongoose.Schema.Types.ObjectId, ref: 'UserGroup' },
-}, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } });
+}, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
 
-module.exports = mongoose.model('User', userSchema);
+module.exports = mongoose.model('User', userSchema)
