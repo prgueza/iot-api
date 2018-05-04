@@ -33,7 +33,7 @@ exports.devices_get_all = (req, res, next) => {
 exports.devices_get_one = (req, res, next) => {
   const _id = req.params.id
   Device.findById(_id)
-  .select('_id url name description  mac mac found batt rssi initcode screen display userGroup created_by created_at updated_at')
+  .select('_id url name description mac mac found batt rssi initcode screen display userGroup created_by created_at updated_at')
   .populate('display', '_id url name')
   .populate('gateway', '_id url name')
   .populate('created_by', '_id url name')
@@ -43,7 +43,7 @@ exports.devices_get_one = (req, res, next) => {
   .populate('userGroup', '_id url name')
   .exec()
   .then(doc => {
-    if (doc && (req.AuthData.userGroup == doc.userGroup._id || req.AuthData.admin)) { // if the user can manage the device or if the user is an admin
+    if (doc && ((doc.userGroup && req.AuthData.userGroup == doc.userGroup._id) || req.AuthData.admin)) { // if the user can manage the device or if the user is an admin
       doc.url = process.env.API_URL + 'devices/' + doc._id
       res.status(200).json(doc)
     } else if (!req.AuthData.admin) { // if the user can't manage the device and isn't an admin

@@ -9,7 +9,9 @@ const Display = require('../models/display.js')
 const Image = require('../models/image.js')
 const Group = require('../models/group.js')
 const Device = require('../models/device.js')
+const Gateway = require('../models/gateway.js')
 const Screen = require('../models/screen.js')
+const Location = require('../models/location.js')
 
 /* GET ALL */
 exports.users_get_all = (req, res, next) => {
@@ -77,8 +79,14 @@ exports.user_signup = (req, res, next) => {
                   return UserGroup.update({ _id: mongoose.Types.ObjectId(req.body.userGroup) }, { $addToSet: { users: _id } })
                 }
               })
-              .then(result => { res.status(201).json({
-                message: 'User created'
+              .then(() => {
+                return User.findById(_id).select('_id url name login email admin userGroup').exec()
+              })
+              .then(doc => { res.status(201).json({
+                  message: 'Success at adding a user to the collection',
+                  success: true,
+                  resourceId: doc._id,
+                  resource: doc
                 })
               })
               .catch(err => { res.status(500).json({
@@ -130,14 +138,41 @@ exports.user_login = (req, res, next) => {
             }
           )
 
-          Promise.all([
+          var resources_array = user.admin ?
+          [
+            Device.find().select('_id url name description display updated_at created_at').populate('gateway', '_id url name').exec(),
+            Gateway.find().select('_id url name description ip port mac device updated_at created_at').exec(),
+            UserGroup.find().select('_id url name description').exec(),
+            Screen.find().select('_id url name description size screen_code color_profile').exec(),
+            Location.find().select('_id url name description').exec(),
+            User.find().select('_id url name login email userGroup').exec()
+          ] : [
             Display.find({userGroup: user.userGroup._id}).select('_id url name description tags updated_at created_at').exec(),
             Image.find({userGroup: user.userGroup._id}).select('_id url name description tags updated_at created_at').exec(),
             Group.find({userGroup: user.userGroup._id}).select('_id url name description tags updated_at created_at').exec(),
             Device.find({userGroup: user.userGroup._id}).select('_id url name description display updated_at created_at').populate('display', '_id url name description').exec(),
-            Screen.find({}).select('_id url name').exec()
-          ])
+            Screen.find().select('_id url name').exec()
+          ]
+
+          Promise.all(resources_array)
           .then((data) => {
+
+            var data_obj = user.admin ?
+            {
+              devices: data[0],
+              gateways: data[1],
+              userGroups: data[2],
+              screens: data[3],
+              locations: data[4],
+              users: data[5]
+            } : {
+              displays: data[0],
+              images: data[1],
+              groups: data[2],
+              devices: data[3],
+              screens: data[4]
+            }
+
             return res.status(200).json({
               message: 'Auth Successful',
               token: token,
@@ -149,12 +184,7 @@ exports.user_login = (req, res, next) => {
                 created_at: user.created_at,
                 updated_at: user.updated_at
               },
-              data: {
-                displays: data[0],
-                images: data[1],
-                groups: data[2],
-                devices: data[3]
-              }
+              data: data_obj
             })
           })
         } else { // password doesn't match!
@@ -176,8 +206,13 @@ exports.user_update = (req, res, next) => {
     res.status(401).json({message: 'Not allowed'})
   } else {
     User
-      .update({ _id: req.body._is }, { $set: req.body }, { new: true })
-      .then(result => res.status(200).json(result))
+      .findByIdAndUpdate({ _id: req.params.id }, { $set: req.body }, { new: true })
+      .then(doc => res.status(200).json({
+        message: 'Success at updating a user from the collection',
+        success: true,
+        resourceId: doc._id,
+        resource: doc
+      }))
       .catch(err => res.status(500).json({error: err}))
   }
 }
@@ -188,9 +223,15 @@ exports.user_delete = (req, res, next) => {
     res.status(401).json({message: 'Not allowed'})
   } else {
     User
-      .remove({_id: req.params.id}) // remove user document
+      .findByIdAndRemove({_id: req.params.id}) // remove user document
+      .select('_id url name login email userGroup created_at updated_at')
       .exec()
-      .then(result => res.status(200).json(result))
+      .then(doc => res.status(200).json({
+        message: 'Success at removing a user from the collection',
+        success: true,
+        resourceId: req.params.id,
+        resource: doc
+      }))
       .catch(err => res.status(500).json({error: err}))
   }
 }

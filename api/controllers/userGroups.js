@@ -47,14 +47,18 @@ exports.userGroup_create = (req, res, next) => {
 
     userGroup
       .save()
-      .then(result => {
+      .then(doc => {
         res.status(201).json({
-          message: 'UserGroup created',
-          createdUserGroup: {
-            _id: result._id,
-            name: result.name,
-            description: result.description,
-            url: result.url
+          message: 'Success at adding a new usergroup to the collection',
+          success: true,
+          resourceId: doc._id,
+          resource: {
+            _id: doc._id,
+            url: doc.url,
+            name: doc.name,
+            description: doc.description,
+            created_at: doc.created_at,
+            updated_at: doc.updated_at
           }
         })
       })
@@ -64,12 +68,19 @@ exports.userGroup_create = (req, res, next) => {
 
 /* PUT */
 exports.userGroup_update = (req, res, next) => {
-  if (!rea.AuthData.admin) {
+  if (!req.AuthData.admin) {
     res.status(401).json({message: 'Not allowed'})
   } else {
     UserGroup
-      .update({ _id: req.params.id }, { $set: req.body })
-      .then(result => res.status(200).json(result))
+      .findByIdAndUpdate({ _id: req.params.id }, { $set: req.body }, { new: true })
+      .select('_id url name description created_at updated_at')
+      .exec()
+      .then(doc => res.status(200).json({
+        message: 'Success at updating an usergroup from the collection',
+        success: true,
+        resourceId: req.params.id,
+        resource: doc
+      }))
       .catch(err => res.status(500).json({error: err}))
   }
 }
@@ -80,9 +91,15 @@ exports.userGroup_delete = (req, res, next) => {
     res.status(401).json({message: 'Not allowed'})
   } else {
     UserGroup
-      .remove({_id: req.params.id})
+      .findByIdAndRemove({_id: req.params.id})
+      .select('_id url name description created_at updated_at')
       .exec()
-      .then(result => res.status(200).json(result))
+      .then(doc => res.status(200).json({
+        message: 'Success at removing an usergroup from the collection',
+        success: true,
+        resourceId: req.params.id,
+        resource: doc
+      }))
       .catch(err => res.status(500).json({error: err}))
   }
 }

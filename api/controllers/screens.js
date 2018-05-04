@@ -43,17 +43,20 @@ exports.screen_create = (req, res, next) => {
 
     screen
       .save()
-      .then(result => {
+      .then(doc => {
         res.status(201).json({
-          message: 'Resolution created',
-          createdResolution: {
-            _id: result._id,
-            url: result.url
-            name: result.name,
-            description: result.description,
-            screen_code: result.screen_code,
-            color_profile: result.color_profile,
-            size: result.size,
+          message: 'Success at adding a screen from the collection',
+          success: true,
+          resourceId: doc._id,
+          resource: {
+            '_id': doc._id,
+            'url': doc.url,
+            'name': doc.name,
+            'description': doc.description,
+            'size': doc.size,
+            'screen_code': doc.screen_code,
+            'updated_at': doc.updated_at,
+            'created_at': doc.created_at,
           }
         })
       })
@@ -67,8 +70,13 @@ exports.screen_update = (req, res, next) => {
     res.status(401).json({message: 'Not allowed'})
   } else {
     Screen
-      .update({ _id: req.params.id }, { $set: req.body })
-      .then(result => res.status(200).json(result))
+      .findByIdAndUpdate({ _id: req.params.id }, { $set: req.body }, { new: true })
+      .then(doc => res.status(200).json({
+        message: 'Success at updating a screen from the collection',
+        success: true,
+        resourceId: req.params.id,
+        resource: doc
+      }))
       .catch(err => res.status(500).json({error: err}))
   }
 }
@@ -79,9 +87,14 @@ exports.screen_delete = (req, res, next) => {
     res.status(401).json({message: 'Not allowed'})
   } else {
     Screen
-      .remove({_id: req.params.id})
+      .findByIdAndRemove({_id: req.params.id})
       .exec()
-      .then(result => res.status(200).json(result))
+      .then(doc => res.status(200).json({
+        message: 'Success at removing a screen from the collection',
+        success: true,
+        resourceId: req.params.id,
+        resource: doc
+      }))
       .catch(err => res.status(500).json({error: err}))
   }
 }

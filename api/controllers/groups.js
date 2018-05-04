@@ -163,20 +163,23 @@ exports.group_delete = (req, res, next) => {
   const query = req.AuthData.admin ? { _id: _id } : { _id: _id, userGroup: req.AuthData.userGroup }
   // delete document from collection
   Group
-  .find(query)
-  .remove()
-  .exec()
-  // update displays involved
-  .then(() => { return Display.updateMany({ groups: _id }, { $pull: { groups: _id } }) }) // remove the group from all displays that have its ref
-  // update images involved
-  .then(() => { return Image.updateMany({ groups: _id }, { $pull: { groups: _id } }) }) // remove the group from all images that have its ref
-  // send response
-  .then((result) => {
-    res.status(200).json({
-      message: 'Success at removing a group from the collection',
-      success: true,
-      resourceId: _id
-    })
+  .findOneAndRemove(query).exec()
+  .then((doc) => {
+    if (doc) {
+      return Promise.all([
+        Display.updateMany({ groups: _id }, { $pull: { groups: _id } }),
+        Image.updateMany({ groups: _id }, { $pull: { groups: _id } })
+      ])
+      .then(() => {
+        res.status(200).json({
+          message: 'Success at removing a group from the collection',
+          success: true,
+          resourceId: _id
+        })
+      })
+    } else {
+      res.status(404).json({message: 'No valid entry found for provided id within the user group'})
+    }
   })
   // catch any errors
   .catch((err) => {

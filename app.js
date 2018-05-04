@@ -14,7 +14,7 @@ process.env.DEV = 'development';
 const displaysRoutes = require('./api/routes/displays');
 const imagesRoutes = require('./api/routes/images');
 const groupsRoutes = require('./api/routes/groups');
-const resolutionsRoutes = require('./api/routes/resolutions');
+const screensRoutes = require('./api/routes/screens');
 const locationsRoutes = require('./api/routes/locations');
 const usersRoutes = require('./api/routes/users');
 const gatewaysRoutes = require('./api/routes/gateways');
@@ -66,7 +66,7 @@ app.use((req, res, next) => {
 app.use('/displays', displaysRoutes);
 app.use('/images', imagesRoutes);
 app.use('/groups', groupsRoutes);
-app.use('/resolutions', resolutionsRoutes);
+app.use('/screens', screensRoutes);
 app.use('/locations', locationsRoutes);
 app.use('/users', usersRoutes);
 app.use('/gateways', gatewaysRoutes);
