@@ -5,28 +5,32 @@ const path = require( 'path' )
 const FormData = require( 'form-data' )
 const moment = require( 'moment' )
 const http = require( 'http' )
+
 /* DATA MODELS */
 const Display = require( '../models/display' )
 const Image = require( '../models/image' )
 const Device = require( '../models/device' )
 const Gateway = require( '../models/gateway' )
 const UserGroup = require( '../models/userGroup' )
+
 var last_update
 var waiting = false
+
 /* GET */
 exports.update = ( req, res, next ) => {
   if ( last_update && moment()
     .diff( last_update, 'seconds' ) < process.env.LAST_UPDATE_TIMER ) { // if last update was recent send the data without updating
     // get devices that can be accessed by the user that sent the request
     var query = !req.AuthData.admin // Only restrict search if the user isn't admin
-      ? {
+      ?
+      {
         userGroup: req.AuthData.userGroup // get devices that belong to the userGroup the user belongs to
       } : {}
     Device.find( query )
       .select( '_id url name description mac found batt rssi initcode screen gateway created_at updated_at' )
       .populate( 'gateway', '_id name description mac url' )
       .exec()
-      .then( ( docs ) => res.status( 200 )
+      .then( docs => res.status( 200 )
         .json( docs ) )
   } else if ( waiting ) { // if another user is requesting the update
     res.status( 500 )
@@ -103,7 +107,8 @@ exports.update = ( req, res, next ) => {
               .then( () => {
                 // get devices that can be accessed by the user that sent the request
                 var query = !req.AuthData.admin // Only restrict search if the user isn't admin
-                  ? {
+                  ?
+                  {
                     userGroup: req.AuthData.userGroup // get devices that belong to the userGroup the user belongs to
                   } : {}
                 Device.find( query )
@@ -122,13 +127,16 @@ exports.update = ( req, res, next ) => {
               } )
           } )
       } )
-      .catch( err => res.status( 500 )
-        .json( { error: err } ) ) // catch and return any error
+      .catch( err => {
+        waiting = false // unblock
+        res.status( 500 )
+          .json( { error: err } )
+      } ) // catch and return any error
   }
 }
 exports.change_image = ( req, res, next ) => {
   // query for checking if the user can update the display
-  var device_query = !req.AuthData.admin ? {
+  var display_query = !req.AuthData.admin ? {
     _id: req.params.id,
     userGroup: req.AuthData.userGroup
   } : {
@@ -143,17 +151,25 @@ exports.change_image = ( req, res, next ) => {
   }
   // execute both querys (if both resources are found it means the op is posible)
   Promise.all( [
-    Device.find( device_query )
-      .select( 'gateway' )
-      .populate( 'gateway', 'url sync_url mac' )
+    Display.findOne( display_query )
+      .select( 'device' )
+      .populate( {
+        path: 'device',
+        select: '_id active_image gateway',
+        populate: [ {
+          path: 'gateway',
+          select: '_id ip port mac sync_url '
+        } ]
+      } )
       .exec(),
-    Image.find( image_query )
+    Image.findOne( image_query )
       .select( 'path' )
       .exec()
   ] )
     .then( doc => {
-      var gateway = doc[ 0 ][ 0 ].gateway // get gateway data for uploading the image
-      var file_path = doc[ 1 ][ 0 ].path // get the path for the image file
+      console.log( doc )
+      var gateway = doc[ 0 ].device.gateway // get gateway data for uploading the image
+      var file_path = doc[ 1 ].path // get the path for the image file
       fs.readFile( file_path, ( err, data ) => {
         if ( err ) // if error while reading the file
           throw err
@@ -167,13 +183,13 @@ exports.change_image = ( req, res, next ) => {
           } )
           .then( response => { // perform the request
             if ( response.status == 200 ) { // with success
-              Device.findOneAndUpdate( device_query, { // update the display data and set the image as active
+              Display.findOneAndUpdate( display_query, { // update the display data and set the image as active
                   $set: {
                     active_image: req.body.image_id
                   }
                 }, { new: true } )
-                .select( '_id url name description display active_image created_at updated_at' )
-                .populate( 'display', '_id url name description' )
+                .select( '_id url name description device created_at updated_at' )
+                .populate( 'device', '_id url name description' )
                 .then( doc => { //return new resource and select some fields
                   if ( doc ) { // if the resource was found and updated send response with the API format (message, succes, resourceId, resource)
                     res.status( 201 )
