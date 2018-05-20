@@ -67,7 +67,7 @@ exports.devices_get_one = ( req, res, next ) => {
 
 /* PUT */
 exports.device_update = ( req, res, next ) => {
-	if ( !req.checkAuth.admin ) {
+	if ( !req.AuthData.admin ) {
 		res.status( 401 )
 			.json( { error: 'Not allowed' } )
 	} else {
@@ -110,17 +110,18 @@ exports.device_update = ( req, res, next ) => {
 			} ) // add the display to the selected userGroup
 			// send response
 			.then( res => Device.findById( _id )
+				.select( '_id url name description gateway mac found batt rssi screen initcode createdAt updatedAt' )
+				.populate( 'gateway', '_id url name mac' )
 				.exec() )
 			.then( doc => {
-				const result = {
-					_id: doc._id,
-					url: doc.url,
-					name: doc.name,
-					description: doc.description,
-					createdAt: doc.createdAt
-				}
 				res.status( 200 )
-					.json( { message: 'Success at updating a device from the collection', success: true, result: result } )
+					.json( {
+						message: 'Success at adding a new display to the collection',
+						notify: '(' + doc.initcode + ') - ' + doc.name + ' actualizado',
+						success: true,
+						resourceId: _id,
+						resource: doc,
+					} )
 			} )
 			// catch any errors
 			.catch( err => {

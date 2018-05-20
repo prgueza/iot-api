@@ -88,6 +88,7 @@ exports.userGroup_update = ( req, res, next ) => {
 			.then( doc => res.status( 200 )
 				.json( {
 					message: 'Success at updating an usergroup from the collection',
+					notify: doc.name + ' actualizado',
 					success: true,
 					resourceId: req.params.id,
 					resource: doc

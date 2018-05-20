@@ -39,14 +39,6 @@ exports.group_get_one = ( req, res, next ) => {
 		.populate( 'resolution', '_id url name size' )
 		.populate( 'createdBy', '_id url name' )
 		.populate( 'updatedBy', '_id url name' )
-		.populate( {
-			path: 'overlayImage',
-			select: 'image size xCoordinate yCoordinate',
-			populate: {
-				path: 'image',
-				select: '_ir url name src'
-			}
-		} )
 		.exec()
 		.then( doc => {
 			if ( doc ) { // if the group is found
@@ -58,6 +50,7 @@ exports.group_get_one = ( req, res, next ) => {
 			}
 		} )
 		.catch( err => { // catch any errors
+			console.log( err )
 			res.status( 500 )
 				.json( {
 					message: 'Internal Server Error',
@@ -105,6 +98,7 @@ exports.group_create = ( req, res, next ) => {
 			res.status( 201 )
 				.json( {
 					message: 'Success at adding a new group to the collection',
+					notify: `Se ha creado un nuevo grupo: '${doc.name}'`,
 					success: true,
 					resourceId: doc._id,
 					resource: doc
@@ -123,63 +117,49 @@ exports.group_create = ( req, res, next ) => {
 
 /* PUT */
 exports.group_update = ( req, res, next ) => {
-	// Get the id for the group of users that is allowed to update this resource
-	const userGroup_id = ''
-	Group.findById( req.body._id )
-		.select( 'userGroup', _id )
-		.exec()
-		.then( ( doc ) => {
-			if ( doc ) userGroup_id = doc.userGroup
+	// get the id from the request for the query
+	const _id = req.params.id
+	// get displays and images ids from the request
+	const { displays, images, userGroup } = req.body
+	// create displays and images ids from data received
+	const d_ids = displays && displays.map( ( d ) => mongoose.Types.ObjectId( d ) )
+	const i_ids = images && images.map( ( i ) => mongoose.Types.ObjectId( i ) )
+	const u_id = mongoose.Types.ObjectId( userGroup )
+	// update the group based on its id
+	Group
+		// update group
+		.findOneAndUpdate( { _id: _id, userGroup: req.AuthData.userGroup }, { $set: req.body } )
+		// update displays involved
+		.then( () => { return Display.updateMany( { groups: _id }, { $unset: { group: undefined } } ) } ) // remove the group from all displays that have its ref
+		.then( () => { return Display.updateMany( { _id: { $in: d_ids } }, { group: _id } ) } ) // add the group to selected displays
+		// update images involved
+		.then( () => { return Image.updateMany( { groups: _id }, { $pull: { groups: _id } } ) } ) // remove the group from all images that have its ref
+		.then( () => { return Image.updateMany( { _id: { $in: i_ids } }, { $addToSet: { groups: _id } } ) } ) // add the group to selected images
+		// update userGroups involved
+		.then( () => { return UserGroup.updateMany( { groups: _id }, { $pull: { groups: _id } } ) } ) // remove the group from all userGroups that have its ref
+		.then( () => { return UserGroup.update( { _id: u_id }, { $addToSet: { groups: _id } } ) } ) // add the group to selected userGroup
+		// send response
+		.then( ( res ) => Group.findById( _id )
+			.select( '_id url name description tags updatedAt createdAt' )
+			.exec() )
+		.then( doc => {
+			res.status( 201 )
+				.json( {
+					message: 'Success at updating a group from the collection',
+					success: true,
+					resourceId: doc._id,
+					resource: doc
+				} )
 		} )
-	// if the user is not allowed to update this resource
-	if ( !AuthData.admin && AuthData.userGroup != userGroup_id ) {
-		res.status( 401 )
-			.json( { error: 'Not allowed' } )
-	} else {
-		// get the id from the request for the query
-		const _id = req.params.id
-		// get displays and images ids from the request
-		const { displays, images, userGroup } = req.body
-		// create displays and images ids from data received
-		const d_ids = displays && displays.map( ( d ) => mongoose.Types.ObjectId( d ) )
-		const i_ids = images && images.map( ( i ) => mongoose.Types.ObjectId( i ) )
-		const u_id = mongoose.Types.ObjectId( userGroup )
-		// update the group based on its id
-		Group
-			// update group
-			.update( { _id: _id }, { $set: req.body } )
-			// update displays involved
-			.then( () => { return Display.updateMany( { groups: _id }, { $unset: { group: undefined } } ) } ) // remove the group from all displays that have its ref
-			.then( () => { return Display.updateMany( { _id: { $in: d_ids } }, { group: _id } ) } ) // add the group to selected displays
-			// update images involved
-			.then( () => { return Image.updateMany( { groups: _id }, { $pull: { groups: _id } } ) } ) // remove the group from all images that have its ref
-			.then( () => { return Image.updateMany( { _id: { $in: i_ids } }, { $addToSet: { groups: _id } } ) } ) // add the group to selected images
-			// update userGroups involved
-			.then( () => { return UserGroup.updateMany( { groups: _id }, { $pull: { groups: _id } } ) } ) // remove the group from all userGroups that have its ref
-			.then( () => { return UserGroup.update( { _id: u_id }, { $addToSet: { groups: _id } } ) } ) // add the group to selected userGroup
-			// send response
-			.then( ( res ) => Group.findById( _id )
-				.select( '_id url name description tags updatedAt createdAt' )
-				.exec() )
-			.then( doc => {
-				res.status( 201 )
-					.json( {
-						message: 'Success at updating a group from the collection',
-						success: true,
-						resourceId: doc._id,
-						resource: doc
-					} )
-			} )
-			// catch any errors
-			.catch( err => {
-				console.log( err )
-				res.status( 500 )
-					.json( {
-						message: 'Internal Server Error',
-						error: err
-					} )
-			} )
-	}
+		// catch any errors
+		.catch( err => {
+			console.log( err )
+			res.status( 500 )
+				.json( {
+					message: 'Internal Server Error',
+					error: err
+				} )
+		} )
 }
 
 /* DELETE */

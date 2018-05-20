@@ -172,10 +172,12 @@ exports.user_login = ( req, res, next ) => {
 						.exec(),
             User.find()
 						.select( '_id url name login email userGroup' )
+						.populate( 'userGroup', '_id url name' )
 						.exec()
           ] : [
             Display.find( { userGroup: user.userGroup._id } )
-						.select( '_id url name description tags updatedAt createdAt' )
+						.select( '_id url name description tags device updatedAt createdAt' )
+						.populate( 'device', '_id url name initcode' )
 						.exec(),
             Image.find( { userGroup: user.userGroup._id } )
 						.select( '_id url name description tags src updatedAt createdAt' )
@@ -248,9 +250,12 @@ exports.user_update = ( req, res, next ) => {
 	} else {
 		User
 			.findByIdAndUpdate( { _id: req.params.id }, { $set: req.body }, { new: true } )
+			.select( '_id url name login email admin userGroup createdAt updatedAt' )
+			.populate( 'userGroup', '_id url name' )
 			.then( doc => res.status( 200 )
 				.json( {
 					message: 'Success at updating a user from the collection',
+					notify: 'Datos de ' + doc.name + ' actualizados',
 					success: true,
 					resourceId: doc._id,
 					resource: doc

@@ -82,6 +82,7 @@ exports.screen_update = ( req, res, next ) => {
 			.then( doc => res.status( 200 )
 				.json( {
 					message: 'Success at updating a screen from the collection',
+					notify: 'Pantalla \'' + doc.name + '\' actualizada',
 					success: true,
 					resourceId: req.params.id,
 					resource: doc

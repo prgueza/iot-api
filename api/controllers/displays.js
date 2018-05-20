@@ -44,20 +44,13 @@ exports.displays_get_one = ( req, res, next ) => {
 		userGroup: req.AuthData.userGroup
 	}
 	Display.findOne( query )
-		.select( '_id url name description category location tags images group userGroup createdBy createdAt updatedAt' )
+		.select( '_id url name description category location tags images group userGroup overlayImage imageFromGroup createdBy createdAt updatedAt' )
 		.populate( 'activeImage', '_id url name src description createdAt' )
 		.populate( 'userGroup', '_id url name' )
-		.populate( {
-			path: 'overlayImage',
-			select: 'image size xCoordinate yCoordinate',
-			populate: {
-				path: 'image',
-				select: '_id url name src'
-			}
-		} )
+		.populate( 'overlayImage.image', '_id url name src' )
 		.populate( {
 			path: 'device',
-			select: '_id url name resolution description activeImage',
+			select: '_id url name resolution description activeImage initcode',
 			populate: [ {
 				path: 'resolution',
 				select: '_id url name size'
@@ -70,8 +63,15 @@ exports.displays_get_one = ( req, res, next ) => {
 				}
       } ]
 		} )
+		.populate( {
+			path: 'group',
+			select: '_id url name description activeImage createdAt',
+			populate: {
+				path: 'activeImage',
+				select: '_id url name src'
+			}
+		} )
 		.populate( 'images', '_id url name description src createdAt' )
-		.populate( 'group', '_id url name description createdAt' )
 		.populate( 'createdBy', '_id url name' )
 		.populate( 'updatedBy', '_id url name' )
 		.exec()
@@ -207,7 +207,7 @@ exports.display_update = ( req, res, next ) => {
 	} = req.body
 	// create displays and images ids from data received
 	const i_ids = images && images.map( image => mongoose.Types.ObjectId( image ) )
-	const g_id = groups && mongoose.Types.ObjectId( group )
+	const g_id = group && mongoose.Types.ObjectId( group )
 	const d_id = device && mongoose.Types.ObjectId( device )
 	// save for response
 	var doc
@@ -278,7 +278,7 @@ exports.display_update = ( req, res, next ) => {
 						Promise.all( updatePromises )
 					} )
 					.then( () => Promise.all( [
-            Display.find( mongoose.Types.ObjectId( _id ) )
+            Display.findOne( mongoose.Types.ObjectId( _id ) )
             .select( '_id url name description tags device updatedAt createdAt' )
 						.populate( 'device', '_id url name initcode' )
             .exec(),
@@ -294,9 +294,10 @@ exports.display_update = ( req, res, next ) => {
 							res.status( 201 )
 								.json( {
 									message: 'Succes at updating a display from the collection',
+									notify: `'${doc[0].name}' actualizado`,
 									success: true,
 									resourceId: _id,
-									resource: doc[ 0 ][ 0 ],
+									resource: doc[ 0 ],
 									devices: doc[ 1 ]
 								} )
 						}, 0 )

@@ -6,7 +6,7 @@ const groupSchema = mongoose.Schema( {
 	name: { type: String, required: true },
 	description: { type: String, default: 'Sin descripcion' },
 	tags: [ String ],
-	active_image: { type: mongoose.Schema.Types.ObjectId, ref: 'Image', default: null },
+	activeImage: { type: mongoose.Schema.Types.ObjectId, ref: 'Image', default: null },
 	overlayImage: {
 		image: { type: mongoose.Schema.Types.ObjectId, ref: 'Image' },
 		size: { type: Number, default: 100 },
