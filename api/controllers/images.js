@@ -149,66 +149,104 @@ exports.image_create = ( req, res, next ) => {
 }
 
 /* PUT */
-exports.image_update = ( req, res, next ) => { // get id from request parameters
+/* UPDATE (PUT) */
+exports.image_update = ( req, res, next ) => {
+	// get the id from the request for the query
 	const _id = req.params.id
-	const query = req.AuthData.admin ? {
-		_id: _id
-	} : {
-		_id: _id,
-		userGroup: req.AuthData.userGroup
-	}
-	// delete document from collection
-	// remove display
-	Display.find( query )
-		.remove()
-		.exec()
-		.then( ( res ) => result = res )
-		// update images involved
-		.then( () => {
-			return Image.updateMany( {
-				displays: _id
-			}, {
-				$pull: {
-					displays: _id
-				}
-			} )
-		} ) // remove the display from all images that have its ref
-		// update groups involved
-		.then( () => {
-			return Group.updateMany( {
-				displays: _id
-			}, {
-				$pull: {
-					displays: _id
-				}
-			} )
-		} ) // remove the display from all groups that have its ref
-		// update userGroups involved
-		.then( () => {
-			return Device.updateMany( {
-				displays: _id
-			}, {
-				$pull: {
-					displays: _id
-				}
-			} )
-		} ) // remove the display from all devices that have its ref
-		// send response
-		.then( () => Device.find( { userGroup: req.AuthData.userGroup } )
-			.select( '_id url name description display updatedAt createdAt' )
-			.populate( 'display', '_id url name description' )
-			.exec() )
+	// get displays and images ids from the request
+	const {
+		displays,
+		groups
+	} = req.body
+	// create displays and images ids from data received
+	const d_ids = displays && displays.map( display => mongoose.Types.ObjectId( display ) )
+	const g_ids = groups && groups.map( group => mongoose.Types.ObjectId( group ) )
+	// save for response
+	var doc
+	Image.findOneAndUpdate( { // update display
+			_id: _id,
+			userGroup: req.AuthData.userGroup
+		}, {
+			$set: req.body
+		}, {
+			new: true
+		} )
 		.then( ( doc ) => {
-			res.status( 200 )
-				.json( { message: 'Success at removing a display from the collection', success: true, resourceId: _id, devices: doc } )
+			if ( doc ) {
+				var updatePromises = []
+				if ( d_ids ) updatePromises.push( Display.updateMany( {
+						images: _id
+					}, {
+						$pull: {
+							images: _id
+						}
+					} )
+					.exec() )
+				if ( g_ids ) updatePromises.push( Group.updateMany( {
+						images: _id
+					}, {
+						$pull: {
+							images: _id
+						}
+					} )
+					.exec() )
+				Promise.all( updatePromises )
+					.then( () => {
+						updatePromises = []
+						if ( d_ids ) updatePromises.push( Display.updateMany( {
+								_id: {
+									$in: d_ids
+								}
+							}, {
+								$addToSet: {
+									images: _id
+								}
+							} )
+							.exec() )
+						if ( g_ids ) updatePromises.push( Group.updateMany( {
+								_id: {
+									$in: g_ids
+								}
+							}, {
+								$addToSet: {
+									images: _id
+								}
+							} )
+							.exec() )
+						Promise.all( updatePromises )
+					} )
+					.then( () =>
+						Image.findOne( mongoose.Types.ObjectId( _id ) )
+						.select( '_id url name description tags updatedAt createdAt' )
+						.exec()
+					)
+					.then( ( doc ) => {
+						setTimeout( () => {
+							res.status( 201 )
+								.json( {
+									message: 'Succes at updating a display from the collection',
+									notify: `'${doc.name}' actualizado`,
+									success: true,
+									resourceId: _id,
+									resource: doc,
+								} )
+						}, 0 )
+					} )
+			} else {
+				res.status( 401 )
+					.json( {
+						error: 'No valid entry found for provided id within the user group'
+					} )
+			}
 		} )
 		.catch( err => {
 			console.log( err )
 			res.status( 500 )
-				.json( { error: err } )
+				.json( {
+					error: err
+				} )
 		} )
 }
-
 /* DELETE */
 exports.image_delete = ( req, res, next ) => { // get id from request parameters
 	const _id = req.params.id

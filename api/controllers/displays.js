@@ -65,11 +65,14 @@ exports.displays_get_one = ( req, res, next ) => {
 		} )
 		.populate( {
 			path: 'group',
-			select: '_id url name description activeImage createdAt',
-			populate: {
+			select: '_id url name description activeImage overlayImage createdAt',
+			populate: [ {
 				path: 'activeImage',
 				select: '_id url name src'
-			}
+			}, {
+				path: 'overlayImage.image',
+				select: '_id url name src'
+			} ]
 		} )
 		.populate( 'images', '_id url name description src createdAt' )
 		.populate( 'createdBy', '_id url name' )

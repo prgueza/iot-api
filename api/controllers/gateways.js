@@ -69,14 +69,11 @@ exports.gateway_create = ( req, res, next ) => {
 		const { name, description, location, createdBy, mac, ip, port } = req.body
 		// create a new id for the gateway
 		const _id = new mongoose.Types.ObjectId()
-		// create devices ids from data received
-		const d_ids = devices && devices.map( ( d ) => mongoose.Types.ObjectId( d ) )
 		// build the new gateway from its model
 		const gateway = new Gateway( {
 			_id: _id,
 			url: process.env.API_URL + 'gateways/' + _id,
 			sync: 'http://' + ip + ':' + port + '/devices',
-			id: id,
 			name: name,
 			description: description,
 			location: location,
@@ -106,7 +103,8 @@ exports.gateway_create = ( req, res, next ) => {
 					.json( {
 						message: 'Success at adding a new gateway to the collection',
 						success: true,
-						result: result
+						resourceId: _id,
+						resource: result
 					} )
 			} )
 			// catch any errors

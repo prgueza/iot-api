@@ -7,18 +7,18 @@ const UserGroup = require( '../models/userGroup.js' )
 
 /* GET ALL */
 exports.userGroups_get_all = ( req, res, next ) => {
-	if ( !req.AuthData.admin ) {
-		res.status( 401 )
-			.json( { message: 'Not allowed' } )
-	} else {
-		UserGroup.find()
-			.select( '_id url name description createdAt' )
-			.exec()
-			.then( docs => res.status( 200 )
-				.json( docs ) )
-			.catch( err => res.status( 500 )
-				.json( { error: err } ) )
-	}
+	// if ( !req.AuthData.admin ) {
+	// 	res.status( 401 )
+	// 		.json( { message: 'Not allowed' } )
+	// } else {
+	UserGroup.find()
+		.select( '_id url name description createdAt' )
+		.exec()
+		.then( docs => res.status( 200 )
+			.json( docs ) )
+		.catch( err => res.status( 500 )
+			.json( { error: err } ) )
+	//}
 }
 
 /* GET ONE */

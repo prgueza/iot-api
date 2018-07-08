@@ -32,8 +32,9 @@ exports.group_get_one = ( req, res, next ) => {
 	const _id = req.params.id
 	const query = req.AuthData.admin ? { _id: _id } : { _id: _id, userGroup: req.AuthData.userGroup }
 	Group.findOne( query )
-		.select( '_id url name description createdAt createdBy updatedAt updatedBy activeImage images displays tags resolution' )
+		.select( '_id url name description createdAt createdBy updatedAt updatedBy activeImage overlayImage images displays tags resolution' )
 		.populate( 'activeImage', '_id url src name description createdAt tags_total' )
+		.populate( 'overlayImage.image', '_id url name src' )
 		.populate( 'images', '_id url src name description createdAt tags_total' )
 		.populate( 'displays', '_id url name description createdAt tags_total' )
 		.populate( 'resolution', '_id url name size' )

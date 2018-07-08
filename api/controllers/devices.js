@@ -88,32 +88,13 @@ exports.device_update = ( req, res, next ) => {
 			}, {
 				$set: req.body
 			}, { new: true } )
-			// update userGroups involved
-			.then( () => {
-				return UserGroup.updateMany( {
-					devices: _id
-				}, {
-					$pull: {
-						devices: _id
-					}
-				} )
-			} )
-			. // remove the display from all userGroups that have its ref
-		then( () => {
-				return UserGroup.update( {
-					_id: u_id
-				}, {
-					$addToSet: {
-						devices: _id
-					}
-				} )
-			} ) // add the display to the selected userGroup
 			// send response
 			.then( res => Device.findById( _id )
 				.select( '_id url name description gateway mac found batt rssi screen initcode createdAt updatedAt' )
 				.populate( 'gateway', '_id url name mac' )
 				.exec() )
 			.then( doc => {
+				doc.url = 'http://localhost:4000/devices/' + doc._id //// HACK: hotfix
 				res.status( 200 )
 					.json( {
 						message: 'Success at adding a new display to the collection',
@@ -134,33 +115,35 @@ exports.device_update = ( req, res, next ) => {
 
 /* DELETE */
 exports.device_delete = ( req, res, next ) => {
-	// TODO: what happens when you delete a non-configured display
-	if ( !req.AuthData.admin ) {
-		res.status( 401 )
-			.json( { error: 'Not allowed' } )
-	} else {
-		const _id = req.params.id
-		Device.remove( { _id: _id } )
-			.then( ( res ) => result = res )
-			// update userGroups involved
-			.then( () => {
-				return UserGroup.updateMany( {
-					devices: _id
-				}, {
-					$pull: {
-						devices: _id
-					}
-				} )
-			} ) // remove the device from all userGroups that have its ref
-			// send response
-			.then( result => {
+	// get id from request parameters
+	const _id = req.params.id
+	if ( req.AuthData.admin ) {
+		Device.findOneAndRemove( _id )
+			.select( '_id url name description createdAt updatedAt' )
+			.exec()
+			.then( doc => {
+				if ( doc.display ) {
+					Display.findOneAndRemove( doc.display._id )
+				}
+				return ( doc )
+			} )
+			.then( doc => {
 				res.status( 200 )
-					.json( result )
+					.json( {
+						message: 'Success at removing a display from the collection',
+						success: true,
+						resourceId: _id,
+						devices: doc
+					} )
 			} )
 			.catch( err => {
 				console.log( err )
 				res.status( 500 )
-					.json( { error: err } )
+					.json( {
+						error: err
+					} )
 			} )
+	} else {
+		res.status( 401 ).json( { message: 'Forbidden' } )
 	}
 }

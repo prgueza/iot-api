@@ -16,7 +16,7 @@ const Location = require( '../models/location.js' )
 /* GET ALL */
 exports.users_get_all = ( req, res, next ) => {
 	User.find()
-		.select( '_id id url name login email createdAt updatedAt admin userGroup' )
+		.select( '_id url name login email createdAt updatedAt admin userGroup' )
 		.populate( 'userGroup', '_id url name' )
 		.exec()
 		.then( docs => {
@@ -155,8 +155,8 @@ exports.user_login = ( req, res, next ) => {
 
 					var resources_array = user.admin ? [
             Device.find()
-						.select( '_id url name description display updatedAt createdAt' )
-						.populate( 'gateway', '_id url name' )
+						.select( '_id url name description initcode gateway updatedAt' )
+						.populate( 'gateway', '_id ulr name' )
 						.exec(),
             Gateway.find()
 						.select( '_id url name description ip port mac device updatedAt createdAt' )
@@ -171,7 +171,7 @@ exports.user_login = ( req, res, next ) => {
 						.select( '_id url name description' )
 						.exec(),
             User.find()
-						.select( '_id url name login email userGroup' )
+						.select( '_id url name login email admin userGroup' )
 						.populate( 'userGroup', '_id url name' )
 						.exec()
           ] : [
@@ -198,7 +198,10 @@ exports.user_login = ( req, res, next ) => {
 						.then( ( data ) => {
 
 							var data_obj = user.admin ? {
-								devices: data[ 0 ],
+								devices: data[ 0 ].map( ( d ) => {
+									d.url = 'http://localhost:4000/devices/' + d._id
+									return d
+								} ), //// HACK: Hotfix
 								gateways: data[ 1 ],
 								userGroups: data[ 2 ],
 								screens: data[ 3 ],
@@ -247,6 +250,33 @@ exports.user_update = ( req, res, next ) => {
 	if ( !req.AuthData.admin ) {
 		res.status( 401 )
 			.json( { message: 'Not allowed' } )
+	} else if ( req.body.password ) {
+		bcrypt.hash( req.body.password, 10, ( err, hash ) => {
+			if ( err ) {
+				return res.status( 500 )
+					.json( {
+						error: err
+					} )
+			} else {
+				req.body.password = hash
+				console.log( req.body )
+				User
+					.findByIdAndUpdate( { _id: req.params.id }, { $set: req.body }, { new: true } )
+					.select( '_id url name login email admin userGroup createdAt updatedAt' )
+					.populate( 'userGroup', '_id url name' )
+					.then( doc => res.status( 200 )
+						.json( {
+							message: 'Success at updating a user from the collection',
+							notify: 'Datos de ' + doc.name + ' actualizados',
+							success: true,
+							resourceId: doc._id,
+							resource: doc
+						} ) )
+					.catch( err => res.status( 500 )
+						.json( { error: err } ) )
+
+			}
+		} )
 	} else {
 		User
 			.findByIdAndUpdate( { _id: req.params.id }, { $set: req.body }, { new: true } )

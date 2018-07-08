@@ -39,6 +39,7 @@ exports.update = ( req, res, next ) => {
 				error: 'Waiting for another request to finish'
 			} )
 	} else { // else update database
+		console.log( 'updating...' )
 		waiting = true // block
 		var new_devices = []
 		var data = []
@@ -50,9 +51,12 @@ exports.update = ( req, res, next ) => {
 			.select( 'sync' )
 			.exec()
 			.then( ( gateways ) => { // get all syncs for the gateways stored in the database
+				console.log( gateways )
 				var urls = gateways.map( gateway => gateway.sync ) // map the urls into an array
+				console.log( urls )
 				requests = urls.map( url => axios.get( url, { timeout: process.env.TIMEOUT } )
 					.catch( err => errors.push( { Error: err.message } ) ) ) // store as axios get requests in an array
+				console.log( requests )
 				axios.all( requests )
 					.then( ( responses ) => { // execute all requests
 						data = responses.map( r => r.data ) // store just data from requests in the data variable
