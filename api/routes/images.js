@@ -9,16 +9,16 @@ const checkAuth = require('../middleware/check-auth')
 
 /* MULTER CONFIGURATIONS */
 const storage = multer.diskStorage({
-  destination: function(req, file, cb){
+  destination: function(req, file, cb) {
     cb(null, 'img/')
   },
-  filename: function(req, file, cb){
-    cb(null, req.params.id + moment() + '.png')
+  filename: function(req, file, cb) {
+    cb(null, req.params.id + moment() + '.bmp')
   }
 })
 
 const fileFilter = (req, file, cb) => {
-  if(file.mimetype === 'image/jpeg' || file.mimetype === 'image/png'){
+  if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/bmp') {
     cb(null, true)
   } else {
     cb(null, false)
