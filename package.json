@@ -9,6 +9,7 @@
   },
   "author": "Pedro Rodriguez Alia",
   "license": "ISC",
+  "repository": "https://github.com/pedro-rodalia/iot-api.git",
   "dependencies": {
     "axios": "^0.18.0",
     "bcrypt": "^1.0.3",
