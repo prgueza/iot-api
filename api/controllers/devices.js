@@ -118,11 +118,10 @@ exports.device_delete = ( req, res, next ) => {
 	// get id from request parameters
 	const _id = req.params.id
 	if ( req.AuthData.admin ) {
-		Device.findOneAndDelete( _id )
+		Device.findByIdAndDelete( _id )
 			.exec()
 			.then( (doc) => {
-					console.log(doc)
-					return Display.findOneAndDelete( doc.display._id )
+				return doc.display && Display.findByIdAndDelete( doc.display._id )
 			} )
 			.then( () => {
 				res.status( 200 )
