@@ -118,22 +118,18 @@ exports.device_delete = ( req, res, next ) => {
 	// get id from request parameters
 	const _id = req.params.id
 	if ( req.AuthData.admin ) {
-		Device.findOneAndRemove( _id )
-			.select( '_id url name description createdAt updatedAt' )
+		Device.findOneAndDelete( _id )
 			.exec()
-			.then( doc => {
-				if ( doc.display ) {
-					Display.findOneAndRemove( doc.display._id )
-				}
-				return ( doc )
+			.then( (doc) => {
+					console.log(doc)
+					return Display.findOneAndDelete( doc.display._id )
 			} )
-			.then( doc => {
+			.then( () => {
 				res.status( 200 )
 					.json( {
-						message: 'Success at removing a display from the collection',
+						message: 'Success at removing a device from the collection',
 						success: true,
 						resourceId: _id,
-						devices: doc
 					} )
 			} )
 			.catch( err => {

@@ -16,6 +16,17 @@ const UserGroup = require( '../models/userGroup' )
 var last_update = false
 var waiting = false
 
+const parsePort = (url) => {
+	// TODO: mejorar el parse con regex
+	return url.split("/")[2].split(":")[1]
+}
+
+const parseURL = (url) => {
+	// TODO: mejorar el parse con regex
+	return url.split(":")[1].replace("//", "")
+}
+
+
 /* GET */
 exports.update = ( req, res, next ) => {
 	if ( last_update && moment()
@@ -59,14 +70,22 @@ exports.update = ( req, res, next ) => {
 				console.log( requests )
 				axios.all( requests )
 					.then( ( responses ) => { // execute all requests
-						data = responses.map( r => r.data ) // store just data from requests in the data variable
+						data = responses.map( r => {
+							return {
+								gateway_ip: parseURL(r.config.url),
+								gateway_port: parsePort(r.config.url),
+								devices: r.data.device
+							}
+						}) // store just data from requests in the data variable
 						filteredData = data.filter( gateway_list => gateway_list != undefined ) // filter undefined gateway lists coming from failed requests
 						if ( filteredData.length == 0 ) {
 							res.status( 201 )
 								.json( { error: 'No hay puertas de enlace disponibles' } )
 							return
 						}
-						gateways_ips = filteredData.map( gateway_list => gateway_list.gateway_ip ) // get ip for every gateway for filtering as is the only unique identifier the ARTIK API returns
+						console.log(filteredData)
+						gateways_ips = responses.map( response => parseURL(response.config.url) ) // get ip for every gateway for filtering as is the only unique identifier the ARTIK API returns
+						gateways_ips.map( g => console.log(g))
 					} )
 					.then( () => {
 						Device.updateMany( {}, { found: false } ) // set all devices to "not found"
@@ -78,9 +97,13 @@ exports.update = ( req, res, next ) => {
 								}
 							} )
 							.then( ( gateways ) => {
+								console.log(gateways)
 								var sync_devices = [] // for storing all devices found
+								console.log(filteredData.length)
 								for ( var j = 0; j < filteredData.length; j++ ) { // for every list of displays from the gateways
+									gateways.map( g => console.log(g))
 									var current_gateway = gateways.find( ( g ) => g.ip == filteredData[ j ].gateway_ip && g.port == filteredData[ j ].gateway_port ) // get the gateway that provided the list
+									console.log(current_gateway)
 									for ( var i = 0; i < filteredData[ j ].devices.length; i++ ) { // for every device within the list from this specific gateway
 										var current_device = filteredData[ j ].devices[ i ] // save the device into a variable
 										var duplicate = sync_devices.find( ( d ) => d.device.mac == current_device.mac ) // check if the device has already been found
@@ -98,6 +121,7 @@ exports.update = ( req, res, next ) => {
 										}
 									}
 								} // once this is done for every device from every list we should have an array with all found devices and no duplicates (keeping the one with the better signal)
+								console.log(sync_devices)
 								var bulk_ops = []
 								var bulk_ops = sync_devices.map( ( d ) => { // set an update op for every device in the list
 									return {
