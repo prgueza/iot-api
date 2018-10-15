@@ -332,9 +332,7 @@ exports.display_delete = ( req, res, next ) => {
 	}
 	// delete document from collection
 	// remove display
-	Display.find( query )
-		.remove()
-		.exec()
+	Display.findOneAndDelete(query)
 		.then( ( res ) => result = res )
 		// update images involved
 		.then( () => {

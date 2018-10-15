@@ -29,8 +29,7 @@ const parseURL = (url) => {
 
 /* GET */
 exports.update = ( req, res, next ) => {
-	if ( last_update && moment()
-		.diff( last_update, 'seconds' ) < process.env.LAST_UPDATE_TIMER ) { // if last update was recent send the data without updating
+	if ( last_update && moment().diff( last_update, 'seconds' ) < process.env.LAST_UPDATE_TIMER ) { // if last update was recent send the data without updating
 		// get devices that can be accessed by the user that sent the request
 		console.log( 'data from last update' )
 		var query = !req.AuthData.admin // Only restrict search if the user isn't admin
@@ -47,11 +46,11 @@ exports.update = ( req, res, next ) => {
 	} else if ( waiting ) { // if another user is requesting the update
 		res.status( 500 )
 			.json( {
-				error: 'Waiting for another request to finish'
+				error: 'Waiting for another request to finish!'
 			} )
 	} else { // else update database
 		console.log( 'updating...' )
-		waiting = true // block
+		// waiting = true // block
 		var new_devices = []
 		var data = []
 		var errors = []
@@ -66,8 +65,7 @@ exports.update = ( req, res, next ) => {
 				var urls = gateways.map( gateway => gateway.sync ) // map the urls into an array
 				console.log( urls )
 				requests = urls.map( url => axios.get( url, { timeout: process.env.TIMEOUT } )
-					.catch( err => errors.push( { Error: err.message } ) ) ) // store as axios get requests in an array
-				console.log( requests )
+					.catch( err => console.log(err) ) ) // store as axios get requests in an array
 				axios.all( requests )
 					.then( ( responses ) => { // execute all requests
 						data = responses.map( r => {
@@ -83,12 +81,11 @@ exports.update = ( req, res, next ) => {
 								.json( { error: 'No hay puertas de enlace disponibles' } )
 							return
 						}
-						console.log(filteredData)
 						gateways_ips = responses.map( response => parseURL(response.config.url) ) // get ip for every gateway for filtering as is the only unique identifier the ARTIK API returns
 						gateways_ips.map( g => console.log(g))
 					} )
 					.then( () => {
-						Device.updateMany( {}, { found: false } ) // set all devices to "not found"
+						Device.updateMany( {}, { found: false } ).exec() // set all devices to "not found"
 					} )
 					.then( () => {
 						Gateway.find( { // get all data for the gateways that could be accessed
@@ -97,20 +94,22 @@ exports.update = ( req, res, next ) => {
 								}
 							} )
 							.then( ( gateways ) => {
-								console.log(gateways)
 								var sync_devices = [] // for storing all devices found
-								console.log(filteredData.length)
+								console.log('Filtered data: ')
+								console.log(filteredData)
 								for ( var j = 0; j < filteredData.length; j++ ) { // for every list of displays from the gateways
-									gateways.map( g => console.log(g))
 									var current_gateway = gateways.find( ( g ) => g.ip == filteredData[ j ].gateway_ip && g.port == filteredData[ j ].gateway_port ) // get the gateway that provided the list
-									console.log(current_gateway)
 									for ( var i = 0; i < filteredData[ j ].devices.length; i++ ) { // for every device within the list from this specific gateway
 										var current_device = filteredData[ j ].devices[ i ] // save the device into a variable
+										console.log('Current device ')
+										console.log(current_device)
 										var duplicate = sync_devices.find( ( d ) => d.device.mac == current_device.mac ) // check if the device has already been found
 										if ( !duplicate ) { // if it's the first time that the device is found
 											current_device.found = true // set found to true within the device data
 											current_device.gateway = current_gateway._id // set the devices access gateway to the one where it was found on
 											sync_devices.push( { device: current_device } ) // push to found devices array
+											console.log('Current device 2: ')
+											console.log(current_device)
 										} else if ( +duplicate.device.rssi < +current_device.rssi ) { // if it has a duplicate but the signal from the last gateway is stronger thatn from the first one
 											var duplicate_index = sync_devices.findIndex( ( d ) => d.device.mac == current_device.mac ) // get the index of the device stored in found devices
 											current_device.found = true // set found to true within the device data
@@ -121,7 +120,12 @@ exports.update = ( req, res, next ) => {
 										}
 									}
 								} // once this is done for every device from every list we should have an array with all found devices and no duplicates (keeping the one with the better signal)
+								console.log('Sync devices: ')
 								console.log(sync_devices)
+								if (sync_devices.length == 0) {
+									res.status( 500 ) //todo: controlar errores
+										.json( { error: 'No devices found' } )
+								}
 								var bulk_ops = []
 								var bulk_ops = sync_devices.map( ( d ) => { // set an update op for every device in the list
 									return {
@@ -133,8 +137,10 @@ exports.update = ( req, res, next ) => {
 											upsert: true // if it's the first time this device has been found, create a new device resource
 										}
 									}
-								} )
-								Device.bulkWrite( bulk_ops ) // bulk write all these updates
+								} ) // TODO: ver por que a veces devuelve solo uno y ver que pasa cuando eliminas uno
+								console.log('Bulk_ops: ')
+								console.log(JSON.stringify(bulk_ops, null, " "))
+								return Device.bulkWrite( bulk_ops ) // bulk write all these updates
 							} )
 							.then( () => {
 								// get devices that can be accessed by the user that sent the request
@@ -167,6 +173,17 @@ exports.update = ( req, res, next ) => {
 			} ) // catch and return any error
 	}
 }
+
+exports.update_image = async (req, res, next) => {
+	// get id for the display
+	const _id = req.params.id
+	// get device and image information from the display resource
+	const display = await Display.findOneById(_id).select('device activeImage');
+
+	res.status(200).json({display});
+}
+
+// TODO: re-entender funcion y desvincular la operacion de subir la imagen a la pantalla de la operacion de actualizar la api
 exports.change_image = ( req, res, next ) => {
 	// query for checking if the user can update the display
 	var display_query = !req.AuthData.admin ? {
@@ -182,7 +199,7 @@ exports.change_image = ( req, res, next ) => {
 	} : {
 		_id: req.body.image_id
 	}
-	// execute both querys (if both resources are found it means the op is posible)
+	// execute both queries (if both resources are found it means the op is posible)
 	Promise.all( [
     Display.findOne( display_query )
       .select( 'device' )

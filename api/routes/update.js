@@ -9,7 +9,7 @@ const checkAuth = require('../middleware/check-auth')
 router.get('/', checkAuth ,UpdateController.update)
 
 /* API PUT */
-router.put('/:id', checkAuth, UpdateController.change_image)
+router.put('/:id', checkAuth, UpdateController.update_image)
 
 
 module.exports = router
