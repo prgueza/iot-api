@@ -170,7 +170,7 @@ exports.group_delete = ( req, res, next ) => {
 	const query = req.AuthData.admin ? { _id: _id } : { _id: _id, userGroup: req.AuthData.userGroup }
 	// delete document from collection
 	Group
-		.findOneAndRemove( query )
+		.findOneAndDelete( query )
 		.exec()
 		.then( ( doc ) => {
 			if ( doc ) {

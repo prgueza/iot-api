@@ -232,7 +232,10 @@ exports.display_update = ( req, res, next ) => {
 							displays: _id
 						}
 					} )
-					.exec() )
+					.exec().catch(e => console.log(JSON.stringify({
+						message: "Error updating referenced images",
+						error: e
+					}, null, " "))) )
 				if ( g_id ) updatePromises.push( Group.update( {
 						displays: _id
 					}, {
@@ -240,15 +243,21 @@ exports.display_update = ( req, res, next ) => {
 							displays: _id
 						}
 					} )
-					.exec() )
+					.exec().catch(e => console.log(JSON.stringify({
+						message: "Error updating referenced groups",
+						error: e
+					}, null, " "))) )
 				if ( d_id ) updatePromises.push( Device.updateMany( {
 						displays: _id
 					}, {
 						$pull: {
-							displays: _id
+							display: _id
 						}
 					} )
-					.exec() )
+					.exec().catch(e => console.log(JSON.stringify({
+						message: "Error updating referenced displays",
+						error: e
+					}, null, " "))) )
 				Promise.all( updatePromises )
 					.then( () => {
 						updatePromises = []
@@ -261,7 +270,7 @@ exports.display_update = ( req, res, next ) => {
 									displays: _id
 								}
 							} )
-							.exec() )
+							.exec().catch(e => console.log(e)) )
 						if ( g_id ) updatePromises.push( Group.updateMany( {
 								_id: g_id
 							}, {
@@ -269,7 +278,7 @@ exports.display_update = ( req, res, next ) => {
 									displays: _id
 								}
 							} )
-							.exec() )
+							.exec().catch(e => console.log(e)) )
 						if ( d_id ) updatePromises.push( Device.update( {
 								_id: d_id
 							}, {
@@ -277,7 +286,7 @@ exports.display_update = ( req, res, next ) => {
 									display: _id
 								}
 							} )
-							.exec() )
+							.exec().catch(e => console.log(e)) )
 						Promise.all( updatePromises )
 					} )
 					.then( () => Promise.all( [
