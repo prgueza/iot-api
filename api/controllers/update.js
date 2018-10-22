@@ -3,6 +3,7 @@ const axios = require('axios');
 const fs = require('fs');
 const FormData = require('form-data');
 const moment = require('moment');
+const Store = require('data-store');
 
 /* DATA MODELS */
 const Display = require('../models/display');
@@ -10,11 +11,12 @@ const Image = require('../models/image');
 const Device = require('../models/device');
 const Gateway = require('../models/gateway');
 
-let lastUpdate = moment();
+const store = new Store({ path: 'config.json' });
 let waiting = false;
 
 exports.update = async (req, res) => {
   try {
+    const lastUpdate = store.get('lastUpdate');
     // Log last update
     console.log(`Last update was ${moment().diff(lastUpdate, 'seconds')} seconds ago`);
     // Array where all the found devices will be stored
@@ -110,7 +112,9 @@ exports.update = async (req, res) => {
       // Perform a bulkwrite operation and wait for it to finish
       await Device.bulkWrite(updateOps);
       // set lastUpdate to now
-      lastUpdate = moment();
+      store.set('lastUpdate', moment());
+      console.log('Data store updated to:');
+      console.log(store.data);
     }
     // Get the devices back from the database
     const updatedDevices = await Device.find(query).select('_id url name description mac found lastFound batt rssi initcode screen gateway createdAt updatedAt').populate('gateway', '_id name description mac url').exec();

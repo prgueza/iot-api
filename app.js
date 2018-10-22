@@ -5,6 +5,7 @@ const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 
+
 process.env.API_URL = 'http://localhost:4000/';
 process.env.MONGO_ATLAS_PW = '7MZ5oRy4e0YWG4v0';
 process.env.JWT_KEY = 'secret';
@@ -24,6 +25,7 @@ const gatewaysRoutes = require('./api/routes/gateways');
 const devicesRoutes = require('./api/routes/devices');
 const updateRoutes = require('./api/routes/update');
 const userGroupsRoutes = require('./api/routes/userGroup');
+
 
 mongoose.set('useCreateIndex', true);
 mongoose.set('findAndModify', false);
