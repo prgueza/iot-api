@@ -108,7 +108,7 @@ exports.device_delete = async (req, res) => {
     // Delete and get the device
     const device = await Device.findByIdAndDelete(id).exec();
     // Delete the associated display if any
-    await Display.findByIdAndDelete(device.display._id);
+    if (device) await Display.findByIdAndDelete(device.display._id);
     // Send a response
     res.status(200).json({
       message: 'Success at removing a device from the collection',
