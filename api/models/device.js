@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const moment = require('moment');
 
 const deviceSchema = mongoose.Schema({
   _id: mongoose.Schema.Types.ObjectId,
@@ -11,6 +12,7 @@ const deviceSchema = mongoose.Schema({
   rssi: String,
   initcode: String,
   found: Boolean,
+  lastFound: { type: Date, default: moment() },
   activeImage: { type: mongoose.Schema.Types.ObjectId, ref: 'Image' },
   prefGateway: { type: mongoose.Schema.Types.ObjectId, ref: 'Gateway' },
   display: { type: mongoose.Schema.Types.ObjectId, ref: 'Display' },

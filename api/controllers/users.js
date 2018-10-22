@@ -150,7 +150,7 @@ exports.user_login = (req, res, next) => {
 
           const resources_array = user.admin ? [
             Device.find()
-              .select('_id url name description initcode gateway updatedAt')
+              .select('_id url name description initcode gateway updatedAt found lastFound')
               .populate('gateway', '_id ulr name')
               .exec(),
             Gateway.find()
@@ -181,7 +181,7 @@ exports.user_login = (req, res, next) => {
               .select('_id url name description tags updatedAt createdAt')
               .exec(),
             Device.find({ userGroup: user.userGroup._id })
-              .select('_id url name description display updatedAt createdAt')
+              .select('_id url name description display updatedAt createdAt found, lastFound')
               .populate('display', '_id url name description')
               .exec(),
             Screen.find()

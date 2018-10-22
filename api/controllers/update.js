@@ -72,6 +72,7 @@ exports.update = async (req, res) => {
             // Add two new properties
             currentDevice.found = true;
             currentDevice.gateway = gateway._id;
+            currentDevice.lastFound = moment();
             // Push to found devices array
             devices.push({ device: currentDevice });
           } else if (Number(duplicate.device.rssi) < Number(currentDevice.rssi)) {
@@ -112,7 +113,7 @@ exports.update = async (req, res) => {
       lastUpdate = moment();
     }
     // Get the devices back from the database
-    const updatedDevices = await Device.find(query).select('_id url name description mac found batt rssi initcode screen gateway createdAt updatedAt').populate('gateway', '_id name description mac url').exec();
+    const updatedDevices = await Device.find(query).select('_id url name description mac found lastFound batt rssi initcode screen gateway createdAt updatedAt').populate('gateway', '_id name description mac url').exec();
     // Map devices for the responses
     updatedDevices.map((d) => {
       const device = d;

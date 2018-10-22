@@ -1,4 +1,5 @@
 /* DATA MODELS */
+const moment = require('moment');
 const Device = require('../models/device');
 const Display = require('../models/display');
 
@@ -9,11 +10,12 @@ exports.devices_get_all = async (req, res) => {
       res.status(401).json({ error: 'Not allowed' });
     } else {
       const devices = await Device.find()
-        .select('_id url name description gateway mac found batt rssi screen initcode createdAt updatedAt')
+        .select('_id url name description gateway mac found lastFound batt rssi screen initcode createdAt updatedAt')
         .populate('gateway', '_id url name mac')
         .exec();
       const mapDevices = devices.map((device) => {
         device.url = `${process.env.API_URL}devices/${device._id}`;
+        if (moment().diff(device.lastFound, 'days') > 7) device.found = false;
         return device;
       });
       res.status(200).json(mapDevices);
@@ -29,7 +31,7 @@ exports.devices_get_one = async (req, res) => {
   try {
     const _id = req.params.id;
     const device = await Device.findById(_id)
-      .select('_id url name description mac mac found batt rssi initcode screen display activeImage userGroup createdBy createdAt updatedAt')
+      .select('_id url name description mac mac found lastFound batt rssi initcode screen display activeImage userGroup createdBy createdAt updatedAt')
       .populate('display', '_id url name')
       .populate('gateway', '_id url name')
       .populate('created_by', '_id url name')
