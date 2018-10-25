@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 const Screen = require('../models/screen.js');
 
 /* GET ALL */
-exports.screens_get_all = (req, res) => {
+exports.screensGetAll = (req, res) => {
   Screen.find()
     .select('_id url name description screenCode colorProfile size createdAt')
     .exec()
@@ -15,7 +15,7 @@ exports.screens_get_all = (req, res) => {
 };
 
 /* GET ONE */
-exports.screens_get_one = (req, res) => {
+exports.screensGetOne = (req, res) => {
   Screen.findById(req.params.id)
     .select('_id url name description screenCode colorProfile size createdAt')
     .exec()
@@ -26,7 +26,7 @@ exports.screens_get_one = (req, res) => {
 };
 
 /* POST */
-exports.screen_create = (req, res) => {
+exports.screenCreate = (req, res) => {
   if (!req.AuthData.admin) {
     res.status(401)
       .json({ message: 'Not allowed' });
@@ -71,7 +71,7 @@ exports.screen_create = (req, res) => {
 };
 
 /* PUT */
-exports.screen_update = (req, res) => {
+exports.screenUpdate = (req, res) => {
   if (!req.AuthData.admin) {
     res.status(401)
       .json({ message: 'Not allowed' });
@@ -92,7 +92,7 @@ exports.screen_update = (req, res) => {
 };
 
 /* DELETE */
-exports.screen_delete = (req, res) => {
+exports.screenDelete = (req, res) => {
   if (!req.AuthData.admin) {
     res.status(401)
       .json({ message: 'Not allowed' });

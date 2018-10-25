@@ -145,14 +145,8 @@ exports.update_image = async (req, res) => {
   // get device and image information from the display resource
   try {
     const display = await Display.findById(_id).select('device activeImage');
-    console.log(`Display found with id: ${display._id}`);
     const image = await Image.findById(mongoose.Types.ObjectId(display.activeImage)).select('path');
-    console.log(`Image found with id: ${image._id}`);
-    console.log(`The file's path is: ${image.path}`);
     const device = await Device.findById(mongoose.Types.ObjectId(display.device)).select('gateway mac').populate('gateway', 'sync');
-    console.log(`The device to which this display is linked has the id: ${display.device}`);
-    console.log(`This device has this mac: ${device.mac}`);
-    console.log(`The url for uploading the image is: ${device.gateway.sync}/?mac=${device.mac}`);
     const file = fs.readFileSync(image.path);
     const form = new FormData();
     form.append('image', file, 'image.bmp');
@@ -163,9 +157,10 @@ exports.update_image = async (req, res) => {
       headers: form.getHeaders(),
       timeout: 30000,
     };
-    await axios.put(device.gateway.sync, form, config);
+    const response = await axios.put(device.gateway.sync, form, config);
     res.status(200).json({
       message: 'Imagen enviada a la pantalla con éxito',
+      response: response.data,
     });
   } catch (e) {
     const error = {

@@ -3,115 +3,117 @@ const mongoose = require('mongoose');
 /* DATA MODELS */
 const Location = require('../models/location.js');
 
-// TODO: filter response and write missing methods
-
 /* GET ALL */
-exports.locations_get_all = (req, res) => {
-  if (!req.AuthData.admin) {
-    res.status(401)
-      .json({ message: 'Not allowed' });
-  } else {
-    Location.find()
-      .select('_id url name description createdAt')
-      .exec()
-      .then(docs => res.status(200)
-        .json(docs))
-      .catch(err => res.status(500)
-        .json({ error: err }));
+exports.locationsGetAll = async (req, res) => {
+  try {
+    if (!req.AuthData.admin) {
+      res.status(401).json({ message: 'Not allowed' });
+    } else {
+      const location = await Location.find()
+        .select('_id url name description createdAt')
+        .exec();
+      res.status(200).json({ location });
+    }
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json(error);
   }
 };
 
 /* GET ONE */
-exports.locations_get_one = (req, res) => {
-  if (!req.AuthData.admin) {
-    res.status(401)
-      .json({ message: 'Not allowed' });
-  } else {
-    Location.findById(req.params.id)
-      .select('_id url name description createdAt')
-      .exec()
-      .then(docs => res.status(200)
-        .json(docs))
-      .catch(err => res.status(500)
-        .json({ error: err }));
+exports.locationsGetOne = async (req, res) => {
+  try {
+    if (!req.AuthData.admin) {
+      res.status(401).json({ message: 'Not allowed' });
+    } else {
+      const location = await Location.findById(req.params.id)
+        .select('_id url name description createdAt')
+        .exec();
+      if (location) {
+        res.status(200).json({ location });
+      } else {
+        res.status(404).json({ message: 'No valid entry found for provided id' });
+      }
+    }
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json(error);
   }
 };
 
 /* POST */
-exports.location_create = (req, res) => {
-  if (!req.AuthData.admin) {
-    res.status(401)
-      .json({ message: 'Not allowed' });
-  } else {
-    const _id = new mongoose.Types.ObjectId();
-    const location = new Location({
-      _id,
-      url: `${process.env.API_URL}locations/${_id}`,
-      name: req.body.name,
-      description: req.body.description,
-    });
-
-    location
-      .save()
-      .then((doc) => {
-        res.status(201)
-          .json({
-            message: 'Success at adding a location from the collection',
-            success: true,
-            resourceId: doc._id,
-            resource: {
-              _id: doc._id,
-              url: doc.url,
-              name: doc.name,
-              description: doc.description,
-              createdAt: doc.createdAt,
-              updatedAt: doc.updatedAt,
-            },
-          });
-      })
-      .catch(err => res.status(500)
-        .json({ error: err }));
+exports.locationCreate = (req, res) => {
+  try {
+    if (!req.AuthData.admin) {
+      res.status(401).json({ message: 'Not allowed' });
+    } else {
+      const _id = new mongoose.Types.ObjectId();
+      const { name, description } = req.body;
+      const location = new Location({
+        _id,
+        name,
+        description,
+        url: `${process.env.API_URL}locations/${_id}`,
+      });
+      const newLocation = location.save().select('_id name description url createdAt updatedAt');
+      res.status(201).json({
+        message: 'Success at adding a location from the collection',
+        success: true,
+        resourceId: _id,
+        resource: newLocation,
+      });
+    }
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json(error);
   }
 };
 
 /* PUT */
-exports.location_update = (req, res) => {
-  if (!req.AuthData.admin) {
-    res.status(401)
-      .json({ message: 'Not allowed' });
-  } else {
-    Location
-      .findByIdAndUpdate({ _id: req.params.id }, { $set: req.body }, { new: true })
-      .then(doc => res.status(200)
-        .json({
+exports.locationUpdate = async (req, res) => {
+  try {
+    if (!req.AuthData.admin) {
+      res.status(401).json({ message: 'Not allowed' });
+    } else {
+      const location = await Location.findByIdAndUpdate({ _id: req.params.id }, { $set: req.body }, { new: true });
+      if (location) {
+        res.status(200).json({
           message: 'Success at updating an usergroup from the collection',
-          notify: `Localización '${doc.name}' actualizada`,
+          notify: `Localización '${location.name}' actualizada`,
           success: true,
           resourceId: req.params.id,
-          resource: doc,
-        }))
-      .catch(err => res.status(500)
-        .json({ error: err }));
+          resource: location,
+        });
+      } else {
+        res.status(404).json({ message: 'No valid entry found for provided id' });
+      }
+    }
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json(error);
   }
 };
 
 /* DELETE */
-exports.location_delete = (req, res) => {
-  if (!req.AuthData.admin) {
-    res.status(401)
-      .json({ messgae: 'Not allowed' });
-  } else {
-    Location
-      .findByIdAndRemove({ _id: req.params.id })
-      .exec()
-      .then(doc => res.status(200)
-        .json({
+exports.locationDelete = async (req, res) => {
+  try {
+    if (!req.AuthData.admin) {
+      res.status(401).json({ messgae: 'Not allowed' });
+    } else {
+      const location = await Location.findByIdAndRemove({ _id: req.params.id }).exec();
+      if (location) {
+        res.status(200).json({
           message: 'Success at removing a location from the collection',
           success: true,
           resourceId: req.params.id,
-          resource: doc,
-        }))
-      .catch(err => res.status(500)
-        .json({ error: err }));
+          resource: location,
+        });
+      } else {
+        res.status(404).json({ message: 'No valid entry found for provided id' });
+      }
+    }
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json(error);
   }
 };

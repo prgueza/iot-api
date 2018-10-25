@@ -4,7 +4,7 @@ const Device = require('../models/device');
 const Display = require('../models/display');
 
 /* GET ALL -  Authorization: Only admin users can get ALL the devices */
-exports.devices_get_all = async (req, res) => {
+exports.devicesGetAll = async (req, res) => {
   try {
     if (!req.AuthData.admin) {
       res.status(401).json({ error: 'Not allowed' });
@@ -27,7 +27,7 @@ exports.devices_get_all = async (req, res) => {
 };
 
 /* GET ONE - Authorization: Only admin users or users from the same userGroup as the device can get said device */
-exports.devices_get_one = async (req, res) => {
+exports.devicesGetOne = async (req, res) => {
   try {
     const _id = req.params.id;
     const device = await Device.findById(_id)
@@ -59,7 +59,7 @@ exports.devices_get_one = async (req, res) => {
 };
 
 /* PUT */
-exports.device_update = async (req, res) => {
+exports.deviceUpdate = async (req, res) => {
   try {
     // If the user has no admin privileges answer with an error
     if (!req.AuthData.admin) {
@@ -96,7 +96,7 @@ exports.device_update = async (req, res) => {
 };
 
 /* DELETE */
-exports.device_delete = async (req, res) => {
+exports.deviceDelete = async (req, res) => {
   try {
     // If the user has no admin privileges answer with an error
     if (!req.AuthData.admin) {

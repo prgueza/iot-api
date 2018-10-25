@@ -7,192 +7,140 @@ const Image = require('../models/image');
 const Device = require('../models/device');
 
 /* GET ALL */
-exports.displays_get_all = (req, res) => {
-  if (!req.AuthData.admin) {
-    res.status(401)
-      .json({
-        error: 'Not allowed',
-      });
-  } else {
-    Display.find()
-      .select('_id url name description tags device createdAt updatedAt')
-      .populate('device', '_id url name initcode')
-      .exec()
-      .then((docs) => {
-        setTimeout(() => {
-          res.status(200)
-            .json(docs);
-        }, 0);
-      })
-      .catch((err) => {
-        console.log(err);
-        res.status(500)
-          .json({
-            error: err,
-          });
-      });
+exports.displaysGetAll = async (req, res) => {
+  try {
+    if (!req.AuthData.admin) {
+      res.status(401).json({ error: 'Not allowed' });
+    } else {
+      const displays = await Display.find()
+        .select('_id url name description tags device createdAt updatedAt')
+        .populate('device', '_id url name initcode')
+        .exec();
+      res.status(200).json(displays);
+    }
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json(error);
   }
 };
+
 /* GET ONE */
-exports.displays_get_one = (req, res) => {
-  const _id = req.params.id;
-  const query = req.AuthData.admin ? {
-    _id,
-  } : {
-    _id,
-    userGroup: req.AuthData.userGroup,
-  };
-  Display.findOne(query)
-    .select('_id url name description category location tags images group userGroup overlayImage imageFromGroup createdBy createdAt updatedAt')
-    .populate('activeImage', '_id url name src description createdAt')
-    .populate('userGroup', '_id url name')
-    .populate('overlayImage.image', '_id url name src')
-    .populate({
-      path: 'device',
-      select: '_id url name resolution description activeImage initcode',
-      populate: [{
-        path: 'resolution',
-        select: '_id url name size',
-      }, {
-        path: 'gateway',
-        select: '_id url name location',
-        populate: {
-          path: 'location',
-          select: '_id url name',
-        },
-      }],
-    })
-    .populate({
-      path: 'group',
-      select: '_id url name description activeImage overlayImage createdAt',
-      populate: [{
-        path: 'activeImage',
-        select: '_id url name src',
-      }, {
-        path: 'overlayImage.image',
-        select: '_id url name src',
-      }],
-    })
-    .populate('images', '_id url name description src createdAt')
-    .populate('createdBy', '_id url name')
-    .populate('updatedBy', '_id url name')
-    .exec()
-    .then((doc) => {
-      if (doc) {
-        res.status(200)
-          .json(doc);
-      } else {
-        res.status(404)
-          .json({
-            message: 'No valid entry found for provided id within the user group',
-          });
-      }
-    })
-    .catch((err) => {
-      console.log(err);
-      res.status(500)
-        .json({
-          error: err,
-        });
-    });
+exports.displaysGetOne = async (req, res) => {
+  try {
+    const _id = req.params.id;
+    const query = req.AuthData.admin
+      ? { _id }
+      : { _id, userGroup: req.AuthData.userGroup };
+    const display = await Display.findOne(query)
+      .select('_id url name description category location tags images group userGroup overlayImage imageFromGroup createdBy createdAt updatedAt')
+      .populate('activeImage', '_id url name src description createdAt')
+      .populate('userGroup', '_id url name')
+      .populate('overlayImage.image', '_id url name src')
+      .populate({
+        path: 'device',
+        select: '_id url name resolution description activeImage initcode',
+        populate: [{
+          path: 'resolution',
+          select: '_id url name size',
+        }, {
+          path: 'gateway',
+          select: '_id url name location',
+          populate: {
+            path: 'location',
+            select: '_id url name',
+          },
+        }],
+      })
+      .populate({
+        path: 'group',
+        select: '_id url name description activeImage overlayImage createdAt',
+        populate: [{
+          path: 'activeImage',
+          select: '_id url name src',
+        }, {
+          path: 'overlayImage.image',
+          select: '_id url name src',
+        }],
+      })
+      .populate('images', '_id url name description src createdAt')
+      .populate('createdBy', '_id url name')
+      .populate('updatedBy', '_id url name')
+      .exec();
+    if (display) {
+      res.status(200).json(display);
+    } else {
+      res.status(404).json({ message: 'No valid entry found for provided id within the given user group' });
+    }
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json(error);
+  }
 };
+
 /* POST */
-exports.display_create = (req, res) => {
-  const {
-    name,
-    description,
-    category,
-    updatedBy,
-    createdBy,
-    images,
-    image,
-    group,
-    tags,
-    device,
-  } = req.body;
-  // _id for the new document
-  const _id = new mongoose.Types.ObjectId();
-  // create displays and groups ids from data received
-  const i_ids = images && images.map(image => mongoose.Types.ObjectId(image));
-  const g_id = group && mongoose.Types.ObjectId(group);
-  const d_id = mongoose.Types.ObjectId(device);
-  // build the new display from its model
-  const display = new Display({
-    _id,
-    url: `${process.env.API_URL}displays/${_id}`,
-    name,
-    description,
-    updatedBy,
-    createdBy,
-    category,
-    group,
-    images,
-    activeImage: image,
-    tags,
-    device,
-    userGroup: req.AuthData.userGroup,
-  });
-  // save the display
-  display.save()
-  // update devices involved
-    .then(() => Device.update({
-      _id: d_id,
-    }, {
-      $set: {
-        display: _id,
-      },
-    })) // add the display to selected device
-  // update images involved
-    .then(() => Image.updateMany({
-      _id: {
-        $in: i_ids,
-      },
-    }, {
-      $addToSet: {
-        displays: _id,
-      },
-    })) // add the display to selected images
-  // update groups involved
-    .then(() => Group.update({
-      _id: g_id,
-    }, {
-      $addToSet: {
-        displays: _id,
-      },
-    })) // add the display to selected images
-  // send response
-    .then(() => Promise.all([
+exports.displayCreate = async (req, res) => {
+  try {
+    const {
+      name, description, category, updatedBy, createdBy, images, image, group, tags, device,
+    } = req.body;
+    // _id for the new document
+    const _id = new mongoose.Types.ObjectId();
+    // create displays and groups ids from data received
+    const iIDs = images && images.map(i => mongoose.Types.ObjectId(i));
+    const gID = group && mongoose.Types.ObjectId(group);
+    const dID = mongoose.Types.ObjectId(device);
+    // build the new display from its model
+    const display = new Display({
+      _id,
+      name,
+      description,
+      updatedBy,
+      createdBy,
+      category,
+      group,
+      images,
+      tags,
+      device,
+      url: `${process.env.API_URL}displays/${_id}`,
+      activeImage: image,
+      userGroup: req.AuthData.userGroup,
+    });
+    // Save the display
+    await display.save();
+    // Update resources involved
+    await Promise.all([
+      Device.update({ _id: dID }, { $set: { display: _id } }),
+      Image.updateMany({ _id: { $in: iIDs } }, { $addToSet: { displays: _id } }),
+      Group.update({ _id: gID }, { $addToSet: { displays: _id } }),
+    ]);
+    // Get the display and the device
+    const response = await Promise.all([
       Display.find(_id)
         .select('_id url name description tags device updatedAt createdAt')
         .populate('device', '_id url name initcode')
         .exec(),
-      Device.find({
-        userGroup: req.AuthData.userGroup,
-      })
+      Device.find({ userGroup: req.AuthData.userGroup })
         .select('_id name description display updatedAt createdAt')
         .populate('display', '_id url name description')
         .exec(),
-    ]))
-    .then(doc => res.status(201)
-      .json({
-        message: 'Success at adding a new display to the collection',
-        success: true,
-        resourceId: _id,
-        resource: doc[0][0],
-        devices: doc[1],
-      }))
-  // catch any errors
-    .catch((err) => {
-      console.log(err);
-      res.status(500)
-        .json({
-          message: 'Internal Server Error',
-          error: err,
-        });
+    ]);
+    // Send the response
+    res.status(201).json({
+      message: 'Success at adding a new display to the collection',
+      success: true,
+      resourceId: _id,
+      resource: response[0][0],
+      devices: response[1],
     });
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json(error);
+  }
 };
+
+
 /* UPDATE (PUT) */
-exports.display_update = (req, res) => {
+exports.displayUpdate = (req, res) => {
   // get the id from the request for the query
   const _id = req.params.id;
   // get displays and images ids from the request
@@ -336,54 +284,33 @@ exports.display_update = (req, res) => {
 };
 
 /* DELETE */
-exports.display_delete = (req, res) => {
-  // get id from request parameters
-  const _id = req.params.id;
-  const query = req.AuthData.admin ? {
-    _id,
-  } : {
-    _id,
-    userGroup: req.AuthData.userGroup,
-  };
-  // delete document from collection
-  // remove display
-  Display.findOneAndDelete(query)
-    .then(res => result = res)
-  // update images involved
-    .then(() => Image.updateMany({
-      displays: _id,
-    }, {
-      $pull: {
-        displays: _id,
-      },
-    })) // remove the display from all images that have its ref
-  // update groups involved
-    .then(() => {
-      Group.update({ displays: _id }, { $pull: { displays: _id } });
-    }) // remove the display from all groups that have its ref
-  // update userGroups involved
-    .then(() => {
-      Device.update({ displays: _id }, { $pull: { displays: _id } });
-    }) // remove the display from all devices that have its ref
-  // send response
-    .then(() => Device.find({ userGroup: req.AuthData.userGroup })
-      .select('_id url name description display updatedAt createdAt')
-      .populate('display', '_id url name description')
-      .exec())
-    .then((doc) => {
-      res.status(200)
-        .json({
-          message: 'Success at removing a display from the collection',
-          success: true,
-          resourceId: _id,
-          devices: doc,
-        });
-    })
-    .catch((err) => {
-      console.log(err);
-      res.status(500)
-        .json({
-          error: err,
-        });
-    });
+exports.displayDelete = async (req, res) => {
+  try {
+    const _id = req.params.id;
+    const query = req.AuthData.admin
+      ? { _id }
+      : { _id, userGroup: req.AuthData.userGroup };
+    const display = await Display.findOneAndDelete(query);
+    if (display) {
+      const device = await Promise.all([
+        Image.updateMany({ displays: _id }, { $pull: { displays: _id } }),
+        Group.update({ displays: _id }, { $pull: { displays: _id } }),
+        Device.findOneAndUpdate({ displays: _id }, { $pull: { displays: _id } }, { new: true })
+          .select('_id url name description display updatedAt createdAt')
+          .populate('display', '_id url name description')
+          .exec(),
+      ])[2];
+      res.status(200).json({
+        message: 'Success at removing a display from the collection',
+        success: true,
+        resourceId: _id,
+        devices: device,
+      });
+    } else {
+      res.status(404).json({ message: 'No valid entry found for provided id' });
+    }
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json(error);
+  }
 };
