@@ -71,23 +71,25 @@ exports.deviceUpdate = async (req, res) => {
     // If it's not assigned to a usergroup set the property as undefined
     if (!req.body.userGroup) req.body.userGroup = undefined;
     // Update and get the device
-    const device = await Device.findOneAndUpdate({ _id: id }, {
-      $set: req.body,
-    }, { new: true })
+    const device = await Device.findByIdAndUpdate({ _id: req.params.id }, { $set: req.body }, { new: true })
       .select('_id url name description gateway mac found batt rssi screen initcode userGroup createdAt updatedAt')
       .populate('gateway', '_id url name mac')
       .populate('userGroup', '_id url name')
       .exec();
-    // Set the url manually
-    device.url = `http://localhost:4000/devices/${device._id}`;
-    // Send a response
-    res.status(200).json({
-      message: 'Success at updating the device',
-      notify: `(${device.initcode}) - ${device.name} actualizado`,
-      success: true,
-      resourceId: id,
-      resource: device,
-    });
+    if (device) {
+      // Set the url manually
+      device.url = `http://localhost:4000/devices/${device._id}`;
+      // Send a response
+      res.status(200).json({
+        message: 'Success at updating the device',
+        notify: `(${device.initcode}) - ${device.name} actualizado`,
+        success: true,
+        resourceId: id,
+        resource: device,
+      });
+    } else {
+      res.status(404).json({ message: 'No valid entry for provided id' });
+    }
   } catch (error) {
     // Log errors
     console.log(error.message);
@@ -108,13 +110,17 @@ exports.deviceDelete = async (req, res) => {
     // Delete and get the device
     const device = await Device.findByIdAndDelete(id).exec();
     // Delete the associated display if any
-    if (device) await Display.findByIdAndDelete(device.display._id);
-    // Send a response
-    res.status(200).json({
-      message: 'Success at removing a device from the collection',
-      success: true,
-      resourceId: id,
-    });
+    if (device) {
+      if (device.display) await Display.findByIdAndDelete(device.display._id);
+      // Send a response
+      res.status(200).json({
+        message: 'Success at removing a device from the collection',
+        success: true,
+        resourceId: id,
+      });
+    } else {
+      res.status(404).json({ message: 'No valid entry for provided id' });
+    }
   } catch (error) {
     // Log errors
     console.log(error.message);

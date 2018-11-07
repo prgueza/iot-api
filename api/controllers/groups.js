@@ -7,197 +7,142 @@ const Image = require('../models/image');
 const UserGroup = require('../models/userGroup');
 
 /* GET ALL */
-exports.group_get_all = (req, res) => {
-  const query = req.AuthData.admin ? {} : { userGroup: req.AuthData.userGroup };
-  Group.find(query)
-    .select('_id name description tags url createdAt updatedAt')
-    .exec()
-    .then((docs) => {
-      setTimeout(() => {
-        res.status(200)
-          .json(docs);
-      }, process.env.DELAY);
-    })
-    .catch((err) => {
-      res.status(500)
-        .json({
-          message: 'Internal Server Error',
-          error: err,
-        });
-    });
+exports.groupGetAll = async (req, res) => {
+  try {
+    const query = req.AuthData.admin ? {} : { userGroup: req.AuthData.userGroup };
+    const group = await Group.find(query)
+      .select('_id name description tags url createdAt updatedAt')
+      .exec();
+    if (group) {
+      res.status(200).json(group);
+    } else {
+      res.status(404).json({ message: 'No valid entry for provided id' });
+    }
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json(error);
+  }
 };
 
 /* GET ONE */
-exports.group_get_one = (req, res) => {
-  const _id = req.params.id;
-  const query = req.AuthData.admin ? { _id } : { _id, userGroup: req.AuthData.userGroup };
-  Group.findOne(query)
-    .select('_id url name description createdAt createdBy updatedAt updatedBy activeImage overlayImage images displays tags resolution')
-    .populate('activeImage', '_id url src name description createdAt tags_total')
-    .populate('overlayImage.image', '_id url name src')
-    .populate('images', '_id url src name description createdAt tags_total')
-    .populate('displays', '_id url name description createdAt tags_total')
-    .populate('resolution', '_id url name size')
-    .populate('createdBy', '_id url name')
-    .populate('updatedBy', '_id url name')
-    .exec()
-    .then((doc) => {
-      if (doc) { // if the group is found
-        res.status(200)
-          .json(doc); // set response status to 200 and return the doc
-      } else { // set response status to 404 and return an error message
-        res.status(404)
-          .json({ message: 'No valid entry found for provided id within the user group' });
-      }
-    })
-    .catch((err) => { // catch any errors
-      console.log(err);
-      res.status(500)
-        .json({
-          message: 'Internal Server Error',
-          error: err,
-        });
-    });
+exports.groupGetOne = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const query = req.AuthData.admin ? { _id: id } : { _id: id, userGroup: req.AuthData.userGroup };
+    const group = await Group.findOne(query)
+      .select('_id url name description createdAt createdBy updatedAt updatedBy activeImage overlayImage images displays tags resolution')
+      .populate('activeImage', '_id url src name description createdAt tags_total')
+      .populate('overlayImage.image', '_id url name src')
+      .populate('images', '_id url src name description createdAt tags_total')
+      .populate('displays', '_id url name description createdAt tags_total')
+      .populate('resolution', '_id url name size')
+      .populate('createdBy', '_id url name')
+      .populate('updatedBy', '_id url name')
+      .exec();
+    if (group) {
+      res.status(200).json(group);
+    } else {
+      res.status(404).json({ message: 'No valid entry found for provided id' });
+    }
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json(error);
+  }
 };
 
 /* POST */
-exports.group_create = (req, res) => {
-  // get data for new group
-  const {
-    name, description, createdBy, updatedBy, displays, images, activeImage, resolution, tags,
-  } = req.body;
-  // create a new id for the new group
-  const _id = new mongoose.Types.ObjectId();
-  // create displays and images ids from data received
-  const d_ids = displays && displays.map(d => mongoose.Types.ObjectId(d));
-  const i_ids = images && images.map(i => mongoose.Types.ObjectId(i));
-  // build the new group with its model
-  const group = new Group({
-    _id,
-    url: `${process.env.API_URL}groups/${_id}`,
-    name,
-    description,
-    createdBy,
-    updatedBy,
-    tags,
-    activeImage,
-    displays,
-    images,
-    resolution,
-    userGroup: req.AuthData.userGroup,
-  });
-  // save group
-  group
-    .save()
-  // update displays involved
-    .then(() => Display.updateMany({ _id: { $in: d_ids } }, { $addToSet: { groups: _id } })) // add the group to selected displays
-  // update images involved
-    .then(() => Image.updateMany({ _id: { $in: i_ids } }, { $addToSet: { groups: _id } })) // add the group to selected images
-  // send response
-    .then(() => Group.findById(_id)
-      .select('_id url name description tags updatedAt createdAt')
-      .exec())
-    .then((doc) => {
-      res.status(201)
-        .json({
-          message: 'Success at adding a new group to the collection',
-          notify: `Se ha creado un nuevo grupo: '${doc.name}'`,
-          success: true,
-          resourceId: doc._id,
-          resource: doc,
-        });
-    })
-  // catch any errors
-    .catch((err) => {
-      console.log(err);
-      res.status(500)
-        .json({
-          message: 'Internal Server Error',
-          error: err,
-        });
-    });
+exports.groupCreate = async (req, res) => {
+  try {
+    const {
+      body, body: { displays, images },
+    } = req;
+    const _id = new mongoose.Types.ObjectId();
+    const displaysIds = displays && displays.map(d => mongoose.Types.ObjectId(d));
+    const imagesIds = images && images.map(i => mongoose.Types.ObjectId(i));
+    body._id = _id;
+    body.url = `${process.env.API_URL}groups/${_id}`;
+    body.userGroup = req.AuthData.userGroup;
+    const group = new Group(body);
+    const newGroup = await group.save();
+    const updatePromises = [];
+    if (displaysIds) updatePromises.push(Display.updateMany({ _id: { $in: displaysIds } }, { $addToSet: { groups: _id } }).exec());
+    if (imagesIds) updatePromises.push(Image.updateMany({ _id: { $in: imagesIds } }, { $addToSet: { groups: _id } }).exec());
+    if (updatePromises) await Promise.all(updatePromises);
+    res.status(201)
+      .json({
+        message: 'Success at adding a new group to the collection',
+        notify: `Se ha creado un nuevo grupo: '${newGroup.name}'`,
+        success: true,
+        resourceId: _id,
+        resource: newGroup,
+      });
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json(error);
+  }
 };
 
 /* PUT */
-exports.group_update = (req, res) => {
-  // get the id from the request for the query
-  const _id = req.params.id;
-  // get displays and images ids from the request
-  const { displays, images, userGroup } = req.body;
-  // create displays and images ids from data received
-  const d_ids = displays && displays.map(d => mongoose.Types.ObjectId(d));
-  const i_ids = images && images.map(i => mongoose.Types.ObjectId(i));
-  const u_id = mongoose.Types.ObjectId(userGroup);
-  // update the group based on its id
-  Group
-  // update group
-    .findOneAndUpdate({ _id, userGroup: req.AuthData.userGroup }, { $set: req.body })
-  // update displays involved
-    .then(() => Display.updateMany({ groups: _id }, { $unset: { group: undefined } })) // remove the group from all displays that have its ref
-    .then(() => Display.updateMany({ _id: { $in: d_ids } }, { group: _id })) // add the group to selected displays
-  // update images involved
-    .then(() => Image.updateMany({ groups: _id }, { $pull: { groups: _id } })) // remove the group from all images that have its ref
-    .then(() => Image.updateMany({ _id: { $in: i_ids } }, { $addToSet: { groups: _id } })) // add the group to selected images
-  // update userGroups involved
-    .then(() => UserGroup.updateMany({ groups: _id }, { $pull: { groups: _id } })) // remove the group from all userGroups that have its ref
-    .then(() => UserGroup.update({ _id: u_id }, { $addToSet: { groups: _id } })) // add the group to selected userGroup
-  // send response
-    .then(res => Group.findById(_id)
-      .select('_id url name description tags updatedAt createdAt')
-      .exec())
-    .then((doc) => {
-      res.status(201)
-        .json({
-          message: 'Success at updating a group from the collection',
-          success: true,
-          resourceId: doc._id,
-          resource: doc,
-        });
-    })
-  // catch any errors
-    .catch((err) => {
-      console.log(err);
-      res.status(500)
-        .json({
-          message: 'Internal Server Error',
-          error: err,
-        });
-    });
+exports.groupUpdate = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { body, body: { displays, images } } = req;
+    const displaysIds = displays && displays.map(d => mongoose.Types.ObjectId(d));
+    const imagesIds = images && images.map(i => mongoose.Types.ObjectId(i));
+    const userGroupId = mongoose.Types.ObjectId(req.AuthData.userGroup);
+    body.userGroup = req.AuthData.userGroup;
+    const group = Group.findOneAndUpdate({ _id: id, userGroup: req.AuthData.userGroup }, { $set: body });
+    const pullPromises = [];
+    const pushPromises = [];
+    if (group) {
+      pullPromises.push(UserGroup.updateMany({ groups: id }, { $pull: { groups: id } }).exec());
+      pushPromises.push(UserGroup.update({ _id: userGroupId }, { $addToSet: { groups: id } }).exec());
+      if (displaysIds) {
+        pullPromises.push(Display.updateMany({ groups: id }, { $unset: { group: undefined } }).exec());
+        pushPromises.push(Display.updateMany({ _id: { $in: displaysIds } }, { group: id }).exec());
+      }
+      if (imagesIds) {
+        pullPromises.push(Image.updateMany({ groups: id }, { $pull: { groups: id } }).exec());
+        pushPromises.push(Image.updateMany({ _id: { $in: imagesIds } }, { $addToSet: { groups: id } }).exec());
+      }
+      if (pullPromises) await Promise.All(pullPromises);
+      if (pushPromises) await Promise.All(pushPromises);
+      res.status(201).json({
+        message: 'Success at updating a group from the collection',
+        success: true,
+        resourceId: group._id,
+        resource: group,
+      });
+    } else {
+      res.status(404).json({ message: 'Not valid entry for provided id' });
+    }
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json(error);
+  }
 };
 
 /* DELETE */
-exports.group_delete = (req, res) => {
-  // get id from request parameters
-  const _id = req.params.id;
-  const query = req.AuthData.admin ? { _id } : { _id, userGroup: req.AuthData.userGroup };
-  // delete document from collection
-  Group
-    .findOneAndDelete(query)
-    .exec()
-    .then((doc) => {
-      if (doc) {
-        return Promise.all([
-          Display.updateMany({ groups: _id }, { $unset: { group: _id } }),
-          Image.updateMany({ groups: _id }, { $pull: { groups: _id } }),
-        ])
-          .then(() => {
-            res.status(200)
-              .json({
-                message: 'Success at removing a group from the collection',
-                success: true,
-                resourceId: _id,
-              });
-          });
-      }
-      res.status(404)
-        .json({ message: 'No valid entry found for provided id within the user group' });
-    })
-  // catch any errors
-    .catch((err) => {
-      res.status(500)
-        .json({
-          message: 'Internal Server Error',
-          error: err,
-        });
-    });
+exports.groupDelete = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const query = req.AuthData.admin ? { _id: id } : { _id: id, userGroup: req.AuthData.userGroup };
+    const group = Group.findOneAndDelete(query).exec();
+    if (group) {
+      await Promise.all([
+        Display.updateMany({ groups: id }, { $unset: { group: id } }),
+        Image.updateMany({ groups: id }, { $pull: { groups: id } }),
+      ]);
+      res.status(200).json({
+        message: 'Success at removing a group from the collection',
+        success: true,
+        resourceId: id,
+      });
+    } else {
+      res.status(400).json({ message: 'No valid entry for provided id' });
+    }
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json(error);
+  }
 };

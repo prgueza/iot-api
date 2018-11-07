@@ -42,20 +42,17 @@ exports.locationsGetOne = async (req, res) => {
 };
 
 /* POST */
-exports.locationCreate = (req, res) => {
+exports.locationCreate = async (req, res) => {
   try {
     if (!req.AuthData.admin) {
       res.status(401).json({ message: 'Not allowed' });
     } else {
       const _id = new mongoose.Types.ObjectId();
-      const { name, description } = req.body;
-      const location = new Location({
-        _id,
-        name,
-        description,
-        url: `${process.env.API_URL}locations/${_id}`,
-      });
-      const newLocation = location.save().select('_id name description url createdAt updatedAt');
+      const { body } = req;
+      body.url = `${process.env.API_URL}locations/${_id}`;
+      body._id = _id;
+      const location = new Location(body);
+      const newLocation = await location.save();
       res.status(201).json({
         message: 'Success at adding a location from the collection',
         success: true,

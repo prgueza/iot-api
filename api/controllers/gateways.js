@@ -51,23 +51,13 @@ exports.gatewayCreate = async (req, res) => {
     if (!req.AuthData.admin) {
       res.status(401).json({ error: 'Not allowed' });
     } else {
-      const {
-        name, description, location, createdBy, mac, ip, port,
-      } = req.body;
+      const { body, body: { ip, port } } = req;
       const _id = new mongoose.Types.ObjectId();
-      const gateway = new Gateway({
-        _id,
-        name,
-        description,
-        location,
-        createdBy,
-        mac,
-        ip,
-        port,
-        url: `${process.env.API_URL}gateways/${_id}`,
-        sync: `http://${ip}:${port}/devices`, // TODO: remove this
-      });
-      const newGateway = await gateway.save().populate('_ud url name description createdAt updatedAt');
+      body._id = _id;
+      body.url = `${process.env.API_URL}gateways/${_id}`;
+      body.sync = `http://${ip}:${port}/devices`; // TODO: remove this
+      const gateway = new Gateway(body);
+      const newGateway = await gateway.save();
       res.status(201).json({
         message: 'Success at adding a new gateway to the collection',
         success: true,
@@ -92,7 +82,7 @@ exports.gatewayUpdate = async (req, res) => {
       const gateway = await Gateway.findOneAndUpdate({ _id }, { $set: req.body }, { new: true });
       if (gateway) {
         res.status(200).json({
-          message: 'Success at adding a new display to the collection',
+          message: 'Success at updating a Gateway from the collection',
           notify: `${gateway.name} actualizada`,
           success: true,
           resourceId: _id,

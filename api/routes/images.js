@@ -35,17 +35,17 @@ const upload = multer({
 });
 
 /* API GET */
-router.get('/', checkAuth, ImagesController.images_get_all);
-router.get('/:id', checkAuth, ImagesController.images_get_one);
+router.get('/', checkAuth, ImagesController.imagesGetAll);
+router.get('/:id', checkAuth, ImagesController.imagesGetOne);
 
 /* API POST */
-router.post('/', checkAuth, ImagesController.image_create);
-router.post('/:id', upload.single('image'), ImagesController.image_upload);
+router.post('/', checkAuth, ImagesController.imageCreate);
+router.post('/:id', upload.single('image'), ImagesController.imageUpload);
 
 /* API PUT */
-router.put('/:id', checkAuth, ImagesController.image_update);
+router.put('/:id', checkAuth, ImagesController.imageUpdate);
 
 /* API DELETE */
-router.delete('/:id', checkAuth, ImagesController.image_delete);
+router.delete('/:id', checkAuth, ImagesController.imageDelete);
 
 module.exports = router;

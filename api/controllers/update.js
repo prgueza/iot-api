@@ -139,12 +139,12 @@ exports.update = async (req, res) => {
 };
 
 
-exports.update_image = async (req, res) => {
+exports.updateImage = async (req, res) => {
   // get id for the display
-  const _id = req.params.id;
+  const { id } = req.params;
   // get device and image information from the display resource
   try {
-    const display = await Display.findById(_id).select('device activeImage');
+    const display = await Display.findById(id).select('device activeImage');
     const image = await Image.findById(mongoose.Types.ObjectId(display.activeImage)).select('path');
     const device = await Device.findById(mongoose.Types.ObjectId(display.device)).select('gateway mac').populate('gateway', 'sync');
     const file = fs.readFileSync(image.path);
@@ -155,11 +155,12 @@ exports.update_image = async (req, res) => {
         mac: device.mac,
       },
       headers: form.getHeaders(),
-      timeout: 30000,
+      timeout: 50000,
     };
     const response = await axios.put(device.gateway.sync, form, config);
     res.status(200).json({
       message: 'Imagen enviada a la pantalla con éxito',
+      notify: 'Imagen enviada a la pantalla con éxito',
       response: response.data,
     });
   } catch (e) {

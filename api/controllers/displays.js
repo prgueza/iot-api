@@ -81,30 +81,23 @@ exports.displaysGetOne = async (req, res) => {
 exports.displayCreate = async (req, res) => {
   try {
     const {
-      name, description, category, updatedBy, createdBy, images, image, group, tags, device,
-    } = req.body;
+      body, body: {
+        images, group, device,
+      },
+    } = req;
     // _id for the new document
     const _id = new mongoose.Types.ObjectId();
     // create displays and groups ids from data received
     const iIDs = images && images.map(i => mongoose.Types.ObjectId(i));
     const gID = group && mongoose.Types.ObjectId(group);
     const dID = mongoose.Types.ObjectId(device);
+    // set new properties to the body object
+    body._id = _id;
+    body.url = `${process.env.API_URL}displays/${_id}`;
+    body.activeImage = body.image;
+    body.userGroup = req.AuthData.userGroup;
     // build the new display from its model
-    const display = new Display({
-      _id,
-      name,
-      description,
-      updatedBy,
-      createdBy,
-      category,
-      group,
-      images,
-      tags,
-      device,
-      url: `${process.env.API_URL}displays/${_id}`,
-      activeImage: image,
-      userGroup: req.AuthData.userGroup,
-    });
+    const display = new Display(body);
     // Save the display
     await display.save();
     // Update resources involved
@@ -140,147 +133,51 @@ exports.displayCreate = async (req, res) => {
 
 
 /* UPDATE (PUT) */
-exports.displayUpdate = (req, res) => {
-  // get the id from the request for the query
-  const _id = req.params.id;
-  // get displays and images ids from the request
-  const {
-    images,
-    group,
-    device,
-  } = req.body;
-  // create displays and images ids from data received
-  const i_ids = images && images.map(image => mongoose.Types.ObjectId(image));
-  const g_id = group && mongoose.Types.ObjectId(group);
-  const d_id = device && mongoose.Types.ObjectId(device);
-  // save for response
-  let doc;
-  Display.findOneAndUpdate({ // update display
-    _id,
-    userGroup: req.AuthData.userGroup,
-  }, {
-    $set: req.body,
-  }, {
-    new: true,
-  })
-    .then((doc) => {
-      if (doc) {
-        let updatePromises = [];
-        if (i_ids) {
-          updatePromises.push(Image.updateMany({
-            displays: _id,
-          }, {
-            $pull: {
-              displays: _id,
-            },
-          })
-            .exec().catch(e => console.log(JSON.stringify({
-              message: 'Error updating referenced images',
-              error: e,
-            }, null, ' '))));
-        }
-        if (g_id) {
-          updatePromises.push(Group.update({
-            displays: _id,
-          }, {
-            $pull: {
-              displays: _id,
-            },
-          })
-            .exec().catch(e => console.log(JSON.stringify({
-              message: 'Error updating referenced groups',
-              error: e,
-            }, null, ' '))));
-        }
-        if (d_id) {
-          updatePromises.push(Device.updateMany({
-            displays: _id,
-          }, {
-            $pull: {
-              display: _id,
-            },
-          })
-            .exec().catch(e => console.log(JSON.stringify({
-              message: 'Error updating referenced displays',
-              error: e,
-            }, null, ' '))));
-        }
-        Promise.all(updatePromises)
-          .then(() => {
-            updatePromises = [];
-            if (i_ids) {
-              updatePromises.push(Image.updateMany({
-                _id: {
-                  $in: i_ids,
-                },
-              }, {
-                $addToSet: {
-                  displays: _id,
-                },
-              })
-                .exec().catch(e => console.log(e)));
-            }
-            if (g_id) {
-              updatePromises.push(Group.updateMany({
-                _id: g_id,
-              }, {
-                $addToSet: {
-                  displays: _id,
-                },
-              })
-                .exec().catch(e => console.log(e)));
-            }
-            if (d_id) {
-              updatePromises.push(Device.update({
-                _id: d_id,
-              }, {
-                $set: {
-                  display: _id,
-                },
-              })
-                .exec().catch(e => console.log(e)));
-            }
-            Promise.all(updatePromises);
-          })
-          .then(() => Promise.all([
-            Display.findOne(mongoose.Types.ObjectId(_id))
-              .select('_id url name description tags device updatedAt createdAt')
-              .populate('device', '_id url name initcode')
-              .exec(),
-            Device.find({
-              userGroup: req.AuthData.userGroup,
-            })
-              .select('_id url name description display updatedAt createdAt')
-              .populate('display', '_id url name description')
-              .exec(),
-          ]))
-          .then((doc) => {
-            setTimeout(() => {
-              res.status(201)
-                .json({
-                  message: 'Succes at updating a display from the collection',
-                  notify: `'${doc[0].name}' actualizado`,
-                  success: true,
-                  resourceId: _id,
-                  resource: doc[0],
-                  devices: doc[1],
-                });
-            }, 0);
-          });
-      } else {
-        res.status(401)
-          .json({
-            error: 'No valid entry found for provided id within the user group',
-          });
+exports.displayUpdate = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {
+      images,
+      group,
+      device,
+    } = req.body;
+    const imageIds = images && images.map(image => mongoose.Types.ObjectId(image));
+    const groupId = group && mongoose.Types.ObjectId(group);
+    const deviceId = device && mongoose.Types.ObjectId(device);
+    const display = await Display.findByIdAndUpdate(id, { $set: req.body }, { new: true });
+    const pullPromises = [];
+    const pushPromises = [];
+    if (display) {
+      if (imageIds) {
+        pullPromises.push(Image.updateMany({ displays: id }, { $pull: { displays: id } }).exec());
+        pushPromises.push(Image.updateMany({ _id: { $in: imageIds } }, { $addToSet: { displays: id } }).exec());
       }
-    })
-    .catch((err) => {
-      console.log(err);
-      res.status(500)
-        .json({
-          error: err,
-        });
-    });
+      if (groupId) {
+        pullPromises.push(Group.update({ displays: id }, { $pull: { displays: id } }).exec());
+        pushPromises.push(Group.update({ _id: groupId }, { $addToSet: { displays: id } }).exec());
+      }
+      if (deviceId) {
+        pullPromises.push(Device.update({ displays: id }, { $unset: { display: undefined } }).exec());
+        pushPromises.push(Device.update({ _id: deviceId }, { $set: { display: id } }).exec());
+      }
+      if (pullPromises) await Promise.all(pullPromises);
+      if (pushPromises) await Promise.all(pushPromises);
+      const devices = await Device.find().populate('display', '_id url name description').exec();
+      res.status(201).json({
+        message: 'Succes at updating a display from the collection',
+        notify: `'${display.name}' actualizado`,
+        success: true,
+        resourceId: id,
+        resource: display,
+        devices,
+      });
+    } else {
+      res.status(404).json({ message: `No valid entry for provided id: ${id}` });
+    }
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json(error);
+  }
 };
 
 /* DELETE */
