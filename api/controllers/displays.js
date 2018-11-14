@@ -189,25 +189,23 @@ exports.displayDelete = async (req, res) => {
       : { _id, userGroup: req.AuthData.userGroup };
     const display = await Display.findOneAndDelete(query);
     if (display) {
-      const device = await Promise.all([
+      await Promise.all([
         Image.updateMany({ displays: _id }, { $pull: { displays: _id } }),
         Group.update({ displays: _id }, { $pull: { displays: _id } }),
-        Device.findOneAndUpdate({ displays: _id }, { $pull: { displays: _id } }, { new: true })
-          .select('_id url name description display updatedAt createdAt')
-          .populate('display', '_id url name description')
-          .exec(),
-      ])[2];
+        Device.update({ display: _id }, { $unset: { display: '' } }),
+      ]);
+      const devices = await Device.find().select('_id url name description display').populate('display', '_id url name');
       res.status(200).json({
         message: 'Success at removing a display from the collection',
         success: true,
         resourceId: _id,
-        devices: device,
+        devices,
       });
     } else {
       res.status(404).json({ message: 'No valid entry found for provided id' });
     }
   } catch (error) {
-    console.log(error.message);
+    console.log(error);
     res.status(500).json(error);
   }
 };
