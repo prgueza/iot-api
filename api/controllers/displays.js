@@ -32,7 +32,7 @@ exports.displaysGetOne = async (req, res) => {
       ? { _id }
       : { _id, userGroup: req.AuthData.userGroup };
     const display = await Display.findOne(query)
-      .select('_id url name description category location tags images group userGroup overlayImage imageFromGroup createdBy createdAt updatedAt')
+      .select('_id url name description category location tags images group userGroup overlayImage imageFromGroup createdBy createdAt updatedAt updating lastUpdateResult')
       .populate('activeImage', '_id url name src description createdAt')
       .populate('userGroup', '_id url name')
       .populate('overlayImage.image', '_id url name src')

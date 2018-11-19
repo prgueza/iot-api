@@ -19,7 +19,14 @@ const waiting = {
 };
 
 
-function runNext() {
+async function runNext(result) {
+  const { id } = queue[0];
+  if (result) {
+    await Display.findByIdAndUpdate(id, { updating: false, lastUpdateResult: true });
+  } else {
+    await Display.findByIdAndUpdate(id, { updating: false, lastUpdateResult: false });
+  }
+  // SOCKET
   queue.shift();
   console.log('Queue status on run next');
   console.log(queue);
@@ -30,9 +37,10 @@ function runNext() {
 }
 
 class UpdateRequest {
-  constructor(id, gateway, request) {
+  constructor(id, gateway, display, request) {
     this.id = id;
     this.gateway = gateway;
+    this.display = display;
     this.request = request;
     this.shouldRun();
   }
@@ -51,7 +59,7 @@ class UpdateRequest {
   }
 
   shouldRun() {
-    if (queue.length === 0 || queue[0].id === this.id) {
+    if (queue.length === 0) {
       this.runRequest();
     }
   }
@@ -187,10 +195,28 @@ exports.update = async (req, res) => {
 exports.updateImage = async (req, res) => {
   try {
     const { id } = req.params;
+
+    const deviceInQueue = queue.filter(device => device.id === id);
+
+    if (deviceInQueue.length > 0) {
+      res.status(300).json({
+        notify: 'La imagen está en cola o siendo procesada',
+      });
+      return;
+    }
+
     const display = await Display.findById(id).select('device activeImage');
     const image = await Image.findById(mongoose.Types.ObjectId(display.activeImage)).select('path');
     const device = await Device.findById(mongoose.Types.ObjectId(display.device)).select('gateway mac').populate('gateway', '_id sync');
     const file = fs.readFileSync(image.path);
+
+    if (!display || !image || !device || !file) {
+      const error = {
+        message: 'Something went wrong!',
+      };
+      throw error;
+    }
+
     const form = new FormData();
     form.append('image', file, 'image.bmp');
     const config = {
@@ -202,29 +228,34 @@ exports.updateImage = async (req, res) => {
     };
 
     const axiosRequest = () => axios.put(device.gateway.sync, form, config)
-      .then((response) => {
+      .then(async (response) => {
         if (response.status === 200) {
           console.log(`Success: ${response.status}`);
           console.log(`Message: ${JSON.stringify(response.data, null, null)}`);
+          runNext(true);
         } else {
           console.log(`Error: ${response.status}`);
           console.log(`Message: ${response.data}`);
+          runNext(false);
         }
-        return runNext();
       })
       .catch((err) => {
         console.log(err.response.data);
-        return runNext();
+        return runNext(false);
       });
 
-    const request = new UpdateRequest(id, device.gateway._id, axiosRequest);
 
+    const resource = await Display.findByIdAndUpdate(id, { $set: { updating: true } }, { new: true }).select('_id url name description tags device updatedAt createdAt').populate('device', '_id url name initcode').exec();
+
+    const request = new UpdateRequest(id, device.gateway._id, display._id, axiosRequest);
     queue.push(request);
     console.log('Queue status on shouldRun:');
     console.log(queue);
 
     res.status(200).json({
       notify: 'La imagen está siendo procesada',
+      resourceId: display._id,
+      resource,
     });
   } catch (e) {
     const error = {

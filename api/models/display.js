@@ -18,6 +18,8 @@ const displaySchema = mongoose.Schema({
   images: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Image' }],
   group: { type: mongoose.Schema.Types.ObjectId, ref: 'Group' },
   device: { type: mongoose.Schema.Types.ObjectId, ref: 'Device' },
+  updating: { type: Boolean, default: false },
+  lastUpdateResult: { type: Boolean, default: true },
   userGroup: { type: mongoose.Schema.Types.ObjectId, ref: 'UserGroup' },
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
