@@ -3,6 +3,7 @@ const axios = require('axios');
 const fs = require('fs');
 const FormData = require('form-data');
 const moment = require('moment');
+const Store = require('data-store');
 
 /* DATA MODELS */
 const Display = require('../models/display');
@@ -10,11 +11,64 @@ const Image = require('../models/image');
 const Device = require('../models/device');
 const Gateway = require('../models/gateway');
 
-let lastUpdate = moment();
-let waiting = false;
+const store = new Store({ path: 'config.json' });
+const queue = [];
+const waiting = {
+  update: false,
+  updateImage: false,
+};
+
+
+async function runNext(result) {
+  const { id } = queue[0];
+  if (result) {
+    await Display.findByIdAndUpdate(id, { updating: false, lastUpdateResult: true });
+  } else {
+    await Display.findByIdAndUpdate(id, { updating: false, lastUpdateResult: false });
+  }
+  // SOCKET
+  queue.shift();
+  console.log('Queue status on run next');
+  console.log(queue);
+  if (queue.length > 0) {
+    console.log('Queue not empty');
+    queue[0].runRequest();
+  }
+}
+
+class UpdateRequest {
+  constructor(id, gateway, display, request) {
+    this.id = id;
+    this.gateway = gateway;
+    this.display = display;
+    this.request = request;
+    this.shouldRun();
+  }
+
+  getId() {
+    return this.id;
+  }
+
+  getRequest() {
+    return this.request;
+  }
+
+  runRequest() {
+    console.log(`Running request with id ${this.id}`);
+    this.request();
+  }
+
+  shouldRun() {
+    if (queue.length === 0) {
+      this.runRequest();
+    }
+  }
+}
+
 
 exports.update = async (req, res) => {
   try {
+    const lastUpdate = store.get('lastUpdate');
     // Log last update
     console.log(`Last update was ${moment().diff(lastUpdate, 'seconds')} seconds ago`);
     // Array where all the found devices will be stored
@@ -24,7 +78,7 @@ exports.update = async (req, res) => {
       ? { userGroup: req.AuthData.userGroup }
       : {};
     // If last update was made more than a minute ago
-    if (waiting) {
+    if (waiting.update) {
       const error = {
         message: 'Waiting for another request to finish',
         status: 500,
@@ -32,7 +86,7 @@ exports.update = async (req, res) => {
       throw error;
     } else if (moment().diff(lastUpdate, 'seconds') > 5) {
       // Set waiting flag to true
-      waiting = true;
+      waiting.update = true;
       // Log
       console.log('Updating...');
       // Get all gateways sync url stored in the database
@@ -46,6 +100,7 @@ exports.update = async (req, res) => {
       if (responses === undefined) {
         const error = {
           message: 'None of the gateways was reachable.',
+          notify: 'No hay puertas de enlace disponibles.',
           status: 400,
         };
         throw error;
@@ -90,6 +145,7 @@ exports.update = async (req, res) => {
       if (devices.length === 0) {
         const error = {
           message: 'None of the gateways found any device.',
+          notify: 'No se ha encontrado ningún dispositivo.',
           status: 400,
         };
         throw error;
@@ -110,10 +166,12 @@ exports.update = async (req, res) => {
       // Perform a bulkwrite operation and wait for it to finish
       await Device.bulkWrite(updateOps);
       // set lastUpdate to now
-      lastUpdate = moment();
+      store.set('lastUpdate', moment());
+      console.log('Data store updated to:');
+      console.log(store.data);
     }
     // Get the devices back from the database
-    const updatedDevices = await Device.find(query).select('_id url name description mac found lastFound batt rssi initcode screen gateway createdAt updatedAt').populate('gateway', '_id name description mac url').exec();
+    const updatedDevices = await Device.find(query).select('_id url name display description mac found lastFound batt rssi initcode screen gateway createdAt updatedAt').populate('gateway', '_id name description mac url').exec();
     // Map devices for the responses
     updatedDevices.map((d) => {
       const device = d;
@@ -122,34 +180,43 @@ exports.update = async (req, res) => {
       return device;
     });
     // unblock
-    waiting = false;
+    waiting.update = false;
     // Send response with the devices
     res.status(200).json(updatedDevices);
   } catch (error) {
     // unblock
-    waiting = false;
+    waiting.update = false;
     // log and return errors
     console.log(error.message);
     res.status(error.status || 401).json({ error });
   }
 };
 
-
-exports.update_image = async (req, res) => {
-  // get id for the display
-  const _id = req.params.id;
-  // get device and image information from the display resource
+exports.updateImage = async (req, res) => {
   try {
-    const display = await Display.findById(_id).select('device activeImage');
-    console.log(`Display found with id: ${display._id}`);
+    const { id } = req.params;
+
+    const deviceInQueue = queue.filter(device => device.id === id);
+
+    if (deviceInQueue.length > 0) {
+      res.status(300).json({
+        notify: 'La imagen está en cola o siendo procesada',
+      });
+      return;
+    }
+
+    const display = await Display.findById(id).select('device activeImage');
     const image = await Image.findById(mongoose.Types.ObjectId(display.activeImage)).select('path');
-    console.log(`Image found with id: ${image._id}`);
-    console.log(`The file's path is: ${image.path}`);
-    const device = await Device.findById(mongoose.Types.ObjectId(display.device)).select('gateway mac').populate('gateway', 'sync');
-    console.log(`The device to which this display is linked has the id: ${display.device}`);
-    console.log(`This device has this mac: ${device.mac}`);
-    console.log(`The url for uploading the image is: ${device.gateway.sync}/?mac=${device.mac}`);
+    const device = await Device.findById(mongoose.Types.ObjectId(display.device)).select('gateway mac').populate('gateway', '_id sync');
     const file = fs.readFileSync(image.path);
+
+    if (!display || !image || !device || !file) {
+      const error = {
+        message: 'Something went wrong!',
+      };
+      throw error;
+    }
+
     const form = new FormData();
     form.append('image', file, 'image.bmp');
     const config = {
@@ -157,11 +224,38 @@ exports.update_image = async (req, res) => {
         mac: device.mac,
       },
       headers: form.getHeaders(),
-      timeout: 30000,
+      timeout: 50000,
     };
-    await axios.put(device.gateway.sync, form, config);
+
+    const axiosRequest = () => axios.put(device.gateway.sync, form, config)
+      .then(async (response) => {
+        if (response.status === 200) {
+          console.log(`Success: ${response.status}`);
+          console.log(`Message: ${JSON.stringify(response.data, null, null)}`);
+          runNext(true);
+        } else {
+          console.log(`Error: ${response.status}`);
+          console.log(`Message: ${response.data}`);
+          runNext(false);
+        }
+      })
+      .catch((err) => {
+        console.log(err.response.data);
+        return runNext(false);
+      });
+
+
+    const resource = await Display.findByIdAndUpdate(id, { $set: { updating: true } }, { new: true }).select('_id url name description tags device updatedAt createdAt').populate('device', '_id url name initcode').exec();
+
+    const request = new UpdateRequest(id, device.gateway._id, display._id, axiosRequest);
+    queue.push(request);
+    console.log('Queue status on shouldRun:');
+    console.log(queue);
+
     res.status(200).json({
-      message: 'Imagen enviada a la pantalla con éxito',
+      notify: 'La imagen está siendo procesada',
+      resourceId: display._id,
+      resource,
     });
   } catch (e) {
     const error = {

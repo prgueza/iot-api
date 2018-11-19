@@ -10,6 +10,6 @@ const checkAuth = require('../middleware/check-auth');
 router.get('/', checkAuth, UpdateController.update);
 
 /* API PUT */
-router.post('/:id', checkAuth, UpdateController.update_image);
+router.post('/:id', checkAuth, UpdateController.updateImage);
 
 module.exports = router;

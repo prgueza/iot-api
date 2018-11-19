@@ -7,19 +7,19 @@ const UsersController = require('../controllers/users.js');
 const checkAuth = require('../middleware/check-auth');
 
 /* API SIGNUP */
-router.post('/signup', UsersController.user_signup);
+router.post('/signup', UsersController.userSignup);
 
 /* API LOGIN */
-router.post('/login', UsersController.user_login);
+router.post('/login', UsersController.userLogin);
 
 /* API GET */
-router.get('/', checkAuth, UsersController.users_get_all);
-router.get('/:id', checkAuth, UsersController.users_get_one);
+router.get('/', checkAuth, UsersController.usersGetAll);
+router.get('/:id', checkAuth, UsersController.usersGetOne);
 
 /* API PATCH */
-router.put('/:id', checkAuth, UsersController.user_update);
+router.put('/:id', checkAuth, UsersController.userUpdate);
 
 /* API DELETE */
-router.delete('/:id', checkAuth, UsersController.user_delete);
+router.delete('/:id', checkAuth, UsersController.userDelete);
 
 module.exports = router;

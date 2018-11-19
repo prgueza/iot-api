@@ -4,7 +4,7 @@ const Device = require('../models/device');
 const Display = require('../models/display');
 
 /* GET ALL -  Authorization: Only admin users can get ALL the devices */
-exports.devices_get_all = async (req, res) => {
+exports.devicesGetAll = async (req, res) => {
   try {
     if (!req.AuthData.admin) {
       res.status(401).json({ error: 'Not allowed' });
@@ -27,7 +27,7 @@ exports.devices_get_all = async (req, res) => {
 };
 
 /* GET ONE - Authorization: Only admin users or users from the same userGroup as the device can get said device */
-exports.devices_get_one = async (req, res) => {
+exports.devicesGetOne = async (req, res) => {
   try {
     const _id = req.params.id;
     const device = await Device.findById(_id)
@@ -59,7 +59,7 @@ exports.devices_get_one = async (req, res) => {
 };
 
 /* PUT */
-exports.device_update = async (req, res) => {
+exports.deviceUpdate = async (req, res) => {
   try {
     // If the user has no admin privileges answer with an error
     if (!req.AuthData.admin) {
@@ -71,23 +71,25 @@ exports.device_update = async (req, res) => {
     // If it's not assigned to a usergroup set the property as undefined
     if (!req.body.userGroup) req.body.userGroup = undefined;
     // Update and get the device
-    const device = await Device.findOneAndUpdate({ _id: id }, {
-      $set: req.body,
-    }, { new: true })
+    const device = await Device.findByIdAndUpdate({ _id: req.params.id }, { $set: req.body }, { new: true })
       .select('_id url name description gateway mac found batt rssi screen initcode userGroup createdAt updatedAt')
       .populate('gateway', '_id url name mac')
       .populate('userGroup', '_id url name')
       .exec();
-    // Set the url manually
-    device.url = `http://localhost:4000/devices/${device._id}`;
-    // Send a response
-    res.status(200).json({
-      message: 'Success at updating the device',
-      notify: `(${device.initcode}) - ${device.name} actualizado`,
-      success: true,
-      resourceId: id,
-      resource: device,
-    });
+    if (device) {
+      // Set the url manually
+      device.url = `http://localhost:4000/devices/${device._id}`;
+      // Send a response
+      res.status(200).json({
+        message: 'Success at updating the device',
+        notify: `(${device.initcode}) - ${device.name} actualizado`,
+        success: true,
+        resourceId: id,
+        resource: device,
+      });
+    } else {
+      res.status(404).json({ message: 'No valid entry for provided id' });
+    }
   } catch (error) {
     // Log errors
     console.log(error.message);
@@ -96,7 +98,7 @@ exports.device_update = async (req, res) => {
 };
 
 /* DELETE */
-exports.device_delete = async (req, res) => {
+exports.deviceDelete = async (req, res) => {
   try {
     // If the user has no admin privileges answer with an error
     if (!req.AuthData.admin) {
@@ -108,13 +110,17 @@ exports.device_delete = async (req, res) => {
     // Delete and get the device
     const device = await Device.findByIdAndDelete(id).exec();
     // Delete the associated display if any
-    await Display.findByIdAndDelete(device.display._id);
-    // Send a response
-    res.status(200).json({
-      message: 'Success at removing a device from the collection',
-      success: true,
-      resourceId: id,
-    });
+    if (device) {
+      if (device.display) await Display.findByIdAndDelete(device.display._id);
+      // Send a response
+      res.status(200).json({
+        message: 'Success at removing a device from the collection',
+        success: true,
+        resourceId: id,
+      });
+    } else {
+      res.status(404).json({ message: 'No valid entry for provided id' });
+    }
   } catch (error) {
     // Log errors
     console.log(error.message);
