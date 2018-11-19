@@ -18,6 +18,11 @@ const waiting = {
   updateImage: false,
 };
 
+exports.manager = (io) => {
+  io.on('connection', () => {
+    console.log('user connected');
+  });
+};
 
 async function runNext(result) {
   const { id } = queue[0];
