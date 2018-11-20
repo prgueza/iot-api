@@ -20,6 +20,7 @@ const displaySchema = mongoose.Schema({
   device: { type: mongoose.Schema.Types.ObjectId, ref: 'Device' },
   updating: { type: Boolean, default: false },
   lastUpdateResult: { type: Boolean, default: true },
+  timeline: { type: String, default: '' },
   userGroup: { type: mongoose.Schema.Types.ObjectId, ref: 'UserGroup' },
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },

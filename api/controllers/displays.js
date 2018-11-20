@@ -144,7 +144,7 @@ exports.displayUpdate = async (req, res) => {
     const imageIds = images && images.map(image => mongoose.Types.ObjectId(image));
     const groupId = group && mongoose.Types.ObjectId(group);
     const deviceId = device && mongoose.Types.ObjectId(device);
-    const display = await Display.findByIdAndUpdate(id, { $set: req.body }, { new: true });
+    const display = await Display.findByIdAndUpdate(id, { $set: req.body }, { new: true }).populate('device', '_id url name description');
     const pullPromises = [];
     const pushPromises = [];
     if (display) {

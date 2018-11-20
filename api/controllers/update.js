@@ -13,31 +13,41 @@ const Gateway = require('../models/gateway');
 
 const store = new Store({ path: 'config.json' });
 const queue = [];
+const sockets = [];
 const waiting = {
   update: false,
   updateImage: false,
 };
 
 exports.manager = (io) => {
-  io.on('connection', () => {
+  io.on('connection', (socket) => {
+    sockets.push(socket);
     console.log('user connected');
+    socket.on('login', (data) => {
+      console.log(data);
+      socket.emit('queue', queue);
+    });
   });
 };
 
-async function runNext(result) {
+async function runNext(result, response) {
+  queue[0].result = result;
+  queue[0].status = 'finished';
   const { id } = queue[0];
+  let display;
   if (result) {
-    await Display.findByIdAndUpdate(id, { updating: false, lastUpdateResult: true });
+    display = await Display.findByIdAndUpdate(id, { updating: false, lastUpdateResult: true, timeline: response.data.result }, { new: true }).populate('device', '_id url name description initcode');
   } else {
-    await Display.findByIdAndUpdate(id, { updating: false, lastUpdateResult: false });
+    display = await Display.findByIdAndUpdate(id, { updating: false, lastUpdateResult: false, timeline: response.data.error }, { new: true }).populate('device', '_id url name description initcode');
   }
-  // SOCKET
+  sockets.map(socket => socket.emit('done processing', display));
   queue.shift();
   console.log('Queue status on run next');
   console.log(queue);
   if (queue.length > 0) {
-    console.log('Queue not empty');
     queue[0].runRequest();
+    console.log('Queue not empty');
+    console.log(queue);
   }
 }
 
@@ -47,6 +57,8 @@ class UpdateRequest {
     this.gateway = gateway;
     this.display = display;
     this.request = request;
+    this.status = 'waiting';
+    this.result = false;
     this.shouldRun();
   }
 
@@ -60,6 +72,7 @@ class UpdateRequest {
 
   runRequest() {
     console.log(`Running request with id ${this.id}`);
+    this.status = 'running';
     this.request();
   }
 
@@ -200,6 +213,7 @@ exports.update = async (req, res) => {
 exports.updateImage = async (req, res) => {
   try {
     const { id } = req.params;
+    console.log(id);
 
     const deviceInQueue = queue.filter(device => device.id === id);
 
@@ -237,29 +251,33 @@ exports.updateImage = async (req, res) => {
         if (response.status === 200) {
           console.log(`Success: ${response.status}`);
           console.log(`Message: ${JSON.stringify(response.data, null, null)}`);
-          runNext(true);
+          runNext(true, response);
         } else {
           console.log(`Error: ${response.status}`);
           console.log(`Message: ${response.data}`);
-          runNext(false);
+          runNext(false, response);
         }
       })
       .catch((err) => {
         console.log(err.response.data);
-        return runNext(false);
+        return runNext(false, err.response);
       });
 
 
-    const resource = await Display.findByIdAndUpdate(id, { $set: { updating: true } }, { new: true }).select('_id url name description tags device updatedAt createdAt').populate('device', '_id url name initcode').exec();
+    const resource = await Display.findByIdAndUpdate(id, { $set: { updating: true } }, { new: true }).select('_id url name description tags device updating lastUpdateResult timeline updatedAt createdAt').populate('device', '_id url name initcode').exec();
 
     const request = new UpdateRequest(id, device.gateway._id, display._id, axiosRequest);
     queue.push(request);
     console.log('Queue status on shouldRun:');
     console.log(queue);
 
+    sockets.map(socket => socket.emit('processing', resource));
+
     res.status(200).json({
+      message: 'Success at adding a new update to the queue',
       notify: 'La imagen está siendo procesada',
-      resourceId: display._id,
+      success: true,
+      resourceId: resource._id,
       resource,
     });
   } catch (e) {
