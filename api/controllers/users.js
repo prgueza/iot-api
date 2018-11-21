@@ -117,7 +117,8 @@ exports.userLogin = async (req, res) => {
             Location.find().select('_id url name description').exec(),
             User.find().select('_id url name login email admin userGroup').populate('userGroup', '_id url name').exec(),
           ] : [
-            Display.find({ userGroup: user.userGroup._id }).select('_id url name description tags device updating lastUpdateResult timeline updatedAt createdAt').populate('device', '_id url name initcode').exec(),
+            Display.find({ userGroup: user.userGroup._id }).select('_id url name description tags device updating lastUpdateResult timeline activeImage updatedAt createdAt').populate('device', '_id url name initcode').populate('activeImage', '_id url name')
+              .exec(),
             Image.find({ userGroup: user.userGroup._id }).select('_id url name description tags src updatedAt createdAt').exec(),
             Group.find({ userGroup: user.userGroup._id }).select('_id url name description tags updatedAt createdAt').exec(),
             Device.find({ userGroup: user.userGroup._id }).select('_id url name description display updatedAt createdAt found, lastFound').populate('display', '_id url name description').exec(),

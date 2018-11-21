@@ -36,12 +36,13 @@ async function runNext(result, response) {
   const { id } = queue[0];
   let display;
   if (result) {
-    display = await Display.findByIdAndUpdate(id, { updating: false, lastUpdateResult: true, timeline: response.data.result }, { new: true }).populate('device', '_id url name description initcode');
+    display = await Display.findByIdAndUpdate(id, { updating: false, lastUpdateResult: true, timeline: response.data.result }, { new: true }).select('_id url name description tags device activeImage updating lastUpdateResult timeline createdAt updatedAt').populate('device', '_id url name description initcode').populate('activeImage', '_id url name');
   } else {
-    display = await Display.findByIdAndUpdate(id, { updating: false, lastUpdateResult: false, timeline: response.data.error }, { new: true }).populate('device', '_id url name description initcode');
+    display = await Display.findByIdAndUpdate(id, { updating: false, lastUpdateResult: false, timeline: response.data.error }, { new: true }).select('_id url name description tags device activeImage updating lastUpdateResult timeline createdAt updatedAt').populate('device', '_id url name description initcode').populate('activeImage', '_id url name');
   }
   sockets.map(socket => socket.emit('done processing', display));
   queue.shift();
+  sockets.map(socket => socket.emit('update queue', queue.map(q => q.display)));
   console.log('Queue status on run next');
   console.log(queue);
   if (queue.length > 0) {
@@ -264,13 +265,15 @@ exports.updateImage = async (req, res) => {
       });
 
 
-    const resource = await Display.findByIdAndUpdate(id, { $set: { updating: true } }, { new: true }).select('_id url name description tags device updating lastUpdateResult timeline updatedAt createdAt').populate('device', '_id url name initcode').exec();
+    const resource = await Display.findByIdAndUpdate(id, { $set: { updating: true } }, { new: true }).select('_id url name description tags device activeImage updating lastUpdateResult timeline updatedAt createdAt').populate('device', '_id url name initcode').populate('activeImage', '_id url name')
+      .exec();
 
     const request = new UpdateRequest(id, device.gateway._id, display._id, axiosRequest);
     queue.push(request);
     console.log('Queue status on shouldRun:');
     console.log(queue);
 
+    sockets.map(socket => socket.emit('update queue', queue.map(q => q.display)));
     sockets.map(socket => socket.emit('processing', resource));
 
     res.status(200).json({

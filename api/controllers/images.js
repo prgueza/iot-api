@@ -98,10 +98,10 @@ exports.imageCreate = async (req, res) => {
 exports.imageUpdate = async (req, res) => {
   try {
     const { id } = req.params;
-    const { body, body: { displays, groups } } = req.body;
+    const { body, body: { displays, groups } } = req;
     const displaysIds = displays && displays.map(display => mongoose.Types.ObjectId(display));
     const groupsIds = groups && groups.map(group => mongoose.Types.ObjectId(group));
-    const image = Image.findOneAndUpdate({ _id: id, userGroup: req.AuthData.userGroup }, { $set: body }, { new: true });
+    const image = await Image.findOneAndUpdate({ _id: id, userGroup: req.AuthData.userGroup }, { $set: body }, { new: true }).select('_id url name description tags createdAt updatedAt');
     const pullPromises = [];
     const pushPromises = [];
     if (image) {
@@ -114,15 +114,17 @@ exports.imageUpdate = async (req, res) => {
         pushPromises.push(Group.updateMany({ _id: { $in: groupsIds } }, { $addToSet: { images: id } }));
       }
     }
+    if (pullPromises) await Promise.all(pullPromises);
+    if (pushPromises) await Promise.all(pushPromises);
     res.status(201).json({
-      message: 'Succes at updating a display from the collection',
-      notify: `'${image.name}' actualizado`,
+      message: 'Succes at updating an image from the collection',
+      notify: `${image.name} actualizada`,
       success: true,
       resourceId: id,
       resource: image,
     });
   } catch (error) {
-    console.log(error.message);
+    console.log(error);
     res.status(500).json(error);
   }
 };
