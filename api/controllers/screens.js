@@ -1,13 +1,12 @@
-const mongoose = require('mongoose');
-
 /* DATA MODELS */
 const Screen = require('../models/screen.js');
+const Selections = require('./select');
 
 /* GET ALL */
 exports.screensGetAll = async (req, res) => {
   try {
     const screens = await Screen.find()
-      .select('_id url name description screenCode colorProfile size createdAt')
+      .select(Selections.screens.short)
       .exec();
     res.status(200).json(screens);
   } catch (error) {
@@ -21,7 +20,7 @@ exports.screensGetOne = async (req, res) => {
   try {
     const { id } = req.params;
     const screen = await Screen.findById(id)
-      .select('_id url name description screenCode colorProfile size createdAt')
+      .select(Selections.screens.long)
       .exec();
     if (screen) {
       res.status(200).json(screen);
@@ -41,16 +40,14 @@ exports.screenCreate = async (req, res) => {
       res.status(401).json({ message: 'Not allowed' });
     } else {
       const { body } = req;
-      const _id = new mongoose.Types.ObjectId();
-      body.url = `${process.env.API_URL}resolutions/${_id}`;
-      body._id = _id;
       const screen = new Screen(body);
-      const newScreen = await screen.save();
+      const { _id } = await screen.save();
+      const newScreen = await Screen.findById(_id).select(Selections.screens.short);
       res.status(201).json({
         message: 'Success at adding a screen from the collection',
         notify: 'Se ha creado un nuevo tamaño de pantalla',
         success: true,
-        resourceId: _id,
+        resourceId: newScreen._id,
         resource: newScreen,
       });
     }
@@ -68,7 +65,7 @@ exports.screenUpdate = async (req, res) => {
     } else {
       const { params: { id } } = req;
       const { body } = req;
-      const screen = await Screen.findByIdAndUpdate(id, { $set: body }, { new: true });
+      const screen = await Screen.findByIdAndUpdate(id, { $set: body }, { new: true }).select(Selections.screens.short);
       if (screen) {
         res.status(200).json({
           message: 'Success at updating a screen from the collection',

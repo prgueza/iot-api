@@ -1,13 +1,12 @@
-const mongoose = require('mongoose');
-
 /* DATA MODELS */
 const UserGroup = require('../models/userGroup.js');
+const Selections = require('./select');
 
 /* GET ALL */
 exports.userGroupsGetAll = async (req, res) => {
   try {
     const userGroups = await UserGroup.find()
-      .select('_id url name description createdAt')
+      .select(Selections.userGroups.short)
       .exec();
     res.status(200).json(userGroups);
   } catch (error) {
@@ -24,7 +23,7 @@ exports.userGroupsGetOne = async (req, res) => {
     } else {
       const { id } = req.params;
       const userGroup = await UserGroup.findById(id)
-        .select('_id url name description createdAt')
+        .select(Selections.userGroups.long)
         .exec();
       if (userGroup) {
         res.status(200).json(userGroup);
@@ -45,15 +44,13 @@ exports.userGroupCreate = async (req, res) => {
       res.status(401).json({ message: 'Not allowed' });
     } else {
       const { body } = req;
-      const _id = new mongoose.Types.ObjectId();
-      body.url = `${process.env.API_URL}userGroups/${_id}`;
-      body._id = _id;
       const userGroup = new UserGroup(body);
-      const newUserGroup = await userGroup.save();
+      const { _id } = await userGroup.save();
+      const newUserGroup = await UserGroup.findById(_id).select(Selections.userGroups.short);
       res.status(201).json({
         message: 'Success at adding a new usergroup to the collection',
         success: true,
-        resourceId: _id,
+        resourceId: newUserGroup._id,
         resource: newUserGroup,
       });
     }
@@ -72,7 +69,7 @@ exports.userGroupUpdate = async (req, res) => {
       const { id } = req.params;
       const userGroup = await UserGroup
         .findByIdAndUpdate({ _id: req.params.id }, { $set: req.body }, { new: true })
-        .select('_id url name description createdAt updatedAt')
+        .select(Selections.userGroups.short)
         .exec();
       if (userGroup) {
         res.status(200).json({
@@ -99,10 +96,15 @@ exports.userGroupDelete = async (req, res) => {
       res.status(401).json({ message: 'Not allowed' });
     } else {
       const { id } = req.params;
-      const userGroup = await UserGroup
-        .findByIdAndRemove(id)
-        .select('_id url name description createdAt updatedAt')
-        .exec();
+      const userGroup = await UserGroup.findById(id).select(Selections.userGroups.short);
+      if ((userGroup.users.length + userGroup.devices.length + userGroup.displays.length + userGroup.images.length + userGroup.groups.length) > 0) {
+        res.status(500).json({
+          message: 'Unable to remove a user group with associated resources',
+          notify: 'El grupo tiene recursos asociados',
+        });
+      } else {
+        userGroup.remove();
+      }
       if (userGroup) {
         res.status(200).json({
           message: 'Success at removing an usergroup from the collection',

@@ -1,7 +1,8 @@
 /* DATA MODELS */
 const moment = require('moment');
 const Device = require('../models/device');
-const Display = require('../models/display');
+// const Display = require('../models/display');
+const Selections = require('./select');
 
 /* GET ALL -  Authorization: Only admin users can get ALL the devices */
 exports.devicesGetAll = async (req, res) => {
@@ -10,8 +11,8 @@ exports.devicesGetAll = async (req, res) => {
       res.status(401).json({ error: 'Not allowed' });
     } else {
       const devices = await Device.find()
-        .select('_id url name description gateway mac found lastFound batt rssi screen initcode createdAt updatedAt')
-        .populate('gateway', '_id url name mac')
+        .select(Selections.devices.short)
+        .populate('gateway', Selections.gateways.populate)
         .exec();
       const mapDevices = devices.map((device) => {
         device.url = `${process.env.API_URL}devices/${device._id}`;
@@ -31,15 +32,15 @@ exports.devicesGetOne = async (req, res) => {
   try {
     const _id = req.params.id;
     const device = await Device.findById(_id)
-      .select('_id url name description mac mac found lastFound batt rssi initcode screen display activeImage userGroup createdBy createdAt updatedAt')
-      .populate('display', '_id url name')
-      .populate('gateway', '_id url name')
-      .populate('created_by', '_id url name')
-      .populate('updated_by', '_id url name')
-      .populate('resolution', '_id url name')
-      .populate('location', '_id url name')
-      .populate('userGroup', '_id url name')
-      .populate('active_image', '_id url name')
+      .select(Selections.devices.long)
+      .populate('display', Selections.displays.populate)
+      .populate('gateway', Selections.gateways.populate)
+      .populate('created_by', Selections.users.populate)
+      .populate('updated_by', Selections.users.populate)
+      .populate('resolution', Selections.screens.populate)
+      .populate('location', Selections.locations.populate)
+      .populate('userGroup', Selections.userGroups.populate)
+      .populate('active_image', Selections.images.populate)
       .exec();
     if (device && ((device.userGroup && req.AuthData.userGroup === device.userGroup._id) || req.AuthData.admin)) {
       device.url = `${process.env.API_URL}devices/${device._id}`;
@@ -72,9 +73,9 @@ exports.deviceUpdate = async (req, res) => {
     if (!req.body.userGroup) req.body.userGroup = undefined;
     // Update and get the device
     const device = await Device.findByIdAndUpdate({ _id: req.params.id }, { $set: req.body }, { new: true })
-      .select('_id url name description gateway mac found batt rssi screen initcode userGroup createdAt updatedAt')
-      .populate('gateway', '_id url name mac')
-      .populate('userGroup', '_id url name')
+      .select(Selections.devices.short)
+      .populate('gateway', Selections.gateways.populate)
+      .populate('userGroup', Selections.userGroups.populate)
       .exec();
     if (device) {
       // Set the url manually
@@ -105,14 +106,9 @@ exports.deviceDelete = async (req, res) => {
       console.log('Error: Not allowed');
       res.status(401).json({ error: 'Not allowed' });
     }
-    // Get the id from the request for the query
     const { id } = req.params;
-    // Delete and get the device
-    const device = await Device.findByIdAndDelete(id).exec();
-    // Delete the associated display if any
+    const device = await Device.findBy(id).remove();
     if (device) {
-      if (device.display) await Display.findByIdAndDelete(device.display._id);
-      // Send a response
       res.status(200).json({
         message: 'Success at removing a device from the collection',
         success: true,

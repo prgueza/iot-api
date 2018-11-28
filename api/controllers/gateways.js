@@ -1,7 +1,6 @@
-const mongoose = require('mongoose');
-
 /* DATA MODELS */
 const Gateway = require('../models/gateway');
+const Selections = require('./select');
 
 /* GET ALL */
 exports.gatewaysGetAll = async (req, res) => {
@@ -10,7 +9,7 @@ exports.gatewaysGetAll = async (req, res) => {
       res.status(401).json({ error: 'Not allowed' });
     } else {
       const gateways = await Gateway.find()
-        .select('_id url sync name ip mac port description createdAt updatedAt')
+        .select(Selections.gateways.short)
         .exec();
       res.status(200).json(gateways);
     }
@@ -28,10 +27,10 @@ exports.gatewaysGetOne = async (req, res) => {
     } else {
       const _id = req.params.id;
       const gateway = await Gateway.findById(_id)
-        .select('_id url name description ip mac port createdBy createdAt updatedAt')
-        .populate('createdBy', '_id url name')
-        .populate('updated_by', '_id url name')
-        .populate('location', '_id url name')
+        .select(Selections.gateways.long)
+        .populate('createdBy', Selections.users.populate)
+        .populate('updated_by', Selections.users.populate)
+        .populate('location', Selections.locations.populate)
         .exec();
       if (gateway) {
         res.status(200).json(gateway);
@@ -51,17 +50,14 @@ exports.gatewayCreate = async (req, res) => {
     if (!req.AuthData.admin) {
       res.status(401).json({ error: 'Not allowed' });
     } else {
-      const { body, body: { ip, port } } = req;
-      const _id = new mongoose.Types.ObjectId();
-      body._id = _id;
-      body.url = `${process.env.API_URL}gateways/${_id}`;
-      body.sync = `http://${ip}:${port}/devices`; // TODO: remove this
+      const { body } = req;
       const gateway = new Gateway(body);
-      const newGateway = await gateway.save();
+      const { _id } = await gateway.save();
+      const newGateway = await Gateway.findById(_id).select(Selections.gateways.short);
       res.status(201).json({
         message: 'Success at adding a new gateway to the collection',
         success: true,
-        resourceId: _id,
+        resourceId: newGateway._id,
         resource: newGateway,
       });
     }
@@ -77,9 +73,9 @@ exports.gatewayUpdate = async (req, res) => {
     if (!req.AuthData.admin) {
       res.status(401).json({ error: 'Not allowed' });
     } else {
-      const _id = req.params.id; // TODO: sync url should be generated with the update controller
+      const _id = req.params.id;
       if (req.body.port || req.body.ip) { req.body.sync = `http://${req.body.ip}:${req.body.port}/devices`; }
-      const gateway = await Gateway.findOneAndUpdate({ _id }, { $set: req.body }, { new: true });
+      const gateway = await Gateway.findOneAndUpdate({ _id }, { $set: req.body }, { new: true }).select(Selections.gateways.short);
       if (gateway) {
         res.status(200).json({
           message: 'Success at updating a Gateway from the collection',
@@ -104,13 +100,13 @@ exports.gatewayDelete = async (req, res) => {
     if (!req.AuthData.admin) {
       res.status(401).json({ error: 'Not allowed' });
     } else {
-      const _id = req.params.id;
-      const gateway = await Gateway.findByIdAndDelete(_id);
+      const { id } = req.params;
+      const gateway = await Gateway.findById(id).remove();
       if (gateway) {
         res.status(200).json({
           message: 'Success at removing a gateway from the collection',
           success: true,
-          resourceId: _id,
+          resourceId: id,
         });
       } else {
         res.status(404).json({ message: 'No valid entry found for provided id' });

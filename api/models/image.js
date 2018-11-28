@@ -18,4 +18,11 @@ const imageSchema = mongoose.Schema({
   updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
 }, { timestamps: { createdAt: 'createdAt', updatedAt: 'updatedAt' } });
 
+imageSchema.pre('save', function (next) {
+  const id = new mongoose.Types.ObjectId();
+  this._id = id;
+  this.url = `${process.env.API_URL}images/${id}`;
+  next();
+});
+
 module.exports = mongoose.model('Image', imageSchema);

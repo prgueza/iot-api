@@ -12,13 +12,14 @@ const Device = require('../models/device.js');
 const Gateway = require('../models/gateway.js');
 const Screen = require('../models/screen.js');
 const Location = require('../models/location.js');
+const Selections = require('./select');
 
 /* GET ALL */
 exports.usersGetAll = async (req, res) => {
   try {
     const users = await User.find()
-      .select('_id url name login email createdAt updatedAt admin userGroup')
-      .populate('userGroup', '_id url name')
+      .select(Selections.users.short)
+      .populate('userGroup', Selections.userGroups.populate)
       .exec();
     if (users) {
       res.status(200).json(users);
@@ -36,7 +37,7 @@ exports.usersGetOne = async (req, res) => {
   try {
     const { id } = req.params;
     const user = await User.findById(id)
-      .select('_id url name login email createdAt updatedAt admin')
+      .select(Selections.users.long)
       .exec();
     if (user) {
       res.status(200).json(user);
@@ -57,15 +58,14 @@ exports.userSignup = async (req, res) => {
     if (!existingUser) {
       bcrypt.hash(req.body.password, 10, async (err, hash) => {
         try {
-          const id = new mongoose.Types.ObjectId();
           const { body, body: { userGroup } } = req;
-          body._id = id;
-          body.url = `${process.env.API_URL}users/${id}`;
-          body.userGroup = userGroup || undefined;
+          body.userGroup = userGroup || undefined; // TODO: review if this is necessary
           body.password = hash;
           const user = new User(body);
-          const newUser = await user.save();
-          if (userGroup) await UserGroup.update({ _id: mongoose.Types.ObjectId(userGroup) }, { $addToSet: { users: id } });
+          const { _id } = await user.save();
+          const newUser = await User.findById(_id)
+            .select(Selections.users.short)
+            .populate('userGroup', Selections.userGroups.populate);
           res.status(201).json({
             message: 'Success at adding a user to the collection',
             success: true,
@@ -81,7 +81,7 @@ exports.userSignup = async (req, res) => {
       res.status(409).json({ message: 'Login exists' });
     }
   } catch (error) {
-    console.log(error.message);
+    console.log(error);
     res.status(500).json(error);
   }
 };
@@ -90,8 +90,8 @@ exports.userSignup = async (req, res) => {
 exports.userLogin = async (req, res) => {
   try {
     const user = await User.findOne({ login: req.body.login })
-      .select('_id url login password name email admin userGroup createdAt')
-      .populate('userGroup', '_id url name')
+      .select(Selections.users.long)
+      .populate('userGroup', Selections.userGroups.populate)
       .exec();
     if (user) {
       bcrypt.compare(req.body.password, user.password, async (err, result) => {
@@ -110,19 +110,27 @@ exports.userLogin = async (req, res) => {
             expiresIn: 60 * 60 * 7,
           });
           const resources = user.admin ? [
-            Device.find().select('_id url name description initcode gateway updatedAt found lastFound').populate('gateway', '_id ulr name').exec(),
-            Gateway.find().select('_id url name description ip port mac device updatedAt createdAt').exec(),
-            UserGroup.find().select('_id url name description').exec(),
-            Screen.find().select('_id url name description size screen_code color_profile').exec(),
-            Location.find().select('_id url name description').exec(),
-            User.find().select('_id url name login email admin userGroup').populate('userGroup', '_id url name').exec(),
-          ] : [
-            Display.find({ userGroup: user.userGroup._id }).select('_id url name description tags device updating lastUpdateResult timeline activeImage updatedAt createdAt').populate('device', '_id url name initcode').populate('activeImage', '_id url name')
+            Device.find().select(Selections.devices.short)
+              .populate('gateway', Selections.gateways.populate)
               .exec(),
-            Image.find({ userGroup: user.userGroup._id }).select('_id url name description tags src updatedAt createdAt').exec(),
-            Group.find({ userGroup: user.userGroup._id }).select('_id url name description tags updatedAt createdAt').exec(),
-            Device.find({ userGroup: user.userGroup._id }).select('_id url name description display updatedAt createdAt found, lastFound').populate('display', '_id url name description').exec(),
-            Screen.find().select('_id url name').exec(),
+            Gateway.find().select(Selections.gateways.short).exec(),
+            UserGroup.find().select(Selections.userGroups.short).exec(),
+            Screen.find().select(Selections.screens.short).exec(),
+            Location.find().select(Selections.locations.short).exec(),
+            User.find().select(Selections.users.short)
+              .populate('userGroup', Selections.userGroups.populate)
+              .exec(),
+          ] : [
+            Display.find({ userGroup: user.userGroup._id }).select(Selections.displays.short)
+              .populate('device', Selections.devices.populate)
+              .populate('activeImage', Selections.images.populate)
+              .exec(),
+            Image.find({ userGroup: user.userGroup._id }).select(Selections.images.short).exec(),
+            Group.find({ userGroup: user.userGroup._id }).select(Selections.groups.short).exec(),
+            Device.find({ userGroup: user.userGroup._id }).select(Selections.devices.short)
+              .populate('display', Selections.displays.populate)
+              .exec(),
+            Screen.find().select(Selections.screens.short).exec(),
           ];
           const results = await Promise.all(resources);
           const data = user.admin ? {
@@ -178,12 +186,15 @@ exports.userUpdate = async (req, res) => {
         try {
           const { body, body: { userGroup } } = req;
           body.password = hash;
+          body.userGroup = mongoose.Types.ObjectId(userGroup);
           const { id } = req.params;
-          const user = await User.findByIdAndUpdate({ _id: id }, { $set: body }, { new: true })
-            .select('_id url name login email admin userGroup createdAt updatedAt')
-            .populate('userGroup', '_id url name');
+          const user = await User.findByIdAndUpdate(id, { $set: body }, { new: true })
+            .select(Selections.users.short)
+            .populate('userGroup', Selections.userGroups.populate);
           if (user) {
-            if (userGroup) await UserGroup.update({ _id: mongoose.Types.ObjectId(userGroup) }, { $addToSet: { users: id } });
+            if (userGroup) {
+              await UserGroup.findByIdAndUpdate(mongoose.Types.ObjectId(userGroup), { $addToSet: { users: id } });
+            }
             res.status(200).json({
               message: 'Success at updating a user from the collection',
               notify: `Datos de ${user.name} actualizados`,
@@ -200,20 +211,26 @@ exports.userUpdate = async (req, res) => {
         }
       });
     } else {
-      User
-        .findByIdAndUpdate({ _id: req.params.id }, { $set: req.body }, { new: true })
-        .select('_id url name login email admin userGroup createdAt updatedAt')
-        .populate('userGroup', '_id url name')
-        .then(doc => res.status(200)
-          .json({
-            message: 'Success at updating a user from the collection',
-            notify: `Datos de ${doc.name} actualizados`,
-            success: true,
-            resourceId: doc._id,
-            resource: doc,
-          }))
-        .catch(err => res.status(500)
-          .json({ error: err }));
+      const { body, body: { userGroup } } = req;
+      body.userGroup = mongoose.Types.ObjectId(userGroup);
+      const { id } = req.params;
+      const user = await User.findByIdAndUpdate(id, { $set: body }, { new: true })
+        .select(Selections.users.short)
+        .populate('userGroup', Selections.userGroups.populate);
+      if (user) {
+        if (userGroup) {
+          await UserGroup.findByIdAndUpdate(mongoose.Types.ObjectId(userGroup), { $addToSet: { users: id } });
+        }
+        res.status(200).json({
+          message: 'Success at updating a user from the collection',
+          notify: `Datos de ${user.name} actualizados`,
+          success: true,
+          resourceId: id,
+          resource: user,
+        });
+      } else {
+        res.status(404).json({ message: 'Not valid entry for provided id' });
+      }
     }
   } catch (error) {
     console.log(error.message);
@@ -228,7 +245,7 @@ exports.userDelete = async (req, res) => {
       res.status(401).json({ message: 'Not allowed' });
     } else {
       const { id } = req.params;
-      const user = await User.findByIdAndRemove({ _id: id }).exec();
+      const user = await User.findById(id).remove();
       if (user) {
         res.status(200).json({
           message: 'Success at removing a user from the collection',

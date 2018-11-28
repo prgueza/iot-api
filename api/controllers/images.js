@@ -5,6 +5,7 @@ const fs = require('fs');
 const Group = require('../models/group');
 const Display = require('../models/display');
 const Image = require('../models/image');
+const Selections = require('./select');
 
 /* GET ALL */
 exports.imagesGetAll = async (req, res) => {
@@ -13,7 +14,7 @@ exports.imagesGetAll = async (req, res) => {
       res.status(401).json({ error: 'Not allowed' });
     } else {
       const image = await Image.find()
-        .select('_id name description tags url createdAt updatedAt')
+        .select(Selections.images.short)
         .exec();
       if (image) {
         res.status(200).json(image);
@@ -33,13 +34,13 @@ exports.imagesGetOne = async (req, res) => {
     const { id } = req.params;
     const query = req.AuthData.admin ? { _id: id } : { _id: id, userGroup: req.AuthData.userGroup };
     const image = await Image.findById(query)
-      .select('_id url name description created_by updated_by extension path size src colorProfile resolution category groups displays tags userGroup createdAt updatedAt')
-      .populate('displays', '_id url name')
-      .populate('groups', '_id url name')
-      .populate('resolution', '_id url name size')
-      .populate('created_by', '_id url name')
-      .populate('updated_by', '_id url name')
-      .populate('userGroup', '_id url name description')
+      .select(Selections.images.long)
+      .populate('displays', Selections.displays.populate)
+      .populate('groups', Selections.groups.populate)
+      .populate('resolution', Selections.screens.populate)
+      .populate('created_by', Selections.screens.populate)
+      .populate('updated_by', Selections.users.populate)
+      .populate('userGroup', Selections.userGroups.populate)
       .exec();
     if (image) {
       res.status(200).json(image);
@@ -58,34 +59,27 @@ exports.imageCreate = async (req, res) => {
     const {
       body, body: { displays, groups },
     } = req;
-    const id = new mongoose.Types.ObjectId();
     const displaysIds = displays && displays.map(d => mongoose.Types.ObjectId(d));
     const groupsIds = groups && groups.map(g => mongoose.Types.ObjectId(g));
-    body._id = id;
-    body.url = `${process.env.API_URL}images/${id}`;
-    body.size = 0;
+    body.size = 0; // TODO: get from file
     body.userGroup = req.AuthData.userGroup;
     const image = new Image(body);
-    const newImage = await image.save();
-    const pullPromises = [];
+    const newImage = await image.save().select(Selections.images.short);
     const pushPromises = [];
     if (image) {
       if (displaysIds) {
-        pullPromises.push(Display.updateMany({ _id: { $in: displaysIds } }, { $addToSet: { images: id } })).exec();
-        pushPromises.push(Display.updateMany({ _id: { $in: displaysIds } }, { $addToSet: { images: id } })).exec();
+        pushPromises.push((Display.updateMany({ _id: { $in: displaysIds } }, { $addToSet: { images: newImage._id } })).exec());
       }
       if (groupsIds) {
-        pullPromises.push(Display.updateMany({ _id: { $in: groupsIds } }, { $addToSet: { images: id } })).exec();
-        pushPromises.push(Display.updateMany({ _id: { $in: groupsIds } }, { $addToSet: { images: id } })).exec();
+        pushPromises.push((Display.updateMany({ _id: { $in: groupsIds } }, { $addToSet: { images: newImage._id } })).exec());
       }
     }
-    if (pullPromises) await Promise.all(pullPromises);
     if (pushPromises) await Promise.all(pushPromises);
     res.status(201).json({
       success: true,
       message: 'Success at uploading an image to the server',
       notify: `Imagen '${newImage.name}' creada`,
-      resourceId: id,
+      resourceId: newImage._id,
       resource: newImage,
     });
   } catch (error) {
@@ -101,7 +95,7 @@ exports.imageUpdate = async (req, res) => {
     const { body, body: { displays, groups } } = req;
     const displaysIds = displays && displays.map(display => mongoose.Types.ObjectId(display));
     const groupsIds = groups && groups.map(group => mongoose.Types.ObjectId(group));
-    const image = await Image.findOneAndUpdate({ _id: id, userGroup: req.AuthData.userGroup }, { $set: body }, { new: true }).select('_id url name description tags createdAt updatedAt');
+    const image = await Image.findOneAndUpdate({ _id: id, userGroup: req.AuthData.userGroup }, { $set: body }, { new: true }).select(Selections.images.short);
     const pullPromises = [];
     const pushPromises = [];
     if (image) {
@@ -136,7 +130,7 @@ exports.imageDelete = async (req, res) => {
     const query = req.AuthData.admin ? { _id: id } : { _id: id, userGroup: req.AuthData.userGroup };
     const image = await Image.findOneAndDelete(query).exec();
     if (image) {
-      await Promise.All([
+      await Promise.all([
         Display.updateMany({ images: id }, { $pull: { images: id } }),
         Group.updateMany({ images: id }, { $pull: { images: id } }),
       ]);
@@ -171,7 +165,7 @@ exports.imageUpload = async (req, res) => {
         path: req.file.path,
         src: process.env.API_URL + req.file.path,
       };
-      const newImage = Image.findOneAndUpdate({ _id: id }, { $set: updateObject }, { new: true }).select('_id url name description src tags createdAt updatedAt');
+      const newImage = await Image.findOneAndUpdate({ _id: id }, { $set: updateObject }, { new: true }).select(Selections.images.short);
       res.status(200)
         .json({
           success: true,

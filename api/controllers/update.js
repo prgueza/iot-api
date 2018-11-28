@@ -10,6 +10,7 @@ const Display = require('../models/display');
 const Image = require('../models/image');
 const Device = require('../models/device');
 const Gateway = require('../models/gateway');
+const Selections = require('./select');
 
 const store = new Store({ path: 'config.json' });
 const queue = [];
@@ -36,9 +37,9 @@ async function runNext(result, response) {
   const { id } = queue[0];
   let display;
   if (result) {
-    display = await Display.findByIdAndUpdate(id, { updating: false, lastUpdateResult: true, timeline: response.data.result }, { new: true }).select('_id url name description tags device activeImage updating lastUpdateResult timeline createdAt updatedAt').populate('device', '_id url name description initcode').populate('activeImage', '_id url name');
+    display = await Display.findByIdAndUpdate(id, { updating: false, lastUpdateResult: true, timeline: response.data.result }, { new: true }).select(Selections.displays.short).populate('device', Selections.devices.populate).populate('activeImage', Selections.images.populate);
   } else {
-    display = await Display.findByIdAndUpdate(id, { updating: false, lastUpdateResult: false, timeline: response.data.error }, { new: true }).select('_id url name description tags device activeImage updating lastUpdateResult timeline createdAt updatedAt').populate('device', '_id url name description initcode').populate('activeImage', '_id url name');
+    display = await Display.findByIdAndUpdate(id, { updating: false, lastUpdateResult: false, timeline: response.data.error }, { new: true }).select(Selections.displays.short).populate('device', Selections.devices.populate).populate('activeImage', Selections.images.populate);
   }
   sockets.map(socket => socket.emit('done processing', display));
   queue.shift();
@@ -190,7 +191,10 @@ exports.update = async (req, res) => {
       console.log(store.data);
     }
     // Get the devices back from the database
-    const updatedDevices = await Device.find(query).select('_id url name display description mac found lastFound batt rssi initcode screen gateway createdAt updatedAt').populate('gateway', '_id name description mac url').exec();
+    const updatedDevices = await Device.find(query)
+      .select(Selections.devices.short)
+      .populate('gateway', Selections.gateways.populate)
+      .exec();
     // Map devices for the responses
     updatedDevices.map((d) => {
       const device = d;
@@ -214,6 +218,7 @@ exports.update = async (req, res) => {
 exports.updateImage = async (req, res) => {
   try {
     const { id } = req.params;
+    const { activeImage } = req.body;
     console.log(id);
 
     const deviceInQueue = queue.filter(device => device.id === id);
@@ -226,11 +231,14 @@ exports.updateImage = async (req, res) => {
     }
 
     const display = await Display.findById(id).select('device activeImage');
-    const image = await Image.findById(mongoose.Types.ObjectId(display.activeImage)).select('path');
+    const image = activeImage
+      ? await Image.findById(mongoose.Types.ObjectId(activeImage)).select('path')
+      : await Image.findById(mongoose.Types.ObjectId(display.activeImage)).select('path');
+    console.log(image);
     const device = await Device.findById(mongoose.Types.ObjectId(display.device)).select('gateway mac').populate('gateway', '_id sync');
     const file = fs.readFileSync(image.path);
 
-    if (!display || !image || !device || !file) {
+    if (!display || !image || !device || !device.gateway || !file) {
       const error = {
         message: 'Something went wrong!',
       };
@@ -265,7 +273,7 @@ exports.updateImage = async (req, res) => {
       });
 
 
-    const resource = await Display.findByIdAndUpdate(id, { $set: { updating: true } }, { new: true }).select('_id url name description tags device activeImage updating lastUpdateResult timeline updatedAt createdAt').populate('device', '_id url name initcode').populate('activeImage', '_id url name')
+    const resource = await Display.findByIdAndUpdate(id, { $set: { updating: true, activeImage: mongoose.Types.ObjectId(image._id) } }, { new: true }).select(Selections.displays.short).populate('device', Selections.devices.populate).populate('activeImage', Selections.images.populate)
       .exec();
 
     const request = new UpdateRequest(id, device.gateway._id, display._id, axiosRequest);

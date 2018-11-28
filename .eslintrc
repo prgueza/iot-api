@@ -6,7 +6,8 @@
     "no-underscore-dangle": "off",
     "no-plusplus": "off",
     "max-len": "off",
-    "no-param-reassign": "off"
+    "no-param-reassign": "off",
+    "func-names": "off",
   },
   "env": {
       "browser": true,

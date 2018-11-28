@@ -7,12 +7,6 @@ const groupSchema = mongoose.Schema({
   description: { type: String, default: 'Sin descripcion' },
   tags: [String],
   activeImage: { type: mongoose.Schema.Types.ObjectId, ref: 'Image', default: null },
-  overlayImage: {
-    image: { type: mongoose.Schema.Types.ObjectId, ref: 'Image' },
-    size: { type: Number, default: 100 },
-    xCoordinate: { type: Number, default: 0 },
-    yCoordinate: { type: Number, default: 0 },
-  },
   displays: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Display' }],
   images: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Image' }],
   screen: { type: mongoose.Schema.Types.ObjectId, ref: 'Screen' },
@@ -20,5 +14,12 @@ const groupSchema = mongoose.Schema({
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
 }, { timestamps: { createdAt: 'createdAt', updatedAt: 'updatedAt' } });
+
+groupSchema.pre('save', function (next) {
+  const id = new mongoose.Types.ObjectId();
+  this._id = id;
+  this.url = `${process.env.API_URL}groups/${id}`;
+  next();
+});
 
 module.exports = mongoose.model('Group', groupSchema);

@@ -1,7 +1,6 @@
-const mongoose = require('mongoose');
-
 /* DATA MODELS */
 const Location = require('../models/location.js');
+const Selections = require('./select');
 
 /* GET ALL */
 exports.locationsGetAll = async (req, res) => {
@@ -10,7 +9,7 @@ exports.locationsGetAll = async (req, res) => {
       res.status(401).json({ message: 'Not allowed' });
     } else {
       const location = await Location.find()
-        .select('_id url name description createdAt')
+        .select(Selections.locations.short)
         .exec();
       res.status(200).json({ location });
     }
@@ -27,7 +26,7 @@ exports.locationsGetOne = async (req, res) => {
       res.status(401).json({ message: 'Not allowed' });
     } else {
       const location = await Location.findById(req.params.id)
-        .select('_id url name description createdAt')
+        .select(Selections.locations.long)
         .exec();
       if (location) {
         res.status(200).json({ location });
@@ -47,16 +46,14 @@ exports.locationCreate = async (req, res) => {
     if (!req.AuthData.admin) {
       res.status(401).json({ message: 'Not allowed' });
     } else {
-      const _id = new mongoose.Types.ObjectId();
       const { body } = req;
-      body.url = `${process.env.API_URL}locations/${_id}`;
-      body._id = _id;
       const location = new Location(body);
-      const newLocation = await location.save();
+      const { _id } = await location.save();
+      const newLocation = await Location.findById(_id).select(Selections.locations.short);
       res.status(201).json({
         message: 'Success at adding a location from the collection',
         success: true,
-        resourceId: _id,
+        resourceId: newLocation._id,
         resource: newLocation,
       });
     }
@@ -72,7 +69,7 @@ exports.locationUpdate = async (req, res) => {
     if (!req.AuthData.admin) {
       res.status(401).json({ message: 'Not allowed' });
     } else {
-      const location = await Location.findByIdAndUpdate({ _id: req.params.id }, { $set: req.body }, { new: true });
+      const location = await Location.findByIdAndUpdate({ _id: req.params.id }, { $set: req.body }, { new: true }).select(Selections.locations.short);
       if (location) {
         res.status(200).json({
           message: 'Success at updating an usergroup from the collection',
@@ -97,7 +94,8 @@ exports.locationDelete = async (req, res) => {
     if (!req.AuthData.admin) {
       res.status(401).json({ messgae: 'Not allowed' });
     } else {
-      const location = await Location.findByIdAndRemove({ _id: req.params.id }).exec();
+      const { id } = req.params;
+      const location = await Location.findById(id).remove();
       if (location) {
         res.status(200).json({
           message: 'Success at removing a location from the collection',
