@@ -52,18 +52,11 @@ exports.groupGetOne = async (req, res) => {
 /* POST */
 exports.groupCreate = async (req, res) => {
   try {
-    const {
-      body, body: { displays, images },
-    } = req;
-    const displaysIds = displays && displays.map(d => mongoose.Types.ObjectId(d));
-    const imagesIds = images && images.map(i => mongoose.Types.ObjectId(i));
+    const { body } = req;
     body.userGroup = req.AuthData.userGroup;
     const group = new Group(body);
-    const newGroup = await group.save().select(Selections.group.short);
-    const updatePromises = [];
-    if (displaysIds) updatePromises.push(Display.updateMany({ _id: { $in: displaysIds } }, { group: newGroup._id }).exec());
-    if (imagesIds) updatePromises.push(Image.updateMany({ _id: { $in: imagesIds } }, { $addToSet: { groups: newGroup._id } }).exec());
-    if (updatePromises) await Promise.all(updatePromises);
+    const { _id } = await group.save();
+    const newGroup = await Group.findById(_id).select(Selections.groups.short);
     res.status(201)
       .json({
         message: 'Success at adding a new group to the collection',
@@ -118,13 +111,8 @@ exports.groupUpdate = async (req, res) => {
 exports.groupDelete = async (req, res) => {
   try {
     const { id } = req.params;
-    const query = req.AuthData.admin ? { _id: id } : { _id: id, userGroup: req.AuthData.userGroup };
-    const group = Group.findOneAndDelete(query).exec();
+    const group = await Group.findById(id).remove();
     if (group) {
-      await Promise.all([
-        Display.updateMany({ groups: id }, { $unset: { group: id } }),
-        Image.updateMany({ groups: id }, { $pull: { groups: id } }),
-      ]);
       res.status(200).json({
         message: 'Success at removing a group from the collection',
         success: true,

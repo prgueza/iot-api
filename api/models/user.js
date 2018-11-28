@@ -26,7 +26,7 @@ userSchema.pre('save', async function (next) {
   this._id = id;
   this.url = `${process.env.API_URL}users/${id}`;
   if (this.userGroup) {
-    await UserGroup.update({ _id: mongoose.Types.ObjectId(this.userGroup) }, { $addToSet: { users: id } });
+    await UserGroup.update({ _id: this.userGroup }, { $addToSet: { users: id } });
   }
   next();
 });

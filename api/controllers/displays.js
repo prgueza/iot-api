@@ -122,7 +122,7 @@ exports.displayUpdate = async (req, res) => {
     const display = await Display.findByIdAndUpdate(id, { $set: body }, { new: true })
       .select(Selections.displays.short)
       .populate('activeImage', Selections.images.populate)
-      .populate('device', Selections.device.populate);
+      .populate('device', Selections.devices.populate);
     if (display) {
       if (imageIds) await Image.updateMany({ _id: { $in: imageIds } }, { $addToSet: { displays: id } }).exec();
       const devices = await Device.find()

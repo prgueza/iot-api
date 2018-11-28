@@ -33,6 +33,7 @@ displaySchema.pre('save', function (next) {
   Promise.all([
     Device.update({ _id: this.device }, { $set: { display: id } }),
     Image.updateMany({ _id: { $in: this.images } }, { $addToSet: { displays: id } }),
+    UserGroup.update({ _id: mongoose.Types.ObjectId(this.userGroup) }, { $addToSet: { displays: id } }),
   ]);
   next();
 });

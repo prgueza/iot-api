@@ -2,7 +2,7 @@ const required = '_id url name description createdAt updatedAt';
 
 const Selections = {
   devices: {
-    long: `${required} mac found lastFound batt rssi initcode screen display activeImage userGroup createdBy`,
+    long: `${required} mac found lastFound batt rssi initcode screen display activeImage userGroup updatedBy`,
     short: `${required} gateway mac found lastFound batt rssi screen initcode`,
     populate: `${required} initcode activeImage screen`,
   },
@@ -22,7 +22,7 @@ const Selections = {
     populate: `${required} activeImage`,
   },
   images: {
-    long: `${required} createdBy updatedBy extension path size src colorProfile resolution category groups displays tags userGroup`,
+    long: `${required} createdBy updatedBy extension path size src color resolution category groups displays tags userGroup`,
     short: `${required} tags`,
     populate: `${required} src`,
   },
@@ -32,9 +32,9 @@ const Selections = {
     populate: `${required}`,
   },
   screens: {
-    long: `${required} screenCode colorProfile size`,
-    short: `${required} screenCode colorProfile size`,
-    populate: `${required} screenCode colorProfile size`,
+    long: `${required} screenCode color width height`,
+    short: `${required} screenCode color width height`,
+    populate: `${required} screenCode color width height`,
   },
   userGroups: {
     long: `${required}`,

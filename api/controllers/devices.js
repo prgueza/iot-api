@@ -35,12 +35,11 @@ exports.devicesGetOne = async (req, res) => {
       .select(Selections.devices.long)
       .populate('display', Selections.displays.populate)
       .populate('gateway', Selections.gateways.populate)
-      .populate('created_by', Selections.users.populate)
-      .populate('updated_by', Selections.users.populate)
+      .populate('updatedBy', Selections.users.populate)
       .populate('resolution', Selections.screens.populate)
       .populate('location', Selections.locations.populate)
       .populate('userGroup', Selections.userGroups.populate)
-      .populate('active_image', Selections.images.populate)
+      .populate('activeImage', Selections.images.populate)
       .exec();
     if (device && ((device.userGroup && req.AuthData.userGroup === device.userGroup._id) || req.AuthData.admin)) {
       device.url = `${process.env.API_URL}devices/${device._id}`;
