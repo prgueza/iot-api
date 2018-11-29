@@ -124,7 +124,7 @@ exports.imageUpload = async (req, res) => {
       }
       const updateObject = {
         extension: req.file.mimetype,
-        size: req.file.size,
+        bytes: req.file.size,
         path: req.file.path,
         src: process.env.API_URL + req.file.path,
       };
@@ -137,9 +137,8 @@ exports.imageUpload = async (req, res) => {
           resourceId: id,
           resource: newImage,
         });
-    } else {
-      res.status(404).json({ message: 'No valid entry for provided id' });
     }
+    res.status(404).json({ message: 'No valid entry for provided id' });
   } catch (error) {
     console.log(error.message);
     res.status(500).json(error);

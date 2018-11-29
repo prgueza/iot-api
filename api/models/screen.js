@@ -6,7 +6,7 @@ const screenSchema = mongoose.Schema({
   name: { type: String, required: true },
   description: { type: String, default: 'Sin descripción' },
   screenCode: { type: String, required: true },
-  color: { type: String, default: 'greyscale', enum: ['color', 'greyscale'] },
+  color: { type: String, default: 'Escala de grises', enum: ['Color', 'Escala de grises'] },
   width: { type: Number, default: 0 },
   height: { type: Number, default: 0 },
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },

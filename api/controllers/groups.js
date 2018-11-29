@@ -1,9 +1,5 @@
-const mongoose = require('mongoose');
-
 /* DATA MODELS */
 const Group = require('../models/group');
-const Display = require('../models/display');
-const Image = require('../models/image');
 const Selections = require('./select');
 
 /* GET ALL */
@@ -75,24 +71,10 @@ exports.groupCreate = async (req, res) => {
 exports.groupUpdate = async (req, res) => {
   try {
     const { id } = req.params;
-    const { body, body: { displays, images } } = req;
-    const displaysIds = displays && displays.map(d => mongoose.Types.ObjectId(d));
-    const imagesIds = images && images.map(i => mongoose.Types.ObjectId(i));
-    const group = await Group.findOneAndUpdate({ _id: id, userGroup: req.AuthData.userGroup }, { $set: body }).select(Selections.groups.short);
-    const pullPromises = [];
-    const pushPromises = [];
+    const { body } = req;
+    const group = await Group.findByIdAndUpdate({ _id: id }, { $set: body }, { new: true }).select(Selections.groups.short).exec();
     if (group) {
-      if (displaysIds) {
-        pullPromises.push(Display.updateMany({ groups: id }, { $unset: { group: undefined } }).exec());
-        pushPromises.push(Display.updateMany({ _id: { $in: displaysIds } }, { group: id }).exec());
-      }
-      if (imagesIds) {
-        pullPromises.push(Image.updateMany({ groups: id }, { $pull: { groups: id } }).exec());
-        pushPromises.push(Image.updateMany({ _id: { $in: imagesIds } }, { $addToSet: { groups: id } }).exec());
-      }
-      if (pullPromises) await Promise.all(pullPromises);
-      if (pushPromises) await Promise.all(pushPromises);
-      res.status(201).json({
+      res.status(200).json({
         message: 'Success at updating a group from the collection',
         success: true,
         resourceId: group._id,
@@ -102,7 +84,7 @@ exports.groupUpdate = async (req, res) => {
       res.status(404).json({ message: 'Not valid entry for provided id' });
     }
   } catch (error) {
-    console.log(error.message);
+    console.log(error);
     res.status(500).json(error);
   }
 };

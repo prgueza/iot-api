@@ -71,10 +71,9 @@ exports.deviceUpdate = async (req, res) => {
     // If it's not assigned to a usergroup set the property as undefined
     if (!req.body.userGroup) req.body.userGroup = undefined;
     // Update and get the device
-    const device = await Device.findByIdAndUpdate({ _id: req.params.id }, { $set: req.body }, { new: true })
+    const device = await Device.findByIdAndUpdate({ _id: id }, { $set: req.body }, { new: true })
       .select(Selections.devices.short)
       .populate('gateway', Selections.gateways.populate)
-      .populate('userGroup', Selections.userGroups.populate)
       .exec();
     if (device) {
       // Set the url manually

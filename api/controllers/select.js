@@ -1,4 +1,4 @@
-const required = '_id url name description createdAt updatedAt';
+const required = '_id url name description createdAt updatedAt userGroup';
 
 const Selections = {
   devices: {
@@ -22,8 +22,8 @@ const Selections = {
     populate: `${required} activeImage`,
   },
   images: {
-    long: `${required} createdBy updatedBy extension path size src color resolution category groups displays tags userGroup`,
-    short: `${required} tags`,
+    long: `${required} createdBy updatedBy extension path size src color bytes category groups displays tags userGroup`,
+    short: `${required} tags src`,
     populate: `${required} src`,
   },
   locations: {

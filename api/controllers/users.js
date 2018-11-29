@@ -120,6 +120,9 @@ exports.userLogin = async (req, res) => {
             User.find().select(Selections.users.short)
               .populate('userGroup', Selections.userGroups.populate)
               .exec(),
+            Display.find().select(Selections.displays.short).exec(),
+            Image.find().select(Selections.images.short).exec(),
+            Group.find().select(Selections.groups.short).exec(),
           ] : [
             Display.find({ userGroup: user.userGroup._id }).select(Selections.displays.short)
               .populate('device', Selections.devices.populate)
@@ -143,6 +146,9 @@ exports.userLogin = async (req, res) => {
             screens: results[3],
             locations: results[4],
             users: results[5],
+            displays: results[6],
+            images: results[7],
+            groups: results[8],
           } : {
             displays: results[0],
             images: results[1],

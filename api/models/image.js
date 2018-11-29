@@ -12,7 +12,7 @@ const imageSchema = mongoose.Schema({
   src: String,
   path: { type: String, default: null },
   extension: { type: String, default: 'Sin definir' },
-  size: { type: String, default: 0 },
+  bytes: { type: String, default: 0 },
   category: { type: String, default: 'Sin categoría' },
   color: { type: String, enum: ['Color', 'Escala de grises'] },
   tags: [String],
@@ -32,12 +32,14 @@ imageSchema.pre('save', function (next) {
   next();
 });
 
-// After removing a display, it must be removed from any resource that may reference him
+// After removing an image, it must be removed from any resource that may reference him
 imageSchema.post('remove', { query: true, document: false }, function () {
+  const Display = require('./display.js');
+  const Group = require('./group.js');
   const { _id } = this.getQuery();
   Promise.all([
     UserGroup.findOneAndUpdate({ images: _id }, { $pull: { images: _id } }),
-    Display.findOneAndUpdate({ images: _id }, { $pull: { images: _id } }),
+    Display.updateMany({ images: _id }, { $pull: { images: _id } }),
     Group.updateMany({ images: _id }, { $pull: { images: _id } }),
   ]);
 });
