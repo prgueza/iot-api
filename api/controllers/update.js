@@ -260,20 +260,30 @@ exports.updateImage = async (req, res) => {
         if (response.status === 200) {
           console.log(`Success: ${response.status}`);
           console.log(`Message: ${JSON.stringify(response.data, null, null)}`);
-          runNext(true, response);
+          setTimeout(() => {
+            runNext(true, response);
+          }, 500);
         } else {
           console.log(`Error: ${response.status}`);
           console.log(`Message: ${response.data}`);
-          runNext(false, response);
+          setTimeout(() => {
+            runNext(false, response);
+          }, 500);
         }
       })
       .catch((err) => {
         console.log(err.response.data);
-        return runNext(false, err.response);
+        return setTimeout(() => {
+          runNext(false, err.response);
+        }, 500);
       });
 
 
-    const resource = await Display.findByIdAndUpdate(id, { $set: { updating: true, activeImage: mongoose.Types.ObjectId(image._id) } }, { new: true }).select(Selections.displays.short).populate('device', Selections.devices.populate).populate('activeImage', Selections.images.populate)
+    const resource = await Display.findByIdAndUpdate(id, {
+      $set: {
+        updating: true, timeline: '', lastUpdateResult: false, activeImage: mongoose.Types.ObjectId(image._id),
+      },
+    }, { new: true }).select(Selections.displays.short).populate('device', Selections.devices.populate).populate('activeImage', Selections.images.populate)
       .exec();
 
     const request = new UpdateRequest(id, device.gateway._id, display._id, axiosRequest);

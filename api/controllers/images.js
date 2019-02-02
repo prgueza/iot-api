@@ -1,9 +1,6 @@
-const mongoose = require('mongoose');
 const fs = require('fs');
 
 /* DATA MODELS */
-const Group = require('../models/group');
-const Display = require('../models/display');
 const Image = require('../models/image');
 const Selections = require('./select');
 
@@ -37,9 +34,8 @@ exports.imagesGetOne = async (req, res) => {
       .select(Selections.images.long)
       .populate('displays', Selections.displays.populate)
       .populate('groups', Selections.groups.populate)
-      .populate('resolution', Selections.screens.populate)
-      .populate('created_by', Selections.screens.populate)
-      .populate('updated_by', Selections.users.populate)
+      .populate('createdBy', Selections.screens.populate)
+      .populate('updatedBy', Selections.users.populate)
       .populate('userGroup', Selections.userGroups.populate)
       .exec();
     if (image) {
@@ -56,25 +52,12 @@ exports.imagesGetOne = async (req, res) => {
 /* POST */
 exports.imageCreate = async (req, res) => {
   try {
-    const {
-      body, body: { displays, groups },
-    } = req;
-    const displaysIds = displays && displays.map(d => mongoose.Types.ObjectId(d));
-    const groupsIds = groups && groups.map(g => mongoose.Types.ObjectId(g));
-    body.size = 0; // TODO: get from file
+    const { body } = req;
+    body.size = 0;
     body.userGroup = req.AuthData.userGroup;
     const image = new Image(body);
-    const newImage = await image.save().select(Selections.images.short);
-    const pushPromises = [];
-    if (image) {
-      if (displaysIds) {
-        pushPromises.push((Display.updateMany({ _id: { $in: displaysIds } }, { $addToSet: { images: newImage._id } })).exec());
-      }
-      if (groupsIds) {
-        pushPromises.push((Display.updateMany({ _id: { $in: groupsIds } }, { $addToSet: { images: newImage._id } })).exec());
-      }
-    }
-    if (pushPromises) await Promise.all(pushPromises);
+    const { _id } = await image.save();
+    const newImage = await Image.findById(_id).select(Selections.images.short);
     res.status(201).json({
       success: true,
       message: 'Success at uploading an image to the server',
@@ -92,24 +75,8 @@ exports.imageCreate = async (req, res) => {
 exports.imageUpdate = async (req, res) => {
   try {
     const { id } = req.params;
-    const { body, body: { displays, groups } } = req;
-    const displaysIds = displays && displays.map(display => mongoose.Types.ObjectId(display));
-    const groupsIds = groups && groups.map(group => mongoose.Types.ObjectId(group));
+    const { body } = req;
     const image = await Image.findOneAndUpdate({ _id: id, userGroup: req.AuthData.userGroup }, { $set: body }, { new: true }).select(Selections.images.short);
-    const pullPromises = [];
-    const pushPromises = [];
-    if (image) {
-      if (displaysIds) {
-        pullPromises.push(Display.updateMany({ images: id }, { $pull: { images: id } }).exec());
-        pushPromises.push(Display.updateMany({ _id: { $in: displaysIds } }, { $addToSet: { images: id } }));
-      }
-      if (groupsIds) {
-        pullPromises.push(Group.updateMany({ images: id }, { $pull: { images: id } }).exec());
-        pushPromises.push(Group.updateMany({ _id: { $in: groupsIds } }, { $addToSet: { images: id } }));
-      }
-    }
-    if (pullPromises) await Promise.all(pullPromises);
-    if (pushPromises) await Promise.all(pushPromises);
     res.status(201).json({
       message: 'Succes at updating an image from the collection',
       notify: `${image.name} actualizada`,
@@ -128,12 +95,8 @@ exports.imageDelete = async (req, res) => {
   try {
     const { id } = req.params;
     const query = req.AuthData.admin ? { _id: id } : { _id: id, userGroup: req.AuthData.userGroup };
-    const image = await Image.findOneAndDelete(query).exec();
+    const image = await Image.findOne(query).remove();
     if (image) {
-      await Promise.all([
-        Display.updateMany({ images: id }, { $pull: { images: id } }),
-        Group.updateMany({ images: id }, { $pull: { images: id } }),
-      ]);
       res.status(200).json({
         message: 'Success at removing an image from the collection',
         success: true,
@@ -161,7 +124,7 @@ exports.imageUpload = async (req, res) => {
       }
       const updateObject = {
         extension: req.file.mimetype,
-        size: req.file.size,
+        bytes: req.file.size,
         path: req.file.path,
         src: process.env.API_URL + req.file.path,
       };
@@ -174,9 +137,8 @@ exports.imageUpload = async (req, res) => {
           resourceId: id,
           resource: newImage,
         });
-    } else {
-      res.status(404).json({ message: 'No valid entry for provided id' });
     }
+    res.status(404).json({ message: 'No valid entry for provided id' });
   } catch (error) {
     console.log(error.message);
     res.status(500).json(error);

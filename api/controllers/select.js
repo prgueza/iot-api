@@ -1,9 +1,14 @@
-const required = '_id url name description createdAt updatedAt';
+const required = '_id url name description createdAt updatedAt userGroup';
+
+const Messages = {
+  404: 'No valid entry found for provided id',
+  401: 'Not allowed',
+};
 
 const Selections = {
   devices: {
-    long: `${required} mac found lastFound batt rssi initcode screen display activeImage userGroup createdBy`,
-    short: `${required} gateway mac found lastFound batt rssi screen initcode`,
+    long: `${required} mac found lastFound batt rssi initcode screen display activeImage userGroup updatedBy`,
+    short: `${required} gateway display mac found lastFound batt rssi screen initcode`,
     populate: `${required} initcode activeImage screen`,
   },
   displays: {
@@ -22,8 +27,8 @@ const Selections = {
     populate: `${required} activeImage`,
   },
   images: {
-    long: `${required} createdBy updatedBy extension path size src colorProfile resolution category groups displays tags userGroup`,
-    short: `${required} tags`,
+    long: `${required} createdBy updatedBy extension path size src color bytes category groups displays tags userGroup`,
+    short: `${required} tags src`,
     populate: `${required} src`,
   },
   locations: {
@@ -32,9 +37,9 @@ const Selections = {
     populate: `${required}`,
   },
   screens: {
-    long: `${required} screenCode colorProfile size`,
-    short: `${required} screenCode colorProfile size`,
-    populate: `${required} screenCode colorProfile size`,
+    long: `${required} screenCode color width height`,
+    short: `${required} screenCode color width height`,
+    populate: `${required} screenCode color width height`,
   },
   userGroups: {
     long: `${required}`,
@@ -49,3 +54,4 @@ const Selections = {
 };
 
 module.exports = Selections;
+module.exports = Messages;

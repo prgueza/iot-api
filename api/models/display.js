@@ -18,7 +18,7 @@ const displaySchema = mongoose.Schema({
   group: { type: mongoose.Schema.Types.ObjectId, ref: 'Group' },
   device: { type: mongoose.Schema.Types.ObjectId, ref: 'Device' },
   updating: { type: Boolean, default: false },
-  lastUpdateResult: { type: Boolean, default: true },
+  lastUpdateResult: { type: Boolean, default: false },
   timeline: { type: String, default: '' },
   userGroup: { type: mongoose.Schema.Types.ObjectId, ref: 'UserGroup' },
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
@@ -33,12 +33,13 @@ displaySchema.pre('save', function (next) {
   Promise.all([
     Device.update({ _id: this.device }, { $set: { display: id } }),
     Image.updateMany({ _id: { $in: this.images } }, { $addToSet: { displays: id } }),
+    UserGroup.update({ _id: mongoose.Types.ObjectId(this.userGroup) }, { $addToSet: { displays: id } }),
   ]);
   next();
 });
 
 // After removing a display, it must be removed from any resource that may reference him
-displaySchema.post('remove', { query: true, document: false }, function () {
+displaySchema.pre('remove', { query: true, document: false }, function () {
   const { _id } = this.getQuery();
   Promise.all([
     UserGroup.findOneAndUpdate({ displays: _id }, { $pull: { displays: _id } }),

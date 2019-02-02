@@ -35,12 +35,11 @@ exports.devicesGetOne = async (req, res) => {
       .select(Selections.devices.long)
       .populate('display', Selections.displays.populate)
       .populate('gateway', Selections.gateways.populate)
-      .populate('created_by', Selections.users.populate)
-      .populate('updated_by', Selections.users.populate)
+      .populate('updatedBy', Selections.users.populate)
       .populate('resolution', Selections.screens.populate)
       .populate('location', Selections.locations.populate)
       .populate('userGroup', Selections.userGroups.populate)
-      .populate('active_image', Selections.images.populate)
+      .populate('activeImage', Selections.images.populate)
       .exec();
     if (device && ((device.userGroup && req.AuthData.userGroup === device.userGroup._id) || req.AuthData.admin)) {
       device.url = `${process.env.API_URL}devices/${device._id}`;
@@ -72,10 +71,9 @@ exports.deviceUpdate = async (req, res) => {
     // If it's not assigned to a usergroup set the property as undefined
     if (!req.body.userGroup) req.body.userGroup = undefined;
     // Update and get the device
-    const device = await Device.findByIdAndUpdate({ _id: req.params.id }, { $set: req.body }, { new: true })
+    const device = await Device.findByIdAndUpdate({ _id: id }, { $set: req.body }, { new: true })
       .select(Selections.devices.short)
       .populate('gateway', Selections.gateways.populate)
-      .populate('userGroup', Selections.userGroups.populate)
       .exec();
     if (device) {
       // Set the url manually
@@ -83,7 +81,7 @@ exports.deviceUpdate = async (req, res) => {
       // Send a response
       res.status(200).json({
         message: 'Success at updating the device',
-        notify: `(${device.initcode}) - ${device.name} actualizado`,
+        notify: `${device.initcode} - ${device.name} actualizado`,
         success: true,
         resourceId: id,
         resource: device,
@@ -107,10 +105,12 @@ exports.deviceDelete = async (req, res) => {
       res.status(401).json({ error: 'Not allowed' });
     }
     const { id } = req.params;
-    const device = await Device.findBy(id).remove();
+    const device = await Device.findById(id);
+    await device.remove();
     if (device) {
       res.status(200).json({
         message: 'Success at removing a device from the collection',
+        notify: `${device.initcode} - ${device.name} eliminado`,
         success: true,
         resourceId: id,
       });
@@ -118,7 +118,6 @@ exports.deviceDelete = async (req, res) => {
       res.status(404).json({ message: 'No valid entry for provided id' });
     }
   } catch (error) {
-    // Log errors
     console.log(error.message);
     res.status(error.status || 500).json(error.message);
   }

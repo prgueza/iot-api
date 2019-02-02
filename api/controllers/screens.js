@@ -45,7 +45,7 @@ exports.screenCreate = async (req, res) => {
       const newScreen = await Screen.findById(_id).select(Selections.screens.short);
       res.status(201).json({
         message: 'Success at adding a screen from the collection',
-        notify: 'Se ha creado un nuevo tamaño de pantalla',
+        notify: `${newScreen.name} añadida`,
         success: true,
         resourceId: newScreen._id,
         resource: newScreen,
@@ -53,7 +53,11 @@ exports.screenCreate = async (req, res) => {
     }
   } catch (error) {
     console.log(error.message);
-    res.status(500).json(error);
+    res.status(500).json({
+      success: false,
+      notify: 'Compruebe que ha rellenado los campos',
+      error,
+    });
   }
 };
 
@@ -69,7 +73,7 @@ exports.screenUpdate = async (req, res) => {
       if (screen) {
         res.status(200).json({
           message: 'Success at updating a screen from the collection',
-          notify: `Pantalla '${screen.name}' actualizada`,
+          notify: `${screen.name} actualizada`,
           success: true,
           resourceId: id,
           resource: screen,
@@ -91,10 +95,11 @@ exports.screenDelete = async (req, res) => {
       res.status(401).json({ message: 'Not allowed' });
     } else {
       const { id } = req.params;
-      const screen = await Screen.findByIdAndRemove(id).exec();
+      const screen = await Screen.findByIdAndRemove(id);
       if (screen) {
         res.status(200).json({
           message: 'Success at removing a screen from the collection',
+          notify: `${screen.name} eliminada`,
           success: true,
           resourceId: id,
           resource: screen,
