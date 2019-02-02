@@ -68,6 +68,7 @@ exports.userSignup = async (req, res) => {
             .populate('userGroup', Selections.userGroups.populate);
           res.status(201).json({
             message: 'Success at adding a user to the collection',
+            notify: `${user.name} añadido`,
             success: true,
             resourceId: newUser._id,
             resource: newUser,
@@ -91,12 +92,12 @@ exports.userLogin = async (req, res) => {
   try {
     const user = await User.findOne({ login: req.body.login })
       .select(Selections.users.long)
-      .populate('userGroup', Selections.userGroups.populate)
+      // .populate('userGroup', Selections.userGroups.populate)
       .exec();
     if (user) {
       bcrypt.compare(req.body.password, user.password, async (err, result) => {
         if (err) {
-          res.status(401).json({ message: 'Auth failed' });
+          res.status(401).json({ message: 'Not allowed' });
           return false;
         }
         if (result) {
@@ -174,7 +175,7 @@ exports.userLogin = async (req, res) => {
         return false;
       });
     } else {
-      res.status(401).json({ message: 'Auth failed' });
+      res.status(401).json({ message: 'Not allowed' });
     }
   } catch (error) {
     console.log(error.message);
@@ -251,10 +252,12 @@ exports.userDelete = async (req, res) => {
       res.status(401).json({ message: 'Not allowed' });
     } else {
       const { id } = req.params;
-      const user = await User.findById(id).remove();
+      const user = await User.findById(id);
+      await user.remove();
       if (user) {
         res.status(200).json({
           message: 'Success at removing a user from the collection',
+          notify: `${user.name} eliminado`,
           success: true,
           resourceId: id,
         });

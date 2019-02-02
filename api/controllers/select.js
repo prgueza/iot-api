@@ -1,9 +1,14 @@
 const required = '_id url name description createdAt updatedAt userGroup';
 
+const Messages = {
+  404: 'No valid entry found for provided id',
+  401: 'Not allowed',
+};
+
 const Selections = {
   devices: {
     long: `${required} mac found lastFound batt rssi initcode screen display activeImage userGroup updatedBy`,
-    short: `${required} gateway mac found lastFound batt rssi screen initcode`,
+    short: `${required} gateway display mac found lastFound batt rssi screen initcode`,
     populate: `${required} initcode activeImage screen`,
   },
   displays: {
@@ -49,3 +54,4 @@ const Selections = {
 };
 
 module.exports = Selections;
+module.exports = Messages;

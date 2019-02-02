@@ -49,6 +49,7 @@ exports.userGroupCreate = async (req, res) => {
       const newUserGroup = await UserGroup.findById(_id).select(Selections.userGroups.short);
       res.status(201).json({
         message: 'Success at adding a new usergroup to the collection',
+        notify: `${newUserGroup.name} añadido`,
         success: true,
         resourceId: newUserGroup._id,
         resource: newUserGroup,
@@ -101,6 +102,7 @@ exports.userGroupDelete = async (req, res) => {
         res.status(500).json({
           message: 'Unable to remove a user group with associated resources',
           notify: 'El grupo tiene recursos asociados',
+          success: false,
         });
       } else {
         userGroup.remove();
@@ -108,6 +110,7 @@ exports.userGroupDelete = async (req, res) => {
       if (userGroup) {
         res.status(200).json({
           message: 'Success at removing an usergroup from the collection',
+          notify: `${userGroup.name} eliminado`,
           success: true,
           resourceId: id,
           resource: userGroup,

@@ -12,7 +12,7 @@
   "repository": "https://github.com/pedro-rodalia/iot-api.git",
   "dependencies": {
     "axios": "^0.18.0",
-    "bcrypt": "^1.0.3",
+    "bcrypt": "^2.0.0",
     "body-parser": "^1.18.2",
     "data-store": "^3.1.0",
     "dotenv": "^5.0.1",

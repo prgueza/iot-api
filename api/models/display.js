@@ -39,7 +39,7 @@ displaySchema.pre('save', function (next) {
 });
 
 // After removing a display, it must be removed from any resource that may reference him
-displaySchema.post('remove', { query: true, document: false }, function () {
+displaySchema.pre('remove', { query: true, document: false }, function () {
   const { _id } = this.getQuery();
   Promise.all([
     UserGroup.findOneAndUpdate({ displays: _id }, { $pull: { displays: _id } }),
