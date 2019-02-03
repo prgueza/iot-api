@@ -4,23 +4,23 @@ const mongoose = require('mongoose');
 const Display = require('../models/display');
 const Image = require('../models/image');
 const Device = require('../models/device');
-const Selections = require('./select');
+const { SELECTION, MESSAGE } = require('./static');
 
 /* GET ALL */
 exports.displaysGetAll = async (req, res) => {
   try {
     if (!req.AuthData.admin) {
-      res.status(401).json({ error: 'Not allowed' });
+      res.status(401).json(MESSAGE[401]);
     } else {
       const displays = await Display.find()
-        .select(Selections.displays.short)
-        .populate('device', Selections.devices.populate)
+        .select(SELECTION.displays.short)
+        .populate('device', SELECTION.devices.populate)
         .exec();
       res.status(200).json(displays);
     }
   } catch (error) {
     console.log(error.message);
-    res.status(500).json(error);
+    res.status(500).json(MESSAGE[500](error));
   }
 };
 
@@ -32,41 +32,41 @@ exports.displaysGetOne = async (req, res) => {
       ? { _id }
       : { _id, userGroup: req.AuthData.userGroup };
     const display = await Display.findOne(query)
-      .select(Selections.displays.long)
-      .populate('activeImage', Selections.images.populate)
-      .populate('userGroup', Selections.userGroups.populate)
-      .populate('images', Selections.images.populate)
-      .populate('createdBy', Selections.users.populate)
-      .populate('updatedBy', Selections.users.populate)
+      .select(SELECTION.displays.long)
+      .populate('activeImage', SELECTION.images.populate)
+      .populate('userGroup', SELECTION.userGroups.populate)
+      .populate('images', SELECTION.images.populate)
+      .populate('createdBy', SELECTION.users.populate)
+      .populate('updatedBy', SELECTION.users.populate)
       .populate({
         path: 'device',
-        select: Selections.devices.populate,
+        select: SELECTION.devices.populate,
         populate: [{
           path: 'gateway',
-          select: Selections.gateways.populate,
+          select: SELECTION.gateways.populate,
           populate: {
             path: 'location',
-            select: Selections.locations.populate,
+            select: SELECTION.locations.populate,
           },
         }],
       })
       .populate({
         path: 'group',
-        select: Selections.groups.populate,
+        select: SELECTION.groups.populate,
         populate: [{
           path: 'activeImage',
-          select: Selections.images.populate,
+          select: SELECTION.images.populate,
         }],
       })
       .exec();
     if (display) {
       res.status(200).json(display);
     } else {
-      res.status(404).json({ message: 'No valid entry found for provided id within the given user group' });
+      res.status(404).json(MESSAGE[404]);
     }
   } catch (error) {
     console.log(error.message);
-    res.status(500).json(error);
+    res.status(500).json(MESSAGE[500](error));
   }
 };
 
@@ -86,12 +86,12 @@ exports.displayCreate = async (req, res) => {
     // Get the display and the device
     const response = await Promise.all([
       Display.find(display._id)
-        .select(Selections.displays.short)
-        .populate('device', Selections.devices.populate)
+        .select(SELECTION.displays.short)
+        .populate('device', SELECTION.devices.populate)
         .exec(),
       Device.find({ userGroup: req.AuthData.userGroup })
-        .select(Selections.devices.short)
-        .populate('display', Selections.displays.populate)
+        .select(SELECTION.devices.short)
+        .populate('display', SELECTION.displays.populate)
         .exec(),
     ]);
     // Send the response
@@ -104,7 +104,7 @@ exports.displayCreate = async (req, res) => {
     });
   } catch (error) {
     console.log(error.message);
-    res.status(500).json(error);
+    res.status(500).json(MESSAGE[500](error));
   }
 };
 
@@ -120,13 +120,13 @@ exports.displayUpdate = async (req, res) => {
     body.lastUpdateResult = false;
     const imageIds = images && images.map(image => mongoose.Types.ObjectId(image));
     const display = await Display.findByIdAndUpdate(id, { $set: body }, { new: true })
-      .select(Selections.displays.short)
-      .populate('activeImage', Selections.images.populate)
-      .populate('device', Selections.devices.populate);
+      .select(SELECTION.displays.short)
+      .populate('activeImage', SELECTION.images.populate)
+      .populate('device', SELECTION.devices.populate);
     if (display) {
       if (imageIds) await Image.updateMany({ _id: { $in: imageIds } }, { $addToSet: { displays: id } }).exec();
       const devices = await Device.find()
-        .select(Selections.devices.short)
+        .select(SELECTION.devices.short)
         .populate('display', '_id url name description')
         .exec();
       res.status(201).json({
@@ -138,11 +138,11 @@ exports.displayUpdate = async (req, res) => {
         devices,
       });
     } else {
-      res.status(404).json({ message: `No valid entry for provided id: ${id}` });
+      res.status(404).json(MESSAGE[404]);
     }
   } catch (error) {
     console.log(error.message);
-    res.status(500).json(error);
+    res.status(500).json(MESSAGE[500](error));
   }
 };
 
@@ -155,7 +155,7 @@ exports.displayDelete = async (req, res) => {
       : { _id, userGroup: req.AuthData.userGroup };
     const display = await Display.findOne(query).remove();
     if (display) {
-      const devices = await Device.find().select(Selections.devices.short).exec();
+      const devices = await Device.find().select(SELECTION.devices.short).exec();
       res.status(200).json({
         message: 'Success at removing a display from the collection',
         success: true,
@@ -163,10 +163,10 @@ exports.displayDelete = async (req, res) => {
         devices,
       });
     } else {
-      res.status(404).json({ message: 'No valid entry found for provided id' });
+      res.status(404).json(MESSAGE[404]);
     }
   } catch (error) {
     console.log(error);
-    res.status(500).json(error);
+    res.status(500).json(MESSAGE[500](error));
   }
 };

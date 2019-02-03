@@ -2,17 +2,17 @@
 const moment = require('moment');
 const Device = require('../models/device');
 // const Display = require('../models/display');
-const Selections = require('./select');
+const { SELECTION, MESSAGE } = require('./static');
 
 /* GET ALL -  Authorization: Only admin users can get ALL the devices */
 exports.devicesGetAll = async (req, res) => {
   try {
     if (!req.AuthData.admin) {
-      res.status(401).json({ error: 'Not allowed' });
+      res.status(401).json(MESSAGE[401]);
     } else {
       const devices = await Device.find()
-        .select(Selections.devices.short)
-        .populate('gateway', Selections.gateways.populate)
+        .select(SELECTION.devices.short)
+        .populate('gateway', SELECTION.gateways.populate)
         .exec();
       const mapDevices = devices.map((device) => {
         device.url = `${process.env.API_URL}devices/${device._id}`;
@@ -23,7 +23,7 @@ exports.devicesGetAll = async (req, res) => {
     }
   } catch (error) {
     console.log(error.message);
-    res.status(500).json(error);
+    res.status(500).json(MESSAGE[500](error));
   }
 };
 
@@ -32,29 +32,26 @@ exports.devicesGetOne = async (req, res) => {
   try {
     const _id = req.params.id;
     const device = await Device.findById(_id)
-      .select(Selections.devices.long)
-      .populate('display', Selections.displays.populate)
-      .populate('gateway', Selections.gateways.populate)
-      .populate('updatedBy', Selections.users.populate)
-      .populate('resolution', Selections.screens.populate)
-      .populate('location', Selections.locations.populate)
-      .populate('userGroup', Selections.userGroups.populate)
-      .populate('activeImage', Selections.images.populate)
+      .select(SELECTION.devices.long)
+      .populate('display', SELECTION.displays.populate)
+      .populate('gateway', SELECTION.gateways.populate)
+      .populate('updatedBy', SELECTION.users.populate)
+      .populate('resolution', SELECTION.screens.populate)
+      .populate('location', SELECTION.locations.populate)
+      .populate('userGroup', SELECTION.userGroups.populate)
+      .populate('activeImage', SELECTION.images.populate)
       .exec();
     if (device && ((device.userGroup && req.AuthData.userGroup === device.userGroup._id) || req.AuthData.admin)) {
       device.url = `${process.env.API_URL}devices/${device._id}`;
       res.status(200).json(device);
     } else if (!req.AuthData.admin) {
-      console.log('Error: Not allowed');
-      res.status(401).json({ error: 'Not allowed' });
+      res.status(401).json(MESSAGE[401]);
     } else {
-      console.log('Error: No valid entry for privided id');
-      res.status(404).json({ error: 'No valid entry found for provided id' });
+      res.status(404).json(MESSAGE[404]);
     }
   } catch (error) {
-    // Log errors
     console.log(error.message);
-    res.status(error.status || 500).json(error.message);
+    res.status(error.status || 500).json(MESSAGE[500](error));
   }
 };
 
@@ -63,8 +60,7 @@ exports.deviceUpdate = async (req, res) => {
   try {
     // If the user has no admin privileges answer with an error
     if (!req.AuthData.admin) {
-      console.log('Error: Not allowed');
-      res.status(401).json({ error: 'Not allowed' });
+      res.status(401).json(MESSAGE[401]);
     }
     // Get the id from the request for the query
     const { id } = req.params;
@@ -72,8 +68,8 @@ exports.deviceUpdate = async (req, res) => {
     if (!req.body.userGroup) req.body.userGroup = undefined;
     // Update and get the device
     const device = await Device.findByIdAndUpdate({ _id: id }, { $set: req.body }, { new: true })
-      .select(Selections.devices.short)
-      .populate('gateway', Selections.gateways.populate)
+      .select(SELECTION.devices.short)
+      .populate('gateway', SELECTION.gateways.populate)
       .exec();
     if (device) {
       // Set the url manually
@@ -87,12 +83,11 @@ exports.deviceUpdate = async (req, res) => {
         resource: device,
       });
     } else {
-      res.status(404).json({ message: 'No valid entry for provided id' });
+      res.status(404).json(MESSAGE[404]);
     }
   } catch (error) {
-    // Log errors
     console.log(error.message);
-    res.status(error.status || 500).json(error.message);
+    res.status(error.status || 500).json(MESSAGE[500](error));
   }
 };
 
@@ -101,8 +96,7 @@ exports.deviceDelete = async (req, res) => {
   try {
     // If the user has no admin privileges answer with an error
     if (!req.AuthData.admin) {
-      console.log('Error: Not allowed');
-      res.status(401).json({ error: 'Not allowed' });
+      res.status(401).json(MESSAGE[401]);
     }
     const { id } = req.params;
     const device = await Device.findById(id);
@@ -115,10 +109,10 @@ exports.deviceDelete = async (req, res) => {
         resourceId: id,
       });
     } else {
-      res.status(404).json({ message: 'No valid entry for provided id' });
+      res.status(404).json(MESSAGE[404]);
     }
   } catch (error) {
     console.log(error.message);
-    res.status(error.status || 500).json(error.message);
+    res.status(error.status || 500).json(MESSAGE[500](error));
   }
 };

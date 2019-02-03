@@ -1,21 +1,21 @@
 /* DATA MODELS */
 const Gateway = require('../models/gateway');
-const Selections = require('./select');
+const { SELECTION, MESSAGE } = require('./static');
 
 /* GET ALL */
 exports.gatewaysGetAll = async (req, res) => {
   try {
     if (!req.AuthData.admin) {
-      res.status(401).json({ error: 'Not allowed' });
+      res.status(401).json(MESSAGE[401]);
     } else {
       const gateways = await Gateway.find()
-        .select(Selections.gateways.short)
+        .select(SELECTION.gateways.short)
         .exec();
       res.status(200).json(gateways);
     }
   } catch (error) {
     console.log(error.message);
-    res.status(500).json(error);
+    res.status(500).json(MESSAGE[500](error));
   }
 };
 
@@ -23,24 +23,24 @@ exports.gatewaysGetAll = async (req, res) => {
 exports.gatewaysGetOne = async (req, res) => {
   try {
     if (!req.AuthData.admin) {
-      res.status(401).json({ error: 'Not allowed' });
+      res.status(401).json(MESSAGE[401]);
     } else {
       const _id = req.params.id;
       const gateway = await Gateway.findById(_id)
-        .select(Selections.gateways.long)
-        .populate('createdBy', Selections.users.populate)
-        .populate('updated_by', Selections.users.populate)
-        .populate('location', Selections.locations.populate)
+        .select(SELECTION.gateways.long)
+        .populate('createdBy', SELECTION.users.populate)
+        .populate('updated_by', SELECTION.users.populate)
+        .populate('location', SELECTION.locations.populate)
         .exec();
       if (gateway) {
         res.status(200).json(gateway);
       } else {
-        res.status(404).json({ message: 'No valid entry found for provided id' });
+        res.status(404).json(MESSAGE[404]);
       }
     }
   } catch (error) {
     console.log(error.message);
-    res.status(500).json(error);
+    res.status(500).json(MESSAGE[500](error));
   }
 };
 
@@ -48,12 +48,12 @@ exports.gatewaysGetOne = async (req, res) => {
 exports.gatewayCreate = async (req, res) => {
   try {
     if (!req.AuthData.admin) {
-      res.status(401).json({ error: 'Not allowed' });
+      res.status(401).json(MESSAGE[401]);
     } else {
       const { body } = req;
       const gateway = new Gateway(body);
       const { _id } = await gateway.save();
-      const newGateway = await Gateway.findById(_id).select(Selections.gateways.short);
+      const newGateway = await Gateway.findById(_id).select(SELECTION.gateways.short);
       res.status(201).json({
         message: 'Success at adding a new gateway to the collection',
         notify: `${newGateway.name} configurada`,
@@ -64,7 +64,7 @@ exports.gatewayCreate = async (req, res) => {
     }
   } catch (error) {
     console.log(error.message);
-    res.status(500).json(error);
+    res.status(500).json(MESSAGE[500](error));
   }
 };
 
@@ -72,11 +72,11 @@ exports.gatewayCreate = async (req, res) => {
 exports.gatewayUpdate = async (req, res) => {
   try {
     if (!req.AuthData.admin) {
-      res.status(401).json({ error: 'Not allowed' });
+      res.status(401).json(MESSAGE[401]);
     } else {
       const _id = req.params.id;
       if (req.body.port || req.body.ip) { req.body.sync = `http://${req.body.ip}:${req.body.port}/devices`; }
-      const gateway = await Gateway.findOneAndUpdate({ _id }, { $set: req.body }, { new: true }).select(Selections.gateways.short);
+      const gateway = await Gateway.findOneAndUpdate({ _id }, { $set: req.body }, { new: true }).select(SELECTION.gateways.short);
       if (gateway) {
         res.status(200).json({
           message: 'Success at updating a Gateway from the collection',
@@ -86,12 +86,12 @@ exports.gatewayUpdate = async (req, res) => {
           resource: gateway,
         });
       } else {
-        res.status(404).json({ message: 'No valid entry found for provided id' });
+        res.status(404).json(MESSAGE[404]);
       }
     }
   } catch (error) {
     console.log(error.message);
-    res.status(500).json(error);
+    res.status(500).json(MESSAGE[500](error));
   }
 };
 
@@ -99,7 +99,7 @@ exports.gatewayUpdate = async (req, res) => {
 exports.gatewayDelete = async (req, res) => {
   try {
     if (!req.AuthData.admin) {
-      res.status(401).json({ error: 'Not allowed' });
+      res.status(401).json(MESSAGE[401]);
     } else {
       const { id } = req.params;
       const gateway = await Gateway.findById(id);
@@ -117,6 +117,6 @@ exports.gatewayDelete = async (req, res) => {
     }
   } catch (error) {
     console.log(error.message);
-    res.status(500).json(error);
+    res.status(500).json(MESSAGE[500](error));
   }
 };

@@ -10,7 +10,7 @@ const Display = require('../models/display');
 const Image = require('../models/image');
 const Device = require('../models/device');
 const Gateway = require('../models/gateway');
-const Selections = require('./select');
+const { SELECTION } = require('./static');
 
 const store = new Store({ path: 'config.json' });
 const queue = [];
@@ -37,9 +37,9 @@ async function runNext(result, response) {
   const { id } = queue[0];
   let display;
   if (result) {
-    display = await Display.findByIdAndUpdate(id, { updating: false, lastUpdateResult: true, timeline: response.data.result }, { new: true }).select(Selections.displays.short).populate('device', Selections.devices.populate).populate('activeImage', Selections.images.populate);
+    display = await Display.findByIdAndUpdate(id, { updating: false, lastUpdateResult: true, timeline: response.data.result }, { new: true }).select(SELECTION.displays.short).populate('device', SELECTION.devices.populate).populate('activeImage', SELECTION.images.populate);
   } else {
-    display = await Display.findByIdAndUpdate(id, { updating: false, lastUpdateResult: false, timeline: response.data.error }, { new: true }).select(Selections.displays.short).populate('device', Selections.devices.populate).populate('activeImage', Selections.images.populate);
+    display = await Display.findByIdAndUpdate(id, { updating: false, lastUpdateResult: false, timeline: response.data.error }, { new: true }).select(SELECTION.displays.short).populate('device', SELECTION.devices.populate).populate('activeImage', SELECTION.images.populate);
   }
   sockets.map(socket => socket.emit('done processing', display));
   queue.shift();
@@ -192,8 +192,8 @@ exports.update = async (req, res) => {
     }
     // Get the devices back from the database
     const updatedDevices = await Device.find(query)
-      .select(Selections.devices.short)
-      .populate('gateway', Selections.gateways.populate)
+      .select(SELECTION.devices.short)
+      .populate('gateway', SELECTION.gateways.populate)
       .exec();
     // Map devices for the responses
     updatedDevices.map((d) => {
@@ -283,7 +283,7 @@ exports.updateImage = async (req, res) => {
       $set: {
         updating: true, timeline: '', lastUpdateResult: false, activeImage: mongoose.Types.ObjectId(image._id),
       },
-    }, { new: true }).select(Selections.displays.short).populate('device', Selections.devices.populate).populate('activeImage', Selections.images.populate)
+    }, { new: true }).select(SELECTION.displays.short).populate('device', SELECTION.devices.populate).populate('activeImage', SELECTION.images.populate)
       .exec();
 
     const request = new UpdateRequest(id, device.gateway._id, display._id, axiosRequest);

@@ -1,17 +1,17 @@
 /* DATA MODELS */
 const Screen = require('../models/screen.js');
-const Selections = require('./select');
+const { SELECTION, MESSAGE } = require('./static');
 
 /* GET ALL */
 exports.screensGetAll = async (req, res) => {
   try {
     const screens = await Screen.find()
-      .select(Selections.screens.short)
+      .select(SELECTION.screens.short)
       .exec();
     res.status(200).json(screens);
   } catch (error) {
     console.log(error.message);
-    res.status(500).json(error);
+    res.status(500).json(MESSAGE[500](error));
   }
 };
 
@@ -20,16 +20,16 @@ exports.screensGetOne = async (req, res) => {
   try {
     const { id } = req.params;
     const screen = await Screen.findById(id)
-      .select(Selections.screens.long)
+      .select(SELECTION.screens.long)
       .exec();
     if (screen) {
       res.status(200).json(screen);
     } else {
-      res.status(404).json({ message: 'No valid entry found for provided id' });
+      res.status(404).json(MESSAGE[404]);
     }
   } catch (error) {
     console.log(error.message);
-    res.status(500).json(error);
+    res.status(500).json(MESSAGE[500](error));
   }
 };
 
@@ -37,12 +37,12 @@ exports.screensGetOne = async (req, res) => {
 exports.screenCreate = async (req, res) => {
   try {
     if (!req.AuthData.admin) {
-      res.status(401).json({ message: 'Not allowed' });
+      res.status(401).json(MESSAGE[401]);
     } else {
       const { body } = req;
       const screen = new Screen(body);
       const { _id } = await screen.save();
-      const newScreen = await Screen.findById(_id).select(Selections.screens.short);
+      const newScreen = await Screen.findById(_id).select(SELECTION.screens.short);
       res.status(201).json({
         message: 'Success at adding a screen from the collection',
         notify: `${newScreen.name} añadida`,
@@ -53,11 +53,7 @@ exports.screenCreate = async (req, res) => {
     }
   } catch (error) {
     console.log(error.message);
-    res.status(500).json({
-      success: false,
-      notify: 'Compruebe que ha rellenado los campos',
-      error,
-    });
+    res.status(500).json(MESSAGE[500](error));
   }
 };
 
@@ -65,11 +61,11 @@ exports.screenCreate = async (req, res) => {
 exports.screenUpdate = async (req, res) => {
   try {
     if (!req.AuthData.admin) {
-      res.status(401).json({ message: 'Not allowed' });
+      res.status(401).json(MESSAGE[401]);
     } else {
       const { params: { id } } = req;
       const { body } = req;
-      const screen = await Screen.findByIdAndUpdate(id, { $set: body }, { new: true }).select(Selections.screens.short);
+      const screen = await Screen.findByIdAndUpdate(id, { $set: body }, { new: true }).select(SELECTION.screens.short);
       if (screen) {
         res.status(200).json({
           message: 'Success at updating a screen from the collection',
@@ -79,12 +75,12 @@ exports.screenUpdate = async (req, res) => {
           resource: screen,
         });
       } else {
-        res.status(404).json({ message: 'No valid entry found for provided id' });
+        res.status(404).json(MESSAGE[404]);
       }
     }
   } catch (error) {
     console.log(error.message);
-    res.status(500).json(error);
+    res.status(500).json(MESSAGE[500](error));
   }
 };
 
@@ -92,7 +88,7 @@ exports.screenUpdate = async (req, res) => {
 exports.screenDelete = async (req, res) => {
   try {
     if (!req.AuthData.admin) {
-      res.status(401).json({ message: 'Not allowed' });
+      res.status(401).json(MESSAGE[401]);
     } else {
       const { id } = req.params;
       const screen = await Screen.findByIdAndRemove(id);
@@ -105,11 +101,11 @@ exports.screenDelete = async (req, res) => {
           resource: screen,
         });
       } else {
-        res.status(404).json({ message: 'No valid entry found for provided id' });
+        res.status(404).json(MESSAGE[404]);
       }
     }
   } catch (error) {
     console.log(error.message);
-    res.status(500).json(error);
+    res.status(500).json(MESSAGE[500](error));
   }
 };

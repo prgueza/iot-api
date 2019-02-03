@@ -12,23 +12,23 @@ const Device = require('../models/device.js');
 const Gateway = require('../models/gateway.js');
 const Screen = require('../models/screen.js');
 const Location = require('../models/location.js');
-const Selections = require('./select');
+const { SELECTION, MESSAGE } = require('./static');
 
 /* GET ALL */
 exports.usersGetAll = async (req, res) => {
   try {
     const users = await User.find()
-      .select(Selections.users.short)
-      .populate('userGroup', Selections.userGroups.populate)
+      .select(SELECTION.users.short)
+      .populate('userGroup', SELECTION.userGroups.populate)
       .exec();
     if (users) {
       res.status(200).json(users);
     } else {
-      res.status(404).json({ message: 'No valid entry for provided id' });
+      res.status(404).json(MESSAGE[404]);
     }
   } catch (error) {
     console.log(error.message);
-    res.status(500).json(error);
+    res.status(500).json(MESSAGE[500](error));
   }
 };
 
@@ -37,16 +37,16 @@ exports.usersGetOne = async (req, res) => {
   try {
     const { id } = req.params;
     const user = await User.findById(id)
-      .select(Selections.users.long)
+      .select(SELECTION.users.long)
       .exec();
     if (user) {
       res.status(200).json(user);
     } else {
-      res.status(404).json({ message: 'No valid entry found for provided id' });
+      res.status(404).json(MESSAGE[404]);
     }
   } catch (error) {
     console.log(error.message);
-    res.status(500).json(error);
+    res.status(500).json(MESSAGE[500](error));
   }
 };
 
@@ -64,8 +64,8 @@ exports.userSignup = async (req, res) => {
           const user = new User(body);
           const { _id } = await user.save();
           const newUser = await User.findById(_id)
-            .select(Selections.users.short)
-            .populate('userGroup', Selections.userGroups.populate);
+            .select(SELECTION.users.short)
+            .populate('userGroup', SELECTION.userGroups.populate);
           res.status(201).json({
             message: 'Success at adding a user to the collection',
             notify: `${user.name} añadido`,
@@ -79,25 +79,25 @@ exports.userSignup = async (req, res) => {
         }
       });
     } else {
-      res.status(409).json({ message: 'Login exists' });
+      res.status(409).json(MESSAGE[409]);
     }
   } catch (error) {
     console.log(error);
-    res.status(500).json(error);
+    res.status(500).json(MESSAGE[500](error));
   }
 };
 
 /* LOGIN */
 exports.userLogin = async (req, res) => {
   try {
-    console.log(Selections);
+    console.log(SELECTION);
     const user = await User.findOne({ login: req.body.login })
-      .select(Selections.users.long)
+      .select(SELECTION.users.long)
       .exec();
     if (user) {
       bcrypt.compare(req.body.password, user.password, async (err, result) => {
         if (err) {
-          res.status(401).json({ message: 'Not allowed' });
+          res.status(401).json(MESSAGE[401]);
           return false;
         }
         if (result) {
@@ -111,30 +111,30 @@ exports.userLogin = async (req, res) => {
             expiresIn: 60 * 60 * 7,
           });
           const resources = user.admin ? [
-            Device.find().select(Selections.devices.short)
-              .populate('gateway', Selections.gateways.populate)
+            Device.find().select(SELECTION.devices.short)
+              .populate('gateway', SELECTION.gateways.populate)
               .exec(),
-            Gateway.find().select(Selections.gateways.short).exec(),
-            UserGroup.find().select(Selections.userGroups.short).exec(),
-            Screen.find().select(Selections.screens.short).exec(),
-            Location.find().select(Selections.locations.short).exec(),
-            User.find().select(Selections.users.short)
-              .populate('userGroup', Selections.userGroups.populate)
+            Gateway.find().select(SELECTION.gateways.short).exec(),
+            UserGroup.find().select(SELECTION.userGroups.short).exec(),
+            Screen.find().select(SELECTION.screens.short).exec(),
+            Location.find().select(SELECTION.locations.short).exec(),
+            User.find().select(SELECTION.users.short)
+              .populate('userGroup', SELECTION.userGroups.populate)
               .exec(),
-            Display.find().select(Selections.displays.short).exec(),
-            Image.find().select(Selections.images.short).exec(),
-            Group.find().select(Selections.groups.short).exec(),
+            Display.find().select(SELECTION.displays.short).exec(),
+            Image.find().select(SELECTION.images.short).exec(),
+            Group.find().select(SELECTION.groups.short).exec(),
           ] : [
-            Display.find({ userGroup: user.userGroup._id }).select(Selections.displays.short)
-              .populate('device', Selections.devices.populate)
-              .populate('activeImage', Selections.images.populate)
+            Display.find({ userGroup: user.userGroup._id }).select(SELECTION.displays.short)
+              .populate('device', SELECTION.devices.populate)
+              .populate('activeImage', SELECTION.images.populate)
               .exec(),
-            Image.find({ userGroup: user.userGroup._id }).select(Selections.images.short).exec(),
-            Group.find({ userGroup: user.userGroup._id }).select(Selections.groups.short).exec(),
-            Device.find({ userGroup: user.userGroup._id }).select(Selections.devices.short)
-              .populate('display', Selections.displays.populate)
+            Image.find({ userGroup: user.userGroup._id }).select(SELECTION.images.short).exec(),
+            Group.find({ userGroup: user.userGroup._id }).select(SELECTION.groups.short).exec(),
+            Device.find({ userGroup: user.userGroup._id }).select(SELECTION.devices.short)
+              .populate('display', SELECTION.displays.populate)
               .exec(),
-            Screen.find().select(Selections.screens.short).exec(),
+            Screen.find().select(SELECTION.screens.short).exec(),
           ];
           const results = await Promise.all(resources);
           const data = user.admin ? {
@@ -175,11 +175,11 @@ exports.userLogin = async (req, res) => {
         return false;
       });
     } else {
-      res.status(401).json({ message: 'Not allowed' });
+      res.status(401).json(MESSAGE[401]);
     }
   } catch (error) {
     console.log(error.message);
-    res.status(500).json(error);
+    res.status(500).json(MESSAGE[500](error));
   }
 };
 
@@ -187,7 +187,7 @@ exports.userLogin = async (req, res) => {
 exports.userUpdate = async (req, res) => {
   try {
     if (!req.AuthData.admin) {
-      res.status(401).json({ message: 'Not allowed' });
+      res.status(401).json(MESSAGE[401]);
     } else if (req.body.password) {
       bcrypt.hash(req.body.password, 10, async (err, hash) => {
         try {
@@ -196,8 +196,8 @@ exports.userUpdate = async (req, res) => {
           body.userGroup = mongoose.Types.ObjectId(userGroup);
           const { id } = req.params;
           const user = await User.findByIdAndUpdate(id, { $set: body }, { new: true })
-            .select(Selections.users.short)
-            .populate('userGroup', Selections.userGroups.populate);
+            .select(SELECTION.users.short)
+            .populate('userGroup', SELECTION.userGroups.populate);
           if (user) {
             if (userGroup) {
               await UserGroup.findByIdAndUpdate(mongoose.Types.ObjectId(userGroup), { $addToSet: { users: id } });
@@ -210,11 +210,11 @@ exports.userUpdate = async (req, res) => {
               resource: user,
             });
           } else {
-            res.status(404).json({ message: 'Not valid entry for provided id' });
+            res.status(404).json(MESSAGE[404]);
           }
         } catch (error) {
           console.log(error.message);
-          res.status(500).json(error);
+          res.status(500).json(MESSAGE[500](error));
         }
       });
     } else {
@@ -222,8 +222,8 @@ exports.userUpdate = async (req, res) => {
       body.userGroup = mongoose.Types.ObjectId(userGroup);
       const { id } = req.params;
       const user = await User.findByIdAndUpdate(id, { $set: body }, { new: true })
-        .select(Selections.users.short)
-        .populate('userGroup', Selections.userGroups.populate);
+        .select(SELECTION.users.short)
+        .populate('userGroup', SELECTION.userGroups.populate);
       if (user) {
         if (userGroup) {
           await UserGroup.findByIdAndUpdate(mongoose.Types.ObjectId(userGroup), { $addToSet: { users: id } });
@@ -236,12 +236,12 @@ exports.userUpdate = async (req, res) => {
           resource: user,
         });
       } else {
-        res.status(404).json({ message: 'Not valid entry for provided id' });
+        res.status(404).json(MESSAGE[404]);
       }
     }
   } catch (error) {
     console.log(error.message);
-    res.status(500).json(error);
+    res.status(500).json(MESSAGE[500](error));
   }
 };
 
@@ -249,7 +249,7 @@ exports.userUpdate = async (req, res) => {
 exports.userDelete = async (req, res) => {
   try {
     if (!req.AuthData.admin) {
-      res.status(401).json({ message: 'Not allowed' });
+      res.status(401).json(MESSAGE[401]);
     } else {
       const { id } = req.params;
       const user = await User.findById(id);
@@ -262,11 +262,11 @@ exports.userDelete = async (req, res) => {
           resourceId: id,
         });
       } else {
-        res.status(404).json({ message: 'No valid entry for provided id' });
+        res.status(404).json(MESSAGE[404]);
       }
     }
   } catch (error) {
     console.log(error.message);
-    res.status(500).json(error);
+    res.status(500).json(MESSAGE[500](error));
   }
 };
