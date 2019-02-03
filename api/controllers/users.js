@@ -90,7 +90,6 @@ exports.userSignup = async (req, res) => {
 /* LOGIN */
 exports.userLogin = async (req, res) => {
   try {
-    console.log(SELECTION);
     const user = await User.findOne({ login: req.body.login })
       .select(SELECTION.users.long)
       .exec();
