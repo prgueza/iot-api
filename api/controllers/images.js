@@ -2,26 +2,26 @@ const fs = require('fs');
 
 /* DATA MODELS */
 const Image = require('../models/image');
-const Selections = require('./select');
+const { SELECTION, MESSAGE } = require('./static');
 
 /* GET ALL */
 exports.imagesGetAll = async (req, res) => {
   try {
     if (!req.AuthData.admin) {
-      res.status(401).json({ error: 'Not allowed' });
+      res.status(401).json(MESSAGE[401]);
     } else {
       const image = await Image.find()
-        .select(Selections.images.short)
+        .select(SELECTION.images.short)
         .exec();
       if (image) {
         res.status(200).json(image);
       } else {
-        res.status(404).json({ message: 'Not valid entry for provided id' });
+        res.status(404).json(MESSAGE[404]);
       }
     }
   } catch (error) {
     console.log(error.message);
-    res.status(500).json(error);
+    res.status(500).json(MESSAGE[500](error));
   }
 };
 
@@ -31,21 +31,21 @@ exports.imagesGetOne = async (req, res) => {
     const { id } = req.params;
     const query = req.AuthData.admin ? { _id: id } : { _id: id, userGroup: req.AuthData.userGroup };
     const image = await Image.findById(query)
-      .select(Selections.images.long)
-      .populate('displays', Selections.displays.populate)
-      .populate('groups', Selections.groups.populate)
-      .populate('createdBy', Selections.screens.populate)
-      .populate('updatedBy', Selections.users.populate)
-      .populate('userGroup', Selections.userGroups.populate)
+      .select(SELECTION.images.long)
+      .populate('displays', SELECTION.displays.populate)
+      .populate('groups', SELECTION.groups.populate)
+      .populate('createdBy', SELECTION.screens.populate)
+      .populate('updatedBy', SELECTION.users.populate)
+      .populate('userGroup', SELECTION.userGroups.populate)
       .exec();
     if (image) {
       res.status(200).json(image);
     } else {
-      res.status(404).json({ message: 'Not valid entry for provided id' });
+      res.status(404).json(MESSAGE[404]);
     }
   } catch (error) {
     console.log(error.message);
-    res.status(500).json(error);
+    res.status(500).json(MESSAGE[500](error));
   }
 };
 
@@ -57,7 +57,7 @@ exports.imageCreate = async (req, res) => {
     body.userGroup = req.AuthData.userGroup;
     const image = new Image(body);
     const { _id } = await image.save();
-    const newImage = await Image.findById(_id).select(Selections.images.short);
+    const newImage = await Image.findById(_id).select(SELECTION.images.short);
     res.status(201).json({
       success: true,
       message: 'Success at uploading an image to the server',
@@ -76,7 +76,7 @@ exports.imageUpdate = async (req, res) => {
   try {
     const { id } = req.params;
     const { body } = req;
-    const image = await Image.findOneAndUpdate({ _id: id, userGroup: req.AuthData.userGroup }, { $set: body }, { new: true }).select(Selections.images.short);
+    const image = await Image.findOneAndUpdate({ _id: id, userGroup: req.AuthData.userGroup }, { $set: body }, { new: true }).select(SELECTION.images.short);
     res.status(201).json({
       message: 'Succes at updating an image from the collection',
       notify: `${image.name} actualizada`,
@@ -86,7 +86,7 @@ exports.imageUpdate = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    res.status(500).json(error);
+    res.status(500).json(MESSAGE[500](error));
   }
 };
 
@@ -103,11 +103,11 @@ exports.imageDelete = async (req, res) => {
         resourceId: id,
       });
     } else {
-      res.status(404).json({ message: 'No valid entry for provided id' });
+      res.status(404).json(MESSAGE[404]);
     }
   } catch (error) {
     console.log(error.message);
-    res.status(500).json(error);
+    res.status(500).json(MESSAGE[500](error));
   }
 };
 
@@ -128,7 +128,7 @@ exports.imageUpload = async (req, res) => {
         path: req.file.path,
         src: process.env.API_URL + req.file.path,
       };
-      const newImage = await Image.findOneAndUpdate({ _id: id }, { $set: updateObject }, { new: true }).select(Selections.images.short);
+      const newImage = await Image.findOneAndUpdate({ _id: id }, { $set: updateObject }, { new: true }).select(SELECTION.images.short);
       res.status(200)
         .json({
           success: true,
@@ -138,9 +138,9 @@ exports.imageUpload = async (req, res) => {
           resource: newImage,
         });
     }
-    res.status(404).json({ message: 'No valid entry for provided id' });
+    res.status(404).json(MESSAGE[404]);
   } catch (error) {
     console.log(error.message);
-    res.status(500).json(error);
+    res.status(500).json(MESSAGE[500](error));
   }
 };

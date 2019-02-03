@@ -1,11 +1,14 @@
 const required = '_id url name description createdAt updatedAt userGroup';
 
-const Messages = {
-  404: 'No valid entry found for provided id',
-  401: 'Not allowed',
+exports.MESSAGE = {
+  204: { message: 'No resources available', success: false },
+  401: { message: 'Not allowed', success: false },
+  404: { message: 'No valid entry found for provided id', success: false },
+  409: { message: 'The username or email specified has already been used', success: false },
+  500: error => ({ message: 'Internal server error', success: false, error }),
 };
 
-const Selections = {
+exports.SELECTION = {
   devices: {
     long: `${required} mac found lastFound batt rssi initcode screen display activeImage userGroup updatedBy`,
     short: `${required} gateway display mac found lastFound batt rssi screen initcode`,
@@ -52,6 +55,3 @@ const Selections = {
     populate: `${required}`,
   },
 };
-
-module.exports = Selections;
-module.exports = Messages;
