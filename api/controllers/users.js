@@ -90,9 +90,9 @@ exports.userSignup = async (req, res) => {
 /* LOGIN */
 exports.userLogin = async (req, res) => {
   try {
+    console.log(Selections);
     const user = await User.findOne({ login: req.body.login })
       .select(Selections.users.long)
-      // .populate('userGroup', Selections.userGroups.populate)
       .exec();
     if (user) {
       bcrypt.compare(req.body.password, user.password, async (err, result) => {
@@ -104,7 +104,7 @@ exports.userLogin = async (req, res) => {
           const token = jwt.sign({
             login: user.login,
             userID: user._id,
-            userGroup: user.userGroup._id,
+            userGroup: user.userGroup,
             admin: user.admin,
           },
           process.env.JWT_KEY, {
