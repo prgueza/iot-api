@@ -97,7 +97,7 @@ exports.userLogin = async (req, res) => {
       bcrypt.compare(req.body.password, user.password, async (err, result) => {
         if (err) {
           res.status(401).json(MESSAGE[401]);
-          return false;
+          return;
         }
         if (result) {
           const token = jwt.sign({
@@ -107,7 +107,7 @@ exports.userLogin = async (req, res) => {
             admin: user.admin,
           },
           process.env.JWT_KEY, {
-            expiresIn: 60 * 60 * 7,
+            expiresIn: process.env.JWT_EXPIRATION,
           });
           const resources = user.admin ? [
             Device.find().select(SELECTION.devices.short)
@@ -169,9 +169,7 @@ exports.userLogin = async (req, res) => {
             },
             data,
           });
-          return false;
         }
-        return false;
       });
     } else {
       res.status(401).json(MESSAGE[401]);

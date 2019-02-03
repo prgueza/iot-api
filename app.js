@@ -6,9 +6,9 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 
 // Environment variables
-process.env.NODE_ENV = process.env.NODE_ENV || 'production';
 process.env.API_URL = process.env.API_URL || 'http://localhost:4000/';
 process.env.JWT_KEY = process.env.JWT_KEY || 'secret';
+process.env.JWT_EXPIRATION = process.env.JWT_EXPIRATION || 3600; // seconds
 process.env.LAST_UPDATE_TIMER = process.env.LAST_UPDATE_TIMER || 0; // seconds
 
 // Routes
