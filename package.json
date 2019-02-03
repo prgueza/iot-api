@@ -4,8 +4,8 @@
   "description": "RESTful API for iot-frontend",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon server.js --ignore 'config.json'"
+    "dev": "nodemon server.js --ignore 'config.json'",
+    "run": "node server.js"
   },
   "author": "Pedro Rodriguez Alia",
   "license": "ISC",
