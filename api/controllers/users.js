@@ -94,85 +94,80 @@ exports.userLogin = async (req, res) => {
       .select(SELECTION.users.long)
       .exec();
     if (user) {
-      bcrypt.compare(req.body.password, user.password, async (err, result) => {
-        if (err) {
-          res.status(401).json(MESSAGE[401]);
-          return;
-        }
-        if (result) {
-          const token = jwt.sign({
-            login: user.login,
-            userID: user._id,
-            userGroup: user.userGroup,
+      const match = await bcrypt.compare(req.body.password, user.password);
+      if (match) {
+        const token = jwt.sign({
+          login: user.login,
+          userID: user._id,
+          userGroup: user.userGroup,
+          admin: user.admin,
+        },
+        process.env.JWT_KEY, {
+          expiresIn: process.env.JWT_EXPIRATION,
+        });
+        const resources = user.admin ? [
+          Device.find().select(SELECTION.devices.short)
+            .populate('gateway', SELECTION.gateways.populate)
+            .exec(),
+          Gateway.find().select(SELECTION.gateways.short).exec(),
+          UserGroup.find().select(SELECTION.userGroups.short).exec(),
+          Screen.find().select(SELECTION.screens.short).exec(),
+          Location.find().select(SELECTION.locations.short).exec(),
+          User.find().select(SELECTION.users.short)
+            .populate('userGroup', SELECTION.userGroups.populate)
+            .exec(),
+          Display.find().select(SELECTION.displays.short).exec(),
+          Image.find().select(SELECTION.images.short).exec(),
+          Group.find().select(SELECTION.groups.short).exec(),
+        ] : [
+          Display.find({ userGroup: user.userGroup._id }).select(SELECTION.displays.short)
+            .populate('device', SELECTION.devices.populate)
+            .populate('activeImage', SELECTION.images.populate)
+            .exec(),
+          Image.find({ userGroup: user.userGroup._id }).select(SELECTION.images.short).exec(),
+          Group.find({ userGroup: user.userGroup._id }).select(SELECTION.groups.short).exec(),
+          Device.find({ userGroup: user.userGroup._id }).select(SELECTION.devices.short)
+            .populate('display', SELECTION.displays.populate)
+            .exec(),
+          Screen.find().select(SELECTION.screens.short).exec(),
+        ];
+        const results = await Promise.all(resources);
+        const data = user.admin ? {
+          devices: results[0].map((d) => {
+            d.url = `http://localhost:4000/devices/${d._id}`;
+            return d;
+          }),
+          gateways: results[1],
+          userGroups: results[2],
+          screens: results[3],
+          locations: results[4],
+          users: results[5],
+          displays: results[6],
+          images: results[7],
+          groups: results[8],
+        } : {
+          displays: results[0],
+          images: results[1],
+          groups: results[2],
+          devices: results[3],
+          screens: results[4],
+        };
+        res.status(200).json({
+          message: 'Auth Successful',
+          token,
+          user: {
+            _id: user._id,
+            url: user.url,
+            name: user.name,
             admin: user.admin,
+            createdAt: user.createdAt,
+            updatedAt: user.updatedAt,
           },
-          process.env.JWT_KEY, {
-            expiresIn: process.env.JWT_EXPIRATION,
-          });
-          const resources = user.admin ? [
-            Device.find().select(SELECTION.devices.short)
-              .populate('gateway', SELECTION.gateways.populate)
-              .exec(),
-            Gateway.find().select(SELECTION.gateways.short).exec(),
-            UserGroup.find().select(SELECTION.userGroups.short).exec(),
-            Screen.find().select(SELECTION.screens.short).exec(),
-            Location.find().select(SELECTION.locations.short).exec(),
-            User.find().select(SELECTION.users.short)
-              .populate('userGroup', SELECTION.userGroups.populate)
-              .exec(),
-            Display.find().select(SELECTION.displays.short).exec(),
-            Image.find().select(SELECTION.images.short).exec(),
-            Group.find().select(SELECTION.groups.short).exec(),
-          ] : [
-            Display.find({ userGroup: user.userGroup._id }).select(SELECTION.displays.short)
-              .populate('device', SELECTION.devices.populate)
-              .populate('activeImage', SELECTION.images.populate)
-              .exec(),
-            Image.find({ userGroup: user.userGroup._id }).select(SELECTION.images.short).exec(),
-            Group.find({ userGroup: user.userGroup._id }).select(SELECTION.groups.short).exec(),
-            Device.find({ userGroup: user.userGroup._id }).select(SELECTION.devices.short)
-              .populate('display', SELECTION.displays.populate)
-              .exec(),
-            Screen.find().select(SELECTION.screens.short).exec(),
-          ];
-          const results = await Promise.all(resources);
-          const data = user.admin ? {
-            devices: results[0].map((d) => {
-              d.url = `http://localhost:4000/devices/${d._id}`;
-              return d;
-            }),
-            gateways: results[1],
-            userGroups: results[2],
-            screens: results[3],
-            locations: results[4],
-            users: results[5],
-            displays: results[6],
-            images: results[7],
-            groups: results[8],
-          } : {
-            displays: results[0],
-            images: results[1],
-            groups: results[2],
-            devices: results[3],
-            screens: results[4],
-          };
-          res.status(200).json({
-            message: 'Auth Successful',
-            token,
-            user: {
-              _id: user._id,
-              url: user.url,
-              name: user.name,
-              admin: user.admin,
-              createdAt: user.createdAt,
-              updatedAt: user.updatedAt,
-            },
-            data,
-          });
-        }
-      });
-    } else {
-      res.status(401).json(MESSAGE[401]);
+          data,
+        });
+      } else {
+        res.status(401).json(MESSAGE[401]);
+      }
     }
   } catch (error) {
     console.log(error.message);
