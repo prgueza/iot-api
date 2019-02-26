@@ -4,25 +4,33 @@
   "description": "RESTful API for iot-frontend",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon server.js"
+    "dev": "nodemon server.js --ignore 'config.json'",
+    "start": "node server.js"
   },
   "author": "Pedro Rodriguez Alia",
   "license": "ISC",
+  "repository": "https://github.com/pedro-rodalia/iot-api.git",
   "dependencies": {
     "axios": "^0.18.0",
-    "bcrypt": "^1.0.3",
+    "bcrypt": "^2.0.0",
     "body-parser": "^1.18.2",
+    "data-store": "^3.1.0",
     "dotenv": "^5.0.1",
     "express": "^4.16.2",
     "form-data": "^2.3.2",
     "jsonwebtoken": "^8.1.0",
     "moment": "^2.21.0",
-    "mongoose": "^4.13.7",
+    "mongoose": "^5.3.14",
     "morgan": "^1.9.0",
-    "multer": "^1.3.0"
+    "multer": "^1.3.0",
+    "socket.io": "^2.1.1"
   },
   "devDependencies": {
+    "eslint": "^5.7.0",
+    "eslint-config-airbnb": "^17.1.0",
+    "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-jsx-a11y": "^6.1.2",
+    "eslint-plugin-react": "^7.11.1",
     "nodemon": "^1.17.5"
   }
 }

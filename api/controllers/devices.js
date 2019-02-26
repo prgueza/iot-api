@@ -1,149 +1,118 @@
-const mongoose = require( 'mongoose' )
-
 /* DATA MODELS */
-const Device = require( '../models/device' )
-const Display = require( '../models/display' )
-const Gateway = require( '../models/gateway' )
-const UserGroup = require( '../models/userGroup' )
+const moment = require('moment');
+const Device = require('../models/device');
+// const Display = require('../models/display');
+const { SELECTION, MESSAGE } = require('./static');
 
-/* GET ALL */
-exports.devices_get_all = ( req, res, next ) => {
-	if ( !req.AuthData.admin ) {
-		res.status( 401 )
-			.json( { error: 'Not allowed' } )
-	} else {
-		Device.find()
-			.select( '_id url name description gateway mac found batt rssi screen initcode createdAt updatedAt' )
-			.populate( 'gateway', '_id url name mac' )
-			.exec()
-			.then( ( docs ) => {
-				return res.status( 200 )
-					.json( docs.map( ( doc ) => {
-						doc.url = process.env.API_URL + 'devices/' + doc._id
-						return doc
-					} ) )
-			} )
-			.catch( err => {
-				console.log( err )
-				res.status( 500 )
-					.json( { error: err } )
-			} )
-	}
-}
+/* GET ALL -  Authorization: Only admin users can get ALL the devices */
+exports.devicesGetAll = async (req, res) => {
+  try {
+    if (!req.AuthData.admin) {
+      res.status(401).json(MESSAGE[401]);
+    } else {
+      const devices = await Device.find()
+        .select(SELECTION.devices.short)
+        .populate('gateway', SELECTION.gateways.populate)
+        .exec();
+      const mapDevices = devices.map((device) => {
+        device.url = `${process.env.API_URL}devices/${device._id}`;
+        if (moment().diff(device.lastFound, 'days') > 7) device.found = false;
+        return device;
+      });
+      res.status(200).json(mapDevices);
+    }
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json(MESSAGE[500](error));
+  }
+};
 
-/* GET ONE */
-exports.devices_get_one = ( req, res, next ) => {
-	const _id = req.params.id
-	Device.findById( _id )
-		.select( '_id url name description mac mac found batt rssi initcode screen display activeImage userGroup createdBy createdAt updatedAt' )
-		.populate( 'display', '_id url name' )
-		.populate( 'gateway', '_id url name' )
-		.populate( 'created_by', '_id url name' )
-		.populate( 'updated_by', '_id url name' )
-		.populate( 'resolution', '_id url name' )
-		.populate( 'location', '_id url name' )
-		.populate( 'userGroup', '_id url name' )
-		.populate( 'active_image', '_id url name' )
-		.exec()
-		.then( doc => {
-			if ( doc && ( ( doc.userGroup && req.AuthData.userGroup == doc.userGroup._id ) || req.AuthData.admin ) ) { // if the user can manage the device or if the user is an admin
-				doc.url = process.env.API_URL + 'devices/' + doc._id
-				res.status( 200 )
-					.json( doc )
-			} else if ( !req.AuthData.admin ) { // if the user can't manage the device and isn't an admin
-				res.status( 401 )
-					.json( { error: 'Not allowed' } )
-			} else { // if the id provided for the device doesn't match any
-				res.status( 404 )
-					.json( { message: 'No valid entry found for provided id' } )
-			}
-		} )
-		.catch( err => {
-			console.log( err )
-			res.status( 500 )
-				.json( { error: err } )
-		} )
-}
+/* GET ONE - Authorization: Only admin users or users from the same userGroup as the device can get said device */
+exports.devicesGetOne = async (req, res) => {
+  try {
+    const _id = req.params.id;
+    const device = await Device.findById(_id)
+      .select(SELECTION.devices.long)
+      .populate('display', SELECTION.displays.populate)
+      .populate('gateway', SELECTION.gateways.populate)
+      .populate('updatedBy', SELECTION.users.populate)
+      .populate('resolution', SELECTION.screens.populate)
+      .populate('location', SELECTION.locations.populate)
+      .populate('userGroup', SELECTION.userGroups.populate)
+      .populate('activeImage', SELECTION.images.populate)
+      .exec();
+    if (device && ((device.userGroup && req.AuthData.userGroup === device.userGroup._id) || req.AuthData.admin)) {
+      device.url = `${process.env.API_URL}devices/${device._id}`;
+      res.status(200).json(device);
+    } else if (!req.AuthData.admin) {
+      res.status(401).json(MESSAGE[401]);
+    } else {
+      res.status(404).json(MESSAGE[404]);
+    }
+  } catch (error) {
+    console.log(error.message);
+    res.status(error.status || 500).json(MESSAGE[500](error));
+  }
+};
 
 /* PUT */
-exports.device_update = ( req, res, next ) => {
-	if ( !req.AuthData.admin ) {
-		res.status( 401 )
-			.json( { error: 'Not allowed' } )
-	} else {
-		// get the id from the request for the query
-		const _id = req.params.id
-		// get userGroup id from the request
-		const { userGroup, gateway } = req.body
-		// create userGroup id from data received
-		const u_id = mongoose.Types.ObjectId( userGroup )
-		const g_id = mongoose.Types.ObjectId( gateway )
-		// update the device based on its id
-		if ( !req.body.userGroup )
-			req.body.userGroup = undefined
-		Device
-			// update device
-			.findOneAndUpdate( {
-				_id: _id
-			}, {
-				$set: req.body
-			}, { new: true } )
-			// send response
-			.then( res => Device.findById( _id )
-				.select( '_id url name description gateway mac found batt rssi screen initcode createdAt updatedAt' )
-				.populate( 'gateway', '_id url name mac' )
-				.exec() )
-			.then( doc => {
-				doc.url = 'http://localhost:4000/devices/' + doc._id //// HACK: hotfix
-				res.status( 200 )
-					.json( {
-						message: 'Success at adding a new display to the collection',
-						notify: '(' + doc.initcode + ') - ' + doc.name + ' actualizado',
-						success: true,
-						resourceId: _id,
-						resource: doc,
-					} )
-			} )
-			// catch any errors
-			.catch( err => {
-				console.log( err )
-				res.status( 500 )
-					.json( { message: 'Internal Server Error', error: err } )
-			} )
-	}
-}
+exports.deviceUpdate = async (req, res) => {
+  try {
+    // If the user has no admin privileges answer with an error
+    if (!req.AuthData.admin) {
+      res.status(401).json(MESSAGE[401]);
+    }
+    // Get the id from the request for the query
+    const { id } = req.params;
+    // If it's not assigned to a usergroup set the property as undefined
+    if (!req.body.userGroup) req.body.userGroup = undefined;
+    // Update and get the device
+    const device = await Device.findByIdAndUpdate({ _id: id }, { $set: req.body }, { new: true })
+      .select(SELECTION.devices.short)
+      .populate('gateway', SELECTION.gateways.populate)
+      .exec();
+    if (device) {
+      // Set the url manually
+      device.url = `http://localhost:4000/devices/${device._id}`;
+      // Send a response
+      res.status(200).json({
+        message: 'Success at updating the device',
+        notify: `${device.initcode} - ${device.name} actualizado`,
+        success: true,
+        resourceId: id,
+        resource: device,
+      });
+    } else {
+      res.status(404).json(MESSAGE[404]);
+    }
+  } catch (error) {
+    console.log(error.message);
+    res.status(error.status || 500).json(MESSAGE[500](error));
+  }
+};
 
 /* DELETE */
-exports.device_delete = ( req, res, next ) => {
-	// get id from request parameters
-	const _id = req.params.id
-	if ( req.AuthData.admin ) {
-		Device.findOneAndRemove( _id )
-			.select( '_id url name description createdAt updatedAt' )
-			.exec()
-			.then( doc => {
-				if ( doc.display ) {
-					Display.findOneAndRemove( doc.display._id )
-				}
-				return ( doc )
-			} )
-			.then( doc => {
-				res.status( 200 )
-					.json( {
-						message: 'Success at removing a display from the collection',
-						success: true,
-						resourceId: _id,
-						devices: doc
-					} )
-			} )
-			.catch( err => {
-				console.log( err )
-				res.status( 500 )
-					.json( {
-						error: err
-					} )
-			} )
-	} else {
-		res.status( 401 ).json( { message: 'Forbidden' } )
-	}
-}
+exports.deviceDelete = async (req, res) => {
+  try {
+    // If the user has no admin privileges answer with an error
+    if (!req.AuthData.admin) {
+      res.status(401).json(MESSAGE[401]);
+    }
+    const { id } = req.params;
+    const device = await Device.findById(id);
+    await device.remove();
+    if (device) {
+      res.status(200).json({
+        message: 'Success at removing a device from the collection',
+        notify: `${device.initcode} - ${device.name} eliminado`,
+        success: true,
+        resourceId: id,
+      });
+    } else {
+      res.status(404).json(MESSAGE[404]);
+    }
+  } catch (error) {
+    console.log(error.message);
+    res.status(error.status || 500).json(MESSAGE[500](error));
+  }
+};

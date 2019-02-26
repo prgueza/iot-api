@@ -1,174 +1,122 @@
-const mongoose = require( 'mongoose' )
-
 /* DATA MODELS */
-const Gateway = require( '../models/gateway' )
-const Device = require( '../models/device' )
+const Gateway = require('../models/gateway');
+const { SELECTION, MESSAGE } = require('./static');
 
 /* GET ALL */
-exports.gateways_get_all = ( req, res, next ) => {
-	if ( !req.AuthData.admin ) {
-		res.status( 401 )
-			.json( { error: 'Not allowed' } )
-	} else {
-		Gateway.find()
-			.select( '_id url sync name ip mac port description createdAt updatedAt' )
-			.exec()
-			.then( docs => {
-				console.log( docs )
-				setTimeout( () => {
-					res.status( 200 )
-						.json( docs )
-				}, 0 )
-				// setTimeout(() => { res.status(500).json({error: 'forced error'}) }, 0)
-			} )
-			.catch( err => {
-				console.log( err )
-				res.status( 500 )
-					.json( { error: err } )
-			} )
-	}
-}
+exports.gatewaysGetAll = async (req, res) => {
+  try {
+    if (!req.AuthData.admin) {
+      res.status(401).json(MESSAGE[401]);
+    } else {
+      const gateways = await Gateway.find()
+        .select(SELECTION.gateways.short)
+        .exec();
+      res.status(200).json(gateways);
+    }
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json(MESSAGE[500](error));
+  }
+};
 
 /* GET ONE */
-exports.gateways_get_one = ( req, res, next ) => {
-	if ( !req.AuthData.admin ) {
-		res.status( 401 )
-			.json( { error: 'Not allowed' } )
-	} else {
-		const _id = req.params.id
-		Gateway.findById( _id )
-			.select( '_id url name description ip mac port createdBy createdAt updatedAt' )
-			.populate( 'createdBy', '_id url name' )
-			.populate( 'updated_by', '_id url name' )
-			.populate( 'location', '_id url name' )
-			.exec()
-			.then( doc => {
-				if ( doc ) {
-					res.status( 200 )
-						.json( doc )
-				} else {
-					res.status( 404 )
-						.json( { message: 'No valid entry found for provided id' } )
-				}
-			} )
-			.catch( err => {
-				console.log( err )
-				res.status( 500 )
-					.json( { error: err } )
-			} )
-	}
-}
+exports.gatewaysGetOne = async (req, res) => {
+  try {
+    if (!req.AuthData.admin) {
+      res.status(401).json(MESSAGE[401]);
+    } else {
+      const _id = req.params.id;
+      const gateway = await Gateway.findById(_id)
+        .select(SELECTION.gateways.long)
+        .populate('createdBy', SELECTION.users.populate)
+        .populate('updated_by', SELECTION.users.populate)
+        .populate('location', SELECTION.locations.populate)
+        .exec();
+      if (gateway) {
+        res.status(200).json(gateway);
+      } else {
+        res.status(404).json(MESSAGE[404]);
+      }
+    }
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json(MESSAGE[500](error));
+  }
+};
 
 /* POST */
-exports.gateway_create = ( req, res, next ) => {
-	if ( !req.AuthData.admin ) {
-		res.status( 401 )
-			.json( { error: 'Not allowed' } )
-	} else {
-		// get data for new gateway
-		const { name, description, location, createdBy, mac, ip, port } = req.body
-		// create a new id for the gateway
-		const _id = new mongoose.Types.ObjectId()
-		// build the new gateway from its model
-		const gateway = new Gateway( {
-			_id: _id,
-			url: process.env.API_URL + 'gateways/' + _id,
-			sync: 'http://' + ip + ':' + port + '/devices',
-			name: name,
-			description: description,
-			location: location,
-			createdBy: createdBy,
-			mac: mac,
-			ip: ip,
-			port: port
-		} )
-		// save gateway
-		gateway
-			.save()
-			// send response
-			.then( ( res ) => Gateway.findById( _id )
-				.exec() )
-			.then( ( doc ) => {
-				const result = {
-					_id: doc._id,
-					url: doc.url,
-					name: doc.name,
-					description: doc.description,
-					createdAt: doc.createdAt,
-					updatedAt: doc.updatedAt,
-					ip: doc.ip,
-					mac: doc.mac,
-				}
-				res.status( 201 )
-					.json( {
-						message: 'Success at adding a new gateway to the collection',
-						success: true,
-						resourceId: _id,
-						resource: result
-					} )
-			} )
-			// catch any errors
-			.catch( err => {
-				console.log( err )
-				res.status( 500 )
-					.json( {
-						message: 'Internal Server Error',
-						error: err
-					} )
-			} )
-	}
-}
+exports.gatewayCreate = async (req, res) => {
+  try {
+    if (!req.AuthData.admin) {
+      res.status(401).json(MESSAGE[401]);
+    } else {
+      const { body } = req;
+      const gateway = new Gateway(body);
+      const { _id } = await gateway.save();
+      const newGateway = await Gateway.findById(_id).select(SELECTION.gateways.short);
+      res.status(201).json({
+        message: 'Success at adding a new gateway to the collection',
+        notify: `${newGateway.name} configurada`,
+        success: true,
+        resourceId: newGateway._id,
+        resource: newGateway,
+      });
+    }
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json(MESSAGE[500](error));
+  }
+};
 
 /* PUT */
-exports.gateway_update = ( req, res, next ) => {
-	if ( !req.AuthData.admin ) {
-		res.status( 401 )
-			.json( { error: 'Not allowed' } )
-	} else {
-		// get _id from params
-		const _id = req.params.id
-		if ( req.body.port ) { req.body.sync = 'http://' + req.body.ip + ':' + req.body.port + '/devices' }
-		// update gateway
-		Gateway
-			.findOneAndUpdate( { _id: _id }, { $set: req.body }, { new: true } )
-			// send response
-			.then( doc => {
-				res.status( 200 )
-					.json( {
-						message: 'Success at adding a new display to the collection',
-						notify: doc.name + ' actualizada',
-						success: true,
-						resourceId: _id,
-						resource: doc,
-					} )
-			} )
-			.catch( err => {
-				console.log( err )
-				res.status( 500 )
-					.json( { error: err } )
-			} )
-	}
-}
+exports.gatewayUpdate = async (req, res) => {
+  try {
+    if (!req.AuthData.admin) {
+      res.status(401).json(MESSAGE[401]);
+    } else {
+      const _id = req.params.id;
+      if (req.body.port || req.body.ip) { req.body.sync = `http://${req.body.ip}:${req.body.port}/devices`; }
+      const gateway = await Gateway.findOneAndUpdate({ _id }, { $set: req.body }, { new: true }).select(SELECTION.gateways.short);
+      if (gateway) {
+        res.status(200).json({
+          message: 'Success at updating a Gateway from the collection',
+          notify: `${gateway.name} actualizada`,
+          success: true,
+          resourceId: _id,
+          resource: gateway,
+        });
+      } else {
+        res.status(404).json(MESSAGE[404]);
+      }
+    }
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json(MESSAGE[500](error));
+  }
+};
 
 /* DELETE */
-exports.gateway_delete = ( req, res, next ) => {
-	if ( !req.AuthData.admin ) {
-		res.status( 401 )
-			.json( { error: 'Not allowed' } )
-	} else {
-		const _id = req.params.id
-		Gateway
-			.remove( { _id: _id } )
-			.exec()
-			// send response
-			.then( result => {
-				res.status( 200 )
-					.json( result )
-			} )
-			.catch( err => {
-				console.log( err )
-				res.status( 500 )
-					.json( { error: err } )
-			} )
-	}
-}
+exports.gatewayDelete = async (req, res) => {
+  try {
+    if (!req.AuthData.admin) {
+      res.status(401).json(MESSAGE[401]);
+    } else {
+      const { id } = req.params;
+      const gateway = await Gateway.findById(id);
+      await gateway.remove();
+      if (gateway) {
+        res.status(200).json({
+          message: 'Success at removing a gateway from the collection',
+          notify: `${gateway.name} eliminada`,
+          success: true,
+          resourceId: id,
+        });
+      } else {
+        res.status(404).json({ message: 'No valid entry found for provided id' });
+      }
+    }
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json(MESSAGE[500](error));
+  }
+};

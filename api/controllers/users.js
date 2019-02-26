@@ -1,318 +1,258 @@
-const mongoose = require( 'mongoose' )
-const bcrypt = require( 'bcrypt' )
-const jwt = require( 'jsonwebtoken' )
+const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 /* DATA MODELS */
-const User = require( '../models/user.js' )
-const UserGroup = require( '../models/userGroup.js' )
-const Display = require( '../models/display.js' )
-const Image = require( '../models/image.js' )
-const Group = require( '../models/group.js' )
-const Device = require( '../models/device.js' )
-const Gateway = require( '../models/gateway.js' )
-const Screen = require( '../models/screen.js' )
-const Location = require( '../models/location.js' )
+const User = require('../models/user.js');
+const UserGroup = require('../models/userGroup.js');
+const Display = require('../models/display.js');
+const Image = require('../models/image.js');
+const Group = require('../models/group.js');
+const Device = require('../models/device.js');
+const Gateway = require('../models/gateway.js');
+const Screen = require('../models/screen.js');
+const Location = require('../models/location.js');
+const { SELECTION, MESSAGE } = require('./static');
 
 /* GET ALL */
-exports.users_get_all = ( req, res, next ) => {
-	User.find()
-		.select( '_id url name login email createdAt updatedAt admin userGroup' )
-		.populate( 'userGroup', '_id url name' )
-		.exec()
-		.then( docs => {
-			setTimeout( () => {
-				res.status( 200 )
-					.json( docs )
-			}, 0 )
-		} )
-		.catch( err => {
-			res.status( 500 )
-				.json( { error: err } )
-		} )
-}
+exports.usersGetAll = async (req, res) => {
+  try {
+    const users = await User.find()
+      .select(SELECTION.users.short)
+      .populate('userGroup', SELECTION.userGroups.populate)
+      .exec();
+    if (users) {
+      res.status(200).json(users);
+    } else {
+      res.status(404).json(MESSAGE[404]);
+    }
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json(MESSAGE[500](error));
+  }
+};
 
 /* GET ONE */
-exports.users_get_one = ( req, res, next ) => {
-	const id = req.params.id
-	User.findById( id )
-		.select( '_id url name login password email createdAt updatedAt admin' )
-		.exec()
-		.then( doc => {
-			if ( doc ) {
-				res.status( 200 )
-					.json( doc )
-			} else {
-				res.status( 404 )
-					.json( { message: 'No valid entry found for provided id' } )
-			}
-		} )
-		.catch( err => {
-			res.status( 500 )
-				.json( { error: err } )
-		} )
-}
+exports.usersGetOne = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findById(id)
+      .select(SELECTION.users.long)
+      .exec();
+    if (user) {
+      res.status(200).json(user);
+    } else {
+      res.status(404).json(MESSAGE[404]);
+    }
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json(MESSAGE[500](error));
+  }
+};
 
 /* SIGN UP */
-exports.user_signup = ( req, res, next ) => {
-	User.find( { login: req.body.login } )
-		.exec()
-		.then( user => {
-			if ( user.length >= 1 ) {
-				return res.status( 409 )
-					.json( {
-						message: 'Login exists'
-					} )
-			} else {
-				bcrypt.hash( req.body.password, 10, ( err, hash ) => {
-					if ( err ) {
-						return res.status( 500 )
-							.json( {
-								error: err
-							} )
-					} else {
-						const _id = new mongoose.Types.ObjectId()
-						const user = new User( {
-							_id: _id,
-							url: process.env.API_URL + 'users/' + _id,
-							login: req.body.login,
-							name: req.body.name,
-							email: req.body.email,
-							admin: req.body.admin,
-							userGroup: req.body.userGroup || undefined,
-							password: hash,
-						} )
-						user
-							.save()
-							.then( () => {
-								if ( req.body.userGroup ) {
-									return UserGroup.update( { _id: mongoose.Types.ObjectId( req.body.userGroup ) }, { $addToSet: { users: _id } } )
-								}
-							} )
-							.then( () => {
-								return User.findById( _id )
-									.select( '_id url name login email admin userGroup' )
-									.exec()
-							} )
-							.then( doc => {
-								res.status( 201 )
-									.json( {
-										message: 'Success at adding a user to the collection',
-										success: true,
-										resourceId: doc._id,
-										resource: doc
-									} )
-							} )
-							.catch( err => {
-								res.status( 500 )
-									.json( {
-										error: err
-									} )
-							} )
-					}
-				} )
-			}
-		} )
-}
+exports.userSignup = async (req, res) => {
+  try {
+    const { login } = req.body;
+    const existingUser = await User.findOne({ login }).exec();
+    if (!existingUser) {
+      bcrypt.hash(req.body.password, 10, async (err, hash) => {
+        try {
+          const { body, body: { userGroup } } = req;
+          body.userGroup = userGroup || undefined; // TODO: review if this is necessary
+          body.password = hash;
+          const user = new User(body);
+          const { _id } = await user.save();
+          const newUser = await User.findById(_id)
+            .select(SELECTION.users.short)
+            .populate('userGroup', SELECTION.userGroups.populate);
+          res.status(201).json({
+            message: 'Success at adding a user to the collection',
+            notify: `${user.name} añadido`,
+            success: true,
+            resourceId: newUser._id,
+            resource: newUser,
+          });
+        } catch (error) {
+          console.log(error.message);
+          res.status(500).json(error);
+        }
+      });
+    } else {
+      res.status(409).json(MESSAGE[409]);
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(MESSAGE[500](error));
+  }
+};
 
 /* LOGIN */
-exports.user_login = ( req, res, next ) => {
-	// check if the user exists
-	User.findOne( { login: req.body.login } )
-		.select( '_id url login password name email admin userGroup createdAt' )
-		.populate( 'userGroup', '_id url name' )
-		.exec()
-		// user array
-		.then( user => {
-			// check if user was found or not
-			if ( !user ) { // not found
-				return res.status( 401 )
-					.json( {
-						message: 'Auth failed'
-					} )
-			}
-			// found => check if password is correct
-			bcrypt.compare( req.body.password, user.password, ( err, result ) => {
-				// general error from bcrypt
-				if ( err ) {
-					return res.status( 401 )
-						.json( {
-							message: 'Auth failed'
-						} )
-				}
-				if ( result ) { // passowrd matches!
-					// create token
-					const token = jwt.sign( { // payload
-							login: user.login,
-							userID: user._id,
-							userGroup: user.userGroup._id,
-							admin: user.admin
-						},
-						// secret key
-						process.env.JWT_KEY, { // options
-							expiresIn: "1h"
-						}
-					)
-
-					var resources_array = user.admin ? [
-            Device.find()
-						.select( '_id url name description initcode gateway updatedAt' )
-						.populate( 'gateway', '_id ulr name' )
-						.exec(),
-            Gateway.find()
-						.select( '_id url name description ip port mac device updatedAt createdAt' )
-						.exec(),
-            UserGroup.find()
-						.select( '_id url name description' )
-						.exec(),
-            Screen.find()
-						.select( '_id url name description size screen_code color_profile' )
-						.exec(),
-            Location.find()
-						.select( '_id url name description' )
-						.exec(),
-            User.find()
-						.select( '_id url name login email admin userGroup' )
-						.populate( 'userGroup', '_id url name' )
-						.exec()
-          ] : [
-            Display.find( { userGroup: user.userGroup._id } )
-						.select( '_id url name description tags device updatedAt createdAt' )
-						.populate( 'device', '_id url name initcode' )
-						.exec(),
-            Image.find( { userGroup: user.userGroup._id } )
-						.select( '_id url name description tags src updatedAt createdAt' )
-						.exec(),
-            Group.find( { userGroup: user.userGroup._id } )
-						.select( '_id url name description tags updatedAt createdAt' )
-						.exec(),
-            Device.find( { userGroup: user.userGroup._id } )
-						.select( '_id url name description display updatedAt createdAt' )
-						.populate( 'display', '_id url name description' )
-						.exec(),
-            Screen.find()
-						.select( '_id url name' )
-						.exec()
-          ]
-
-					Promise.all( resources_array )
-						.then( ( data ) => {
-
-							var data_obj = user.admin ? {
-								devices: data[ 0 ].map( ( d ) => {
-									d.url = 'http://localhost:4000/devices/' + d._id
-									return d
-								} ), //// HACK: Hotfix
-								gateways: data[ 1 ],
-								userGroups: data[ 2 ],
-								screens: data[ 3 ],
-								locations: data[ 4 ],
-								users: data[ 5 ]
-							} : {
-								displays: data[ 0 ],
-								images: data[ 1 ],
-								groups: data[ 2 ],
-								devices: data[ 3 ],
-								screens: data[ 4 ]
-							}
-
-							return res.status( 200 )
-								.json( {
-									message: 'Auth Successful',
-									token: token,
-									user: {
-										_id: user._id,
-										url: user.url,
-										name: user.name,
-										admin: user.admin,
-										createdAt: user.createdAt,
-										updatedAt: user.updatedAt
-									},
-									data: data_obj
-								} )
-						} )
-				} else { // password doesn't match!
-					return res.status( 401 )
-						.json( { message: 'Auth failed' } )
-				}
-			} )
-		} )
-		.catch( ( err ) => {
-			res.status( 500 )
-				.json( {
-					message: 'Internal Server Error',
-					error: err
-				} )
-		} )
-}
+exports.userLogin = async (req, res) => {
+  try {
+    const user = await User.findOne({ login: req.body.login })
+      .select(SELECTION.users.long)
+      .exec();
+    if (user) {
+      const match = await bcrypt.compare(req.body.password, user.password);
+      if (match) {
+        const token = jwt.sign({
+          login: user.login,
+          userID: user._id,
+          userGroup: user.userGroup,
+          admin: user.admin,
+        },
+        process.env.JWT_KEY, {
+          expiresIn: 60 * 60 * 8,
+        });
+        const resources = user.admin ? [
+          Device.find().select(SELECTION.devices.short)
+            .populate('gateway', SELECTION.gateways.populate)
+            .exec(),
+          Gateway.find().select(SELECTION.gateways.short).exec(),
+          UserGroup.find().select(SELECTION.userGroups.short).exec(),
+          Screen.find().select(SELECTION.screens.short).exec(),
+          Location.find().select(SELECTION.locations.short).exec(),
+          User.find().select(SELECTION.users.short)
+            .populate('userGroup', SELECTION.userGroups.populate)
+            .exec(),
+          Display.find().select(SELECTION.displays.short).exec(),
+          Image.find().select(SELECTION.images.short).exec(),
+          Group.find().select(SELECTION.groups.short).exec(),
+        ] : [
+          Display.find({ userGroup: user.userGroup._id }).select(SELECTION.displays.short)
+            .populate('device', SELECTION.devices.populate)
+            .populate('activeImage', SELECTION.images.populate)
+            .exec(),
+          Image.find({ userGroup: user.userGroup._id }).select(SELECTION.images.short).exec(),
+          Group.find({ userGroup: user.userGroup._id }).select(SELECTION.groups.short).exec(),
+          Device.find({ userGroup: user.userGroup._id }).select(SELECTION.devices.short)
+            .populate('display', SELECTION.displays.populate)
+            .exec(),
+          Screen.find().select(SELECTION.screens.short).exec(),
+        ];
+        const results = await Promise.all(resources);
+        const data = user.admin ? {
+          devices: results[0].map((d) => {
+            d.url = `http://localhost:4000/devices/${d._id}`;
+            return d;
+          }),
+          gateways: results[1],
+          userGroups: results[2],
+          screens: results[3],
+          locations: results[4],
+          users: results[5],
+          displays: results[6],
+          images: results[7],
+          groups: results[8],
+        } : {
+          displays: results[0],
+          images: results[1],
+          groups: results[2],
+          devices: results[3],
+          screens: results[4],
+        };
+        res.status(200).json({
+          message: 'Auth Successful',
+          token,
+          user: {
+            _id: user._id,
+            url: user.url,
+            name: user.name,
+            admin: user.admin,
+            createdAt: user.createdAt,
+            updatedAt: user.updatedAt,
+          },
+          data,
+        });
+      } else {
+        res.status(401).json(MESSAGE[401]);
+      }
+    }
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json(MESSAGE[500](error));
+  }
+};
 
 /* PUT */
-exports.user_update = ( req, res, next ) => {
-	if ( !req.AuthData.admin ) {
-		res.status( 401 )
-			.json( { message: 'Not allowed' } )
-	} else if ( req.body.password ) {
-		bcrypt.hash( req.body.password, 10, ( err, hash ) => {
-			if ( err ) {
-				return res.status( 500 )
-					.json( {
-						error: err
-					} )
-			} else {
-				req.body.password = hash
-				console.log( req.body )
-				User
-					.findByIdAndUpdate( { _id: req.params.id }, { $set: req.body }, { new: true } )
-					.select( '_id url name login email admin userGroup createdAt updatedAt' )
-					.populate( 'userGroup', '_id url name' )
-					.then( doc => res.status( 200 )
-						.json( {
-							message: 'Success at updating a user from the collection',
-							notify: 'Datos de ' + doc.name + ' actualizados',
-							success: true,
-							resourceId: doc._id,
-							resource: doc
-						} ) )
-					.catch( err => res.status( 500 )
-						.json( { error: err } ) )
-
-			}
-		} )
-	} else {
-		User
-			.findByIdAndUpdate( { _id: req.params.id }, { $set: req.body }, { new: true } )
-			.select( '_id url name login email admin userGroup createdAt updatedAt' )
-			.populate( 'userGroup', '_id url name' )
-			.then( doc => res.status( 200 )
-				.json( {
-					message: 'Success at updating a user from the collection',
-					notify: 'Datos de ' + doc.name + ' actualizados',
-					success: true,
-					resourceId: doc._id,
-					resource: doc
-				} ) )
-			.catch( err => res.status( 500 )
-				.json( { error: err } ) )
-	}
-}
+exports.userUpdate = async (req, res) => {
+  try {
+    if (req.body.password) {
+      bcrypt.hash(req.body.password, 10, async (err, hash) => {
+        try {
+          const { body, body: { userGroup } } = req;
+          body.password = hash;
+          body.userGroup = mongoose.Types.ObjectId(userGroup);
+          const { id } = req.params;
+          const user = await User.findByIdAndUpdate(id, { $set: body }, { new: true })
+            .select(SELECTION.users.short)
+            .populate('userGroup', SELECTION.userGroups.populate);
+          if (user) {
+            if (userGroup) {
+              await UserGroup.findByIdAndUpdate(mongoose.Types.ObjectId(userGroup), { $addToSet: { users: id } });
+            }
+            res.status(200).json({
+              message: 'Success at updating a user from the collection',
+              notify: `Datos de ${user.name} actualizados`,
+              success: true,
+              resourceId: id,
+              resource: user,
+            });
+          } else {
+            res.status(404).json(MESSAGE[404]);
+          }
+        } catch (error) {
+          console.log(error.message);
+          res.status(500).json(MESSAGE[500](error));
+        }
+      });
+    } else {
+      const { body, body: { userGroup } } = req;
+      body.userGroup = mongoose.Types.ObjectId(userGroup);
+      const { id } = req.params;
+      const user = await User.findByIdAndUpdate(id, { $set: body }, { new: true })
+        .select(SELECTION.users.short)
+        .populate('userGroup', SELECTION.userGroups.populate);
+      if (user) {
+        if (userGroup) {
+          await UserGroup.findByIdAndUpdate(mongoose.Types.ObjectId(userGroup), { $addToSet: { users: id } });
+        }
+        res.status(200).json({
+          message: 'Success at updating a user from the collection',
+          notify: `Datos de ${user.name} actualizados`,
+          success: true,
+          resourceId: id,
+          resource: user,
+        });
+      } else {
+        res.status(404).json(MESSAGE[404]);
+      }
+    }
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json(MESSAGE[500](error));
+  }
+};
 
 /* DELETE */
-exports.user_delete = ( req, res, next ) => {
-	if ( !req.AuthData.admin ) {
-		res.status( 401 )
-			.json( { message: 'Not allowed' } )
-	} else {
-		User
-			.findByIdAndRemove( { _id: req.params.id } ) // remove user document
-			.select( '_id url name login email userGroup createdAt updatedAt' )
-			.exec()
-			.then( doc => res.status( 200 )
-				.json( {
-					message: 'Success at removing a user from the collection',
-					success: true,
-					resourceId: req.params.id,
-					resource: doc
-				} ) )
-			.catch( err => res.status( 500 )
-				.json( { error: err } ) )
-	}
-}
+exports.userDelete = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findById(id);
+    await user.remove();
+    if (user) {
+      res.status(200).json({
+        message: 'Success at removing a user from the collection',
+        notify: `${user.name} eliminado`,
+        success: true,
+        resourceId: id,
+      });
+    } else {
+      res.status(404).json(MESSAGE[404]);
+    }
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json(MESSAGE[500](error));
+  }
+};

@@ -1,18 +1,19 @@
-const express = require('express')
-const router = express.Router()
+const express = require('express');
+
+const router = express.Router();
 
 /* CONTROLLER */
-const DeviceController = require('../controllers/devices.js')
-const checkAuth = require('../middleware/check-auth.js')
+const DeviceController = require('../controllers/devices.js');
+const checkAuth = require('../middleware/check-auth.js');
 
 /* API GET */
-router.get('/', checkAuth, DeviceController.devices_get_all)
-router.get('/:id', checkAuth, DeviceController.devices_get_one)
+router.get('/', checkAuth, DeviceController.devicesGetAll);
+router.get('/:id', checkAuth, DeviceController.devicesGetOne);
 
 /* API PUT */
-router.put('/:id', checkAuth, DeviceController.device_update)
+router.put('/:id', checkAuth, DeviceController.deviceUpdate);
 
 /* API DELETE */
-router.delete('/:id', checkAuth, DeviceController.device_delete)
+router.delete('/:id', checkAuth, DeviceController.deviceDelete);
 
-module.exports = router
+module.exports = router;

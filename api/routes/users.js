@@ -1,24 +1,25 @@
-const express = require( 'express' )
-const router = express.Router()
+const express = require('express');
+
+const router = express.Router();
 
 /* CONTROLLER */
-const UsersController = require( '../controllers/users.js' )
-const checkAuth = require( '../middleware/check-auth' )
+const UsersController = require('../controllers/users.js');
+const checkAdmin = require('../middleware/check-admin');
 
 /* API SIGNUP */
-router.post( '/signup', UsersController.user_signup )
+router.post('/signup', checkAdmin, UsersController.userSignup);
 
 /* API LOGIN */
-router.post( '/login', UsersController.user_login )
+router.post('/login', UsersController.userLogin);
 
 /* API GET */
-router.get( '/', checkAuth, UsersController.users_get_all )
-router.get( '/:id', checkAuth, UsersController.users_get_one )
+router.get('/', checkAdmin, UsersController.usersGetAll);
+router.get('/:id', checkAdmin, UsersController.usersGetOne);
 
 /* API PATCH */
-router.put( '/:id', checkAuth, UsersController.user_update )
+router.put('/:id', checkAdmin, UsersController.userUpdate);
 
 /* API DELETE */
-router.delete( '/:id', checkAuth, UsersController.user_delete )
+router.delete('/:id', checkAdmin, UsersController.userDelete);
 
-module.exports = router
+module.exports = router;

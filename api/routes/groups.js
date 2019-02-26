@@ -1,21 +1,22 @@
-const express = require('express')
-const router = express.Router()
+const express = require('express');
+
+const router = express.Router();
 
 /* CONTROLLER */
-const GroupsController = require('../controllers/groups.js')
-const checkAuth = require('../middleware/check-auth')
+const GroupsController = require('../controllers/groups.js');
+const checkAuth = require('../middleware/check-auth');
 
 /* API GET */
-router.get('/', checkAuth, GroupsController.group_get_all)
-router.get('/:id', checkAuth, GroupsController.group_get_one)
+router.get('/', checkAuth, GroupsController.groupGetAll);
+router.get('/:id', checkAuth, GroupsController.groupGetOne);
 
 /* API POST */
-router.post('/', checkAuth, GroupsController.group_create)
+router.post('/', checkAuth, GroupsController.groupCreate);
 
 /* API PUT */
-router.put('/:id', checkAuth, GroupsController.group_update)
+router.put('/:id', checkAuth, GroupsController.groupUpdate);
 
 /* API DELETE */
-router.delete('/:id', checkAuth, GroupsController.group_delete)
+router.delete('/:id', checkAuth, GroupsController.groupDelete);
 
-module.exports = router
+module.exports = router;
