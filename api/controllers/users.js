@@ -90,92 +90,84 @@ exports.userSignup = async (req, res) => {
 /* LOGIN */
 exports.userLogin = async (req, res) => {
   try {
-    console.log(SELECTION);
     const user = await User.findOne({ login: req.body.login })
       .select(SELECTION.users.long)
       .exec();
     if (user) {
-      bcrypt.compare(req.body.password, user.password, async (err, result) => {
-        if (err) {
-          res.status(401).json(MESSAGE[401]);
-          return false;
-        }
-        if (result) {
-          const token = jwt.sign({
-            login: user.login,
-            userID: user._id,
-            userGroup: user.userGroup,
+      const match = await bcrypt.compare(req.body.password, user.password);
+      if (match) {
+        const token = jwt.sign({
+          login: user.login,
+          userID: user._id,
+          userGroup: user.userGroup,
+          admin: user.admin,
+        },
+        process.env.JWT_KEY, {
+          expiresIn: 60 * 60 * 8,
+        });
+        const resources = user.admin ? [
+          Device.find().select(SELECTION.devices.short)
+            .populate('gateway', SELECTION.gateways.populate)
+            .exec(),
+          Gateway.find().select(SELECTION.gateways.short).exec(),
+          UserGroup.find().select(SELECTION.userGroups.short).exec(),
+          Screen.find().select(SELECTION.screens.short).exec(),
+          Location.find().select(SELECTION.locations.short).exec(),
+          User.find().select(SELECTION.users.short)
+            .populate('userGroup', SELECTION.userGroups.populate)
+            .exec(),
+          Display.find().select(SELECTION.displays.short).exec(),
+          Image.find().select(SELECTION.images.short).exec(),
+          Group.find().select(SELECTION.groups.short).exec(),
+        ] : [
+          Display.find({ userGroup: user.userGroup._id }).select(SELECTION.displays.short)
+            .populate('device', SELECTION.devices.populate)
+            .populate('activeImage', SELECTION.images.populate)
+            .exec(),
+          Image.find({ userGroup: user.userGroup._id }).select(SELECTION.images.short).exec(),
+          Group.find({ userGroup: user.userGroup._id }).select(SELECTION.groups.short).exec(),
+          Device.find({ userGroup: user.userGroup._id }).select(SELECTION.devices.short)
+            .populate('display', SELECTION.displays.populate)
+            .exec(),
+          Screen.find().select(SELECTION.screens.short).exec(),
+        ];
+        const results = await Promise.all(resources);
+        const data = user.admin ? {
+          devices: results[0].map((d) => {
+            d.url = `http://localhost:4000/devices/${d._id}`;
+            return d;
+          }),
+          gateways: results[1],
+          userGroups: results[2],
+          screens: results[3],
+          locations: results[4],
+          users: results[5],
+          displays: results[6],
+          images: results[7],
+          groups: results[8],
+        } : {
+          displays: results[0],
+          images: results[1],
+          groups: results[2],
+          devices: results[3],
+          screens: results[4],
+        };
+        res.status(200).json({
+          message: 'Auth Successful',
+          token,
+          user: {
+            _id: user._id,
+            url: user.url,
+            name: user.name,
             admin: user.admin,
+            createdAt: user.createdAt,
+            updatedAt: user.updatedAt,
           },
-          process.env.JWT_KEY, {
-            expiresIn: 60 * 60 * 7,
-          });
-          const resources = user.admin ? [
-            Device.find().select(SELECTION.devices.short)
-              .populate('gateway', SELECTION.gateways.populate)
-              .exec(),
-            Gateway.find().select(SELECTION.gateways.short).exec(),
-            UserGroup.find().select(SELECTION.userGroups.short).exec(),
-            Screen.find().select(SELECTION.screens.short).exec(),
-            Location.find().select(SELECTION.locations.short).exec(),
-            User.find().select(SELECTION.users.short)
-              .populate('userGroup', SELECTION.userGroups.populate)
-              .exec(),
-            Display.find().select(SELECTION.displays.short).exec(),
-            Image.find().select(SELECTION.images.short).exec(),
-            Group.find().select(SELECTION.groups.short).exec(),
-          ] : [
-            Display.find({ userGroup: user.userGroup._id }).select(SELECTION.displays.short)
-              .populate('device', SELECTION.devices.populate)
-              .populate('activeImage', SELECTION.images.populate)
-              .exec(),
-            Image.find({ userGroup: user.userGroup._id }).select(SELECTION.images.short).exec(),
-            Group.find({ userGroup: user.userGroup._id }).select(SELECTION.groups.short).exec(),
-            Device.find({ userGroup: user.userGroup._id }).select(SELECTION.devices.short)
-              .populate('display', SELECTION.displays.populate)
-              .exec(),
-            Screen.find().select(SELECTION.screens.short).exec(),
-          ];
-          const results = await Promise.all(resources);
-          const data = user.admin ? {
-            devices: results[0].map((d) => {
-              d.url = `http://localhost:4000/devices/${d._id}`;
-              return d;
-            }),
-            gateways: results[1],
-            userGroups: results[2],
-            screens: results[3],
-            locations: results[4],
-            users: results[5],
-            displays: results[6],
-            images: results[7],
-            groups: results[8],
-          } : {
-            displays: results[0],
-            images: results[1],
-            groups: results[2],
-            devices: results[3],
-            screens: results[4],
-          };
-          res.status(200).json({
-            message: 'Auth Successful',
-            token,
-            user: {
-              _id: user._id,
-              url: user.url,
-              name: user.name,
-              admin: user.admin,
-              createdAt: user.createdAt,
-              updatedAt: user.updatedAt,
-            },
-            data,
-          });
-          return false;
-        }
-        return false;
-      });
-    } else {
-      res.status(401).json(MESSAGE[401]);
+          data,
+        });
+      } else {
+        res.status(401).json(MESSAGE[401]);
+      }
     }
   } catch (error) {
     console.log(error.message);
@@ -186,9 +178,7 @@ exports.userLogin = async (req, res) => {
 /* PUT */
 exports.userUpdate = async (req, res) => {
   try {
-    if (!req.AuthData.admin) {
-      res.status(401).json(MESSAGE[401]);
-    } else if (req.body.password) {
+    if (req.body.password) {
       bcrypt.hash(req.body.password, 10, async (err, hash) => {
         try {
           const { body, body: { userGroup } } = req;
@@ -248,22 +238,18 @@ exports.userUpdate = async (req, res) => {
 /* DELETE */
 exports.userDelete = async (req, res) => {
   try {
-    if (!req.AuthData.admin) {
-      res.status(401).json(MESSAGE[401]);
+    const { id } = req.params;
+    const user = await User.findById(id);
+    await user.remove();
+    if (user) {
+      res.status(200).json({
+        message: 'Success at removing a user from the collection',
+        notify: `${user.name} eliminado`,
+        success: true,
+        resourceId: id,
+      });
     } else {
-      const { id } = req.params;
-      const user = await User.findById(id);
-      await user.remove();
-      if (user) {
-        res.status(200).json({
-          message: 'Success at removing a user from the collection',
-          notify: `${user.name} eliminado`,
-          success: true,
-          resourceId: id,
-        });
-      } else {
-        res.status(404).json(MESSAGE[404]);
-      }
+      res.status(404).json(MESSAGE[404]);
     }
   } catch (error) {
     console.log(error.message);
