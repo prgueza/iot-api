@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const { MESSAGE } = require('../controllers/static.js');
+const { MESSAGE } = require('../controllers/static');
 
 module.exports = (req, res, next) => {
   try {

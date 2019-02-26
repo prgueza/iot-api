@@ -103,7 +103,7 @@ exports.userLogin = async (req, res) => {
           admin: user.admin,
         },
         process.env.JWT_KEY, {
-          expiresIn: process.env.JWT_EXPIRATION,
+          expiresIn: 60 * 60 * 8,
         });
         const resources = user.admin ? [
           Device.find().select(SELECTION.devices.short)
@@ -178,9 +178,7 @@ exports.userLogin = async (req, res) => {
 /* PUT */
 exports.userUpdate = async (req, res) => {
   try {
-    if (!req.AuthData.admin) {
-      res.status(401).json(MESSAGE[401]);
-    } else if (req.body.password) {
+    if (req.body.password) {
       bcrypt.hash(req.body.password, 10, async (err, hash) => {
         try {
           const { body, body: { userGroup } } = req;
@@ -240,22 +238,18 @@ exports.userUpdate = async (req, res) => {
 /* DELETE */
 exports.userDelete = async (req, res) => {
   try {
-    if (!req.AuthData.admin) {
-      res.status(401).json(MESSAGE[401]);
+    const { id } = req.params;
+    const user = await User.findById(id);
+    await user.remove();
+    if (user) {
+      res.status(200).json({
+        message: 'Success at removing a user from the collection',
+        notify: `${user.name} eliminado`,
+        success: true,
+        resourceId: id,
+      });
     } else {
-      const { id } = req.params;
-      const user = await User.findById(id);
-      await user.remove();
-      if (user) {
-        res.status(200).json({
-          message: 'Success at removing a user from the collection',
-          notify: `${user.name} eliminado`,
-          success: true,
-          resourceId: id,
-        });
-      } else {
-        res.status(404).json(MESSAGE[404]);
-      }
+      res.status(404).json(MESSAGE[404]);
     }
   } catch (error) {
     console.log(error.message);

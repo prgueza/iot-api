@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon server.js --ignore 'config.json'",
-    "run": "node server.js"
+    "start": "node server.js"
   },
   "author": "Pedro Rodriguez Alia",
   "license": "ISC",
