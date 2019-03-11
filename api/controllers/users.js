@@ -103,7 +103,7 @@ exports.userLogin = async (req, res) => {
           admin: user.admin,
         },
         process.env.JWT_KEY, {
-          expiresIn: 60 * 60 * 8,
+          expiresIn: 8 * 60 * 60 * 1000,
         });
         const resources = user.admin ? [
           Device.find().select(SELECTION.devices.short)
