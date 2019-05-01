@@ -8,6 +8,7 @@
     "max-len": "off",
     "no-param-reassign": "off",
     "func-names": "off",
+    "no-loop-func": "off",
   },
   "env": {
       "browser": true,

@@ -52,6 +52,7 @@ exports.locationCreate = async (req, res) => {
       const newLocation = await Location.findById(_id).select(Selections.locations.short);
       res.status(201).json({
         message: 'Success at adding a location from the collection',
+        notify: `${newLocation.name} añadida`,
         success: true,
         resourceId: newLocation._id,
         resource: newLocation,
@@ -73,7 +74,7 @@ exports.locationUpdate = async (req, res) => {
       if (location) {
         res.status(200).json({
           message: 'Success at updating an usergroup from the collection',
-          notify: `Localización '${location.name}' actualizada`,
+          notify: `${location.name} actualizada`,
           success: true,
           resourceId: req.params.id,
           resource: location,
@@ -95,10 +96,12 @@ exports.locationDelete = async (req, res) => {
       res.status(401).json({ messgae: 'Not allowed' });
     } else {
       const { id } = req.params;
-      const location = await Location.findById(id).remove();
+      const location = await Location.findById(id);
+      await location.remove();
       if (location) {
         res.status(200).json({
           message: 'Success at removing a location from the collection',
+          notify: `${location.name} eliminada`,
           success: true,
           resourceId: req.params.id,
           resource: location,

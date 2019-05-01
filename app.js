@@ -1,10 +1,10 @@
 const express = require('express');
+const chalk = require('chalk');
 
 const app = express();
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
-
 
 process.env.API_URL = 'http://localhost:4000/';
 process.env.MONGO_ATLAS_PW = '7MZ5oRy4e0YWG4v0';
@@ -26,16 +26,41 @@ const devicesRoutes = require('./api/routes/devices');
 const updateRoutes = require('./api/routes/update');
 const userGroupsRoutes = require('./api/routes/userGroup');
 
+// Database setup
+const MONGO_ENV = process.env.MONGO_ENV || null;
+const MONGO_USER = process.env.MONGO_USER || 'administrador';
+const MONGO_PW = process.env.MONGO_PW || '7MZ5oRy4e0YWG4v0';
+const MONGO_HOST = process.env.MONGO_HOST || 'iot-api-prod-shard-00-00-kjtyd.mongodb.net:27017,iot-api-prod-shard-00-01-kjtyd.mongodb.net:27017,iot-api-prod-shard-00-02-kjtyd.mongodb.net:27017/test?ssl=true&replicaSet=iot-api-prod-shard-0&authSource=admin&retryWrites=true';
 
 mongoose.set('useCreateIndex', true);
 mongoose.set('findAndModify', false);
-if (process.env.DEV === 'development') {
-  mongoose.connect(`mongodb://administrador:${process.env.MONGO_ATLAS_PW}@iot-api-shard-00-00-yznka.mongodb.net:27017,iot-api-shard-00-01-yznka.mongodb.net:27017,iot-api-shard-00-02-yznka.mongodb.net:27017/test?ssl=true&replicaSet=iot-api-shard-0&authSource=admin`, { useNewUrlParser: true })
-    .then(() => console.log('Conected to development database'));
-} else {
-  mongoose.connect(`mongodb://administrador:${process.env.MONGO_ATLAS_PW}@iot-api-prod-shard-00-00-kjtyd.mongodb.net:27017,iot-api-prod-shard-00-01-kjtyd.mongodb.net:27017,iot-api-prod-shard-00-02-kjtyd.mongodb.net:27017/test?ssl=true&replicaSet=iot-api-prod-shard-0&authSource=admin&retryWrites=true`, { useNewUrlParser: true })
-    .then(() => console.log('Connected to production database'));
-}
+
+const connect = setInterval(() => {
+  if (MONGO_ENV === 'atlas') {
+    mongoose.connect(`mongodb://${MONGO_USER}:${MONGO_PW}@${MONGO_HOST}`, {
+      useNewUrlParser: true,
+      reconnectTries: Number.MAX_VALUE, // Never stop trying to reconnect
+      reconnectInterval: 500, // Reconnect every 500ms
+    }).then(() => {
+      console.log('Connected to cloud database on mongoDB atlas');
+      clearInterval(connect);
+    }).catch(() => {
+      console.log('Attempting to connect...');
+    });
+  } else {
+    mongoose.connect('mongodb://iot-db:27017/application', {
+      useNewUrlParser: true,
+      reconnectTries: Number.MAX_VALUE, // Never stop trying to reconnect
+      reconnectInterval: 500, // Reconnect every 500ms
+    }).then(() => {
+      console.log('Conected to local database on iot-db container');
+      clearInterval(connect);
+    }).catch(() => {
+      console.log('Attempting to connect...');
+    });
+  }
+}, 2000);
+
 
 app.use(morgan('dev')); // logger
 app.use('/img', express.static('img'));

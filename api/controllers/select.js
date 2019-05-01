@@ -3,7 +3,7 @@ const required = '_id url name description createdAt updatedAt userGroup';
 const Selections = {
   devices: {
     long: `${required} mac found lastFound batt rssi initcode screen display activeImage userGroup updatedBy`,
-    short: `${required} gateway mac found lastFound batt rssi screen initcode`,
+    short: `${required} gateway display mac found lastFound batt rssi screen initcode`,
     populate: `${required} initcode activeImage screen`,
   },
   displays: {

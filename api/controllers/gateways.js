@@ -56,6 +56,7 @@ exports.gatewayCreate = async (req, res) => {
       const newGateway = await Gateway.findById(_id).select(Selections.gateways.short);
       res.status(201).json({
         message: 'Success at adding a new gateway to the collection',
+        notify: `${newGateway.name} configurada`,
         success: true,
         resourceId: newGateway._id,
         resource: newGateway,
@@ -101,10 +102,12 @@ exports.gatewayDelete = async (req, res) => {
       res.status(401).json({ error: 'Not allowed' });
     } else {
       const { id } = req.params;
-      const gateway = await Gateway.findById(id).remove();
+      const gateway = await Gateway.findById(id);
+      await gateway.remove();
       if (gateway) {
         res.status(200).json({
           message: 'Success at removing a gateway from the collection',
+          notify: `${gateway.name} eliminada`,
           success: true,
           resourceId: id,
         });

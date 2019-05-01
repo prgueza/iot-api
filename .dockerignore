@@ -1,0 +1,8 @@
+node_modules
+src
+Dockerfile
+.babelrc
+.eslintrc
+.gitignore
+webpack.config.js
+README.md
