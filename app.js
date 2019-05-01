@@ -6,7 +6,7 @@ const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 
-process.env.API_URL = 'http://localhost:4000/';
+process.env.API_URL = 'http://iot-api:4000/';
 process.env.MONGO_ATLAS_PW = '7MZ5oRy4e0YWG4v0';
 process.env.JWT_KEY = 'secret';
 process.env.DELAY = 0; // miliseconds
