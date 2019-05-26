@@ -6,13 +6,15 @@ const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 
-process.env.API_URL = 'http://iot-api:4000/';
+process.env.API_URL = process.env.API_URL || 'http://localhost:4000/';
 process.env.MONGO_ATLAS_PW = '7MZ5oRy4e0YWG4v0';
 process.env.JWT_KEY = 'secret';
 process.env.DELAY = 0; // miliseconds
 process.env.TIMEOUT = 15000; // miliseconds
 process.env.LAST_UPDATE_TIMER = 0; // seconds
 process.env.DEV = 'production';
+
+console.log('iot-api up at: ', process.env.API_URL)
 
 // Routes
 const displaysRoutes = require('./api/routes/displays');
