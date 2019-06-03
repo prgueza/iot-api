@@ -8,5 +8,6 @@ const server = http.createServer(app);
 const io = sockets.listen(server);
 require('./api/controllers/update').manager(io);
 
+console.log(`Starting api on port ${port}`);
 
 server.listen(port);

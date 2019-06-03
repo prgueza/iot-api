@@ -60,8 +60,5 @@ typings/
 # dotenv environment variables file
 .env
 
-# image files directory
-img
-
 # apple ds_store
 .DS_Store
