@@ -77,7 +77,7 @@ exports.deviceUpdate = async (req, res) => {
       .exec();
     if (device) {
       // Set the url manually
-      device.url = `http://localhost:4000/devices/${device._id}`;
+      device.url = `${process.env.API_URL}devices/${device._id}`;
       // Send a response
       res.status(200).json({
         message: 'Success at updating the device',

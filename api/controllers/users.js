@@ -139,7 +139,7 @@ exports.userLogin = async (req, res) => {
           const results = await Promise.all(resources);
           const data = user.admin ? {
             devices: results[0].map((d) => {
-              d.url = `http://localhost:4000/devices/${d._id}`;
+              d.url = `${process.env.API_URL}devices/${d._id}`;
               return d;
             }),
             gateways: results[1],
