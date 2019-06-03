@@ -1,14 +1,20 @@
 const express = require('express');
+const chalk = require('chalk');
 
 const app = express();
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 
-// Environment variables
 process.env.API_URL = process.env.API_URL || 'http://localhost:4000/';
-process.env.JWT_KEY = process.env.JWT_KEY || 'secret';
-process.env.JWT_EXPIRATION = process.env.JWT_EXPIRATION || 60 * 60 * 8; // seconds
+process.env.MONGO_ATLAS_PW = '7MZ5oRy4e0YWG4v0';
+process.env.JWT_KEY = 'secret';
+process.env.DELAY = 0; // miliseconds
+process.env.TIMEOUT = 15000; // miliseconds
+process.env.LAST_UPDATE_TIMER = 0; // seconds
+process.env.DEV = 'production';
+
+console.log('iot-api up at: ', process.env.API_URL)
 
 // Routes
 const displaysRoutes = require('./api/routes/displays');
@@ -23,7 +29,7 @@ const updateRoutes = require('./api/routes/update');
 const userGroupsRoutes = require('./api/routes/userGroup');
 
 // Database setup
-const MONGO_ENV = process.env.MONGO_ENV || 'atlas';
+const MONGO_ENV = process.env.MONGO_ENV || null;
 const MONGO_USER = process.env.MONGO_USER || 'administrador';
 const MONGO_PW = process.env.MONGO_PW || '7MZ5oRy4e0YWG4v0';
 const MONGO_HOST = process.env.MONGO_HOST || 'iot-api-prod-shard-00-00-kjtyd.mongodb.net:27017,iot-api-prod-shard-00-01-kjtyd.mongodb.net:27017,iot-api-prod-shard-00-02-kjtyd.mongodb.net:27017/test?ssl=true&replicaSet=iot-api-prod-shard-0&authSource=admin&retryWrites=true';

@@ -11,6 +11,7 @@
   "license": "ISC",
   "repository": "https://github.com/pedro-rodalia/iot-api.git",
   "dependencies": {
+    "chalk": "^2.4.2",
     "axios": "^0.18.0",
     "bcrypt": "^2.0.0",
     "body-parser": "^1.18.2",
