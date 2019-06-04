@@ -1,5 +1,6 @@
 const express = require('express');
 const chalk = require('chalk');
+const initDatabase = require('./db-init')
 
 const app = express();
 const morgan = require('morgan');
@@ -45,6 +46,7 @@ const connect = setInterval(() => {
       reconnectInterval: 500, // Reconnect every 500ms
     }).then(() => {
       console.log('Connected to cloud database on mongoDB atlas');
+      initDatabase();
       clearInterval(connect);
     }).catch(() => {
       console.log('Attempting to connect...');
@@ -56,6 +58,7 @@ const connect = setInterval(() => {
       reconnectInterval: 500, // Reconnect every 500ms
     }).then(() => {
       console.log('Conected to local database on iot-db container');
+      initDatabase();
       clearInterval(connect);
     }).catch(() => {
       console.log('Attempting to connect...');
