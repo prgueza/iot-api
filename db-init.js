@@ -1,8 +1,8 @@
 const mongoose = require('mongoose')
 const bcrypt = require('bcrypt')
 
-const UserGroup = require('api/models/userGroup.js');
-const User = require('api/models/user.js');
+const UserGroup = require('./api/models/userGroup.js');
+const User = require('./api/models/user.js');
 
 const init = async function initDatabase () {
   try {
