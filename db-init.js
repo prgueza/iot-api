@@ -34,8 +34,8 @@ const init = async function initDatabase () {
     const usergroupUrl = `${process.env.API_URL}usergroups/${usergroupId}`
     await UserGroup.findByIdAndUpdate({ _id: usergroupId }, { $set: { url: usergroupUrl } })
     // Add user password and userGroup
-    user.password = bcrypt.hashSync('1234', 10);
-    user.userGroup = usergroupId
+    userData.password = bcrypt.hashSync('1234', 10);
+    userData.userGroup = usergroupId
     // Create user instance
     const user = new User(userData)
     // Save user
